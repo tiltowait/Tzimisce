@@ -1,32 +1,48 @@
-# Masquerade-Bot
-A handy Discord bot for handling rolls in a *Vampire: The Masquerade 20th Anniversary* game.
+# Tzimisce
+A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary*.
 
 ## Installation
-As of now, the bot requires the user to self-host the bot, including creating an API token through Discord. Store the token in `token.txt` in the same directory as `masquerade.py`.
+The bot is not yet ready for primetime until more testing has been done. Should you wish to locally run the bot, you will need to set up a Discord developer key, install [PostgreSQL](https://www.postgresql.org), and set up two tables: `SavedRolls` and `Token`.
+
+Additionally, it requires `psycopg2` and `discord.py`.
+
+### Creating the Tables
+```
+CREATE TABLE SavedRolls
+(ID    Text NOT NULL,
+Name   Text NOT NULL,
+Syntax Text NOT NULL);
+```
+
+```
+CREATE TABLE Token
+(Token Text NOT NULL);
+```
+Once the `Token` table exists, `INSERT` your developer token.
 
 ## Usage
-### Standard
-*Masquerade-Bot* is designed for ease of use, particularly on mobile. On an iPhone, entering a roll takes as few as 10 taps on the keyboard, a dramatic improvement over Sidekick’s 21.
+### Pool-Based Rolls
+*Tzimisce* is designed for ease of use, particularly on mobile. On an iPhone, entering a roll takes as few as 7 taps on the on-screen keyboard, a dramatic improvement over Sidekick’s 21.
 ```
-!m <pool> <difficulty>
+!m <pool> [difficulty]
 ```
 
-### Optional Arguments
-There are two optional arguments: `[specialty]` and `# comment`:
+#### Optional Arguments
+There are three optional arguments: `[difficulty]`, `[specialty]`, and `# comment`:
 ```
-!m 8 6 Koldunism # Int + Occult
+!m 8 5 Koldunism # Int + Occult
 ```
-This example rolls a pool of 8 dice, difficulty 6, with a specialty of *Koldunism*, and a comment *Int + Occult*. When tagging a specialty, tens count as double.
+This example rolls a pool of 8 dice, difficulty 5, with a specialty of *Koldunism*, and a comment *Int + Occult*. When tagging a specialty, tens count as double.
 
-### Willpower
+If `difficulty` isn’t supplied, it defaults to 6.
+
+#### Willpower
 Rolls using temporary Willpower may be performed using the `!mw` command, which is otherwise identical to the standard invocation. Such rolls have a guaranteed success and will never botch.
+
+### Traditional Rolls
+*Tzimisce* has limited capability for “traditional” rolls, such as `1d10+5`. It can accept a *single* type of die, plus an *optional, positive* modifier. A more robust system is planned.
 
 ## Improvements Over Sidekick
 While the main benefit over Sidekick is brevity, the output is more intelligent when it comes to the *V20* product line. “Negative successes” are only botches when there are zero rolls at or above the difficulty. Botches keep track of “severity” in case of house rules where a “multi-botch” is more detrimental. And Willpower use is clearly stated.
 
-## Limitations
-* It is also unable to save rolls. There are no plans to support this feature at this time.
-
-## Planned Improvements
-* Code refactoring and documentation
-* Proper hosting
+Finally, the output is much more attractive, with color-coding to easily see if a roll was a botch, failure, or success.
