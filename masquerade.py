@@ -15,9 +15,9 @@ class Masquerade(discord.Client):
 
         # Set up the important regular expressions
         self.invoked = re.compile('^[!/]mw?')
-        self.p = re.compile('[!/]m(?P<will>w)? (?P<pool>\d+)(?P<difficulty> \d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
-        self.r = re.compile('^[!/]mw? (?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?(?:\s*#\s*(?P<comment>.*))?$')
-        self.h = re.compile('^[!/]m help.*$')
+        self.poolx = re.compile('[!/]m(?P<will>w)? (?P<pool>\d+)(?P<difficulty> \d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
+        self.tradx = re.compile('^[!/]mw? (?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?(?:\s*#\s*(?P<comment>.*))?$')
+        self.helpx = re.compile('^[!/]m help.*$')
 
         # Colors help show, at a glance, if a roll was successful
         self.success_color = 0x14a1a0
@@ -65,17 +65,17 @@ class Masquerade(discord.Client):
             author = message.author.name
 
         # Standard roll. Pool, difficulty, specialty.
-        if self.p.match(message.content):
+        if self.poolx.match(message.content):
             embed = self.__pool_roll(message.content, author, message.author.avatar_url)
             await message.channel.send(content=message.author.mention, embed=embed)
 
         # Traditional roll. 1d10+5, etc.
-        elif self.r.match(message.content):
+        elif self.tradx.match(message.content):
             embed = self.__traditional_roll(message.content, author, message.author.avatar_url)
             await message.channel.send(content=message.author.mention, embed=embed)
 
         # Print the help message.
-        elif self.h.match(message.content):
+        elif self.helpx.match(message.content):
             embed = self.__help()
             await message.channel.send(content=message.author.mention, embed=embed)
 
@@ -84,11 +84,11 @@ class Masquerade(discord.Client):
             msg = self.__query_saved_rolls(message.author.mention, message.content)
 
             # If the user has retrieved a roll, go ahead and roll it.
-            if self.p.match(msg):
+            if self.poolx.match(msg):
                 embed = self.__pool_roll(msg, author, message.author.avatar_url)
                 await message.channel.send(content=message.author.mention, embed=embed)
 
-            elif self.r.match(msg):
+            elif self.tradx.match(msg):
                 embed = self.__traditional_roll(msg, author, message.author.avatar_url)
                 await message.channel.send(content=message.author.mention, embed=embed)
 
@@ -183,7 +183,7 @@ class Masquerade(discord.Client):
     # Does not check that difficulty is 1 or > 10.
     #
     def __pool_roll(self, message, author, avatar):
-        m = self.p.match(message)
+        m = self.poolx.match(message)
         will = m.group('will') is not None
         pool = int(m.group('pool'))
 
@@ -246,7 +246,7 @@ class Masquerade(discord.Client):
     # A "traditional" roll, such as 5d10+2.
     #
     def __traditional_roll(self, message, author, avatar):
-        m = self.r.match(message)
+        m = self.tradx.match(message)
         repeat  = int(m.group('repeat'))
         die     = int(m.group('die'))
         mod     = m.group('mod')
