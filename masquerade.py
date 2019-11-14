@@ -108,8 +108,9 @@ class Masquerade(discord.Client):
         else:
             await message.channel.send('{0}: Come again?'.format(message.author.mention))
 
+    #
     # Roll a specific die a number of times and return the results as an array.
-
+    #
     def __roll(self, repeat, die):
         repeat = int(repeat)
         return sorted([random.randint(1,die) for _ in range(repeat)], reverse=True)
@@ -127,11 +128,10 @@ class Masquerade(discord.Client):
                 formatted.append('~~**{0}**~~'.format(roll))
             elif roll < difficulty:
                 formatted.append('~~{0}~~'.format(roll))
+            elif roll == 10 and spec:
+                formatted.append('**{0}**'.format(roll))
             else:
-                if roll == 10 and spec:
-                    formatted.append('**{0}**'.format(roll))
-                else:
-                    formatted.append('{0}'.format(roll))
+                formatted.append('{0}'.format(roll))
 
         return formatted
 
@@ -410,12 +410,6 @@ class Masquerade(discord.Client):
         return self.__retrieve_stored_roll(userid, name) is not None
 
 
-# Retrieve the Discord API token stored in the database
-connection = psycopg2.connect(DATABASE_URL)
-cursor = connection.cursor()
-cursor.execute('SELECT Token FROM Token')
-token = cursor.fetchone()
-connection.close()
-
+# Run it
 client = Masquerade()
-client.run(token[0])
+client.run(os.environ['TZIMISCE_TOKEN'])

@@ -2,7 +2,7 @@
 A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary*.
 
 ## Installation
-The bot is not yet ready for primetime until more testing has been done. Should you wish to locally run the bot, you will need to set up a Discord developer key, install [PostgreSQL](https://www.postgresql.org), and set up two tables: `SavedRolls` and `Token`.
+The bot is not yet ready for primetime until more testing has been done. Should you wish to locally run the bot, you will need to set up a Discord developer key, install [PostgreSQL](https://www.postgresql.org), and set up the `SavedRolls` table.
 
 Additionally, it requires `psycopg2` and `discord.py`.
 
@@ -14,11 +14,8 @@ Name   Text NOT NULL,
 Syntax Text NOT NULL);
 ```
 
-```
-CREATE TABLE Token
-(Token Text NOT NULL);
-```
-Once the `Token` table exists, `INSERT` your developer token.
+### Setting the token
+Store your API token in an environment variable called `TZIMISCE_TOKEN`.
 
 ## Usage
 ### Pool-Based Rolls
