@@ -1,4 +1,3 @@
-import discord
 import psycopg2
 import os
 import re
@@ -106,21 +105,18 @@ class RollDB:
         return 'Roll deleted!'
 
     #
-    # Returns an embed with all of the user's stored rolls listed.
+    # Returns an list of all the stored rolls.
     #
-    def list_stored_rolls(self, userid):
+    def stored_rolls(self, userid):
         query = 'SELECT * FROM SavedRolls WHERE ID=\'' + userid + '\' ORDER BY Name'
         self.cursor.execute(query)
         result = self.cursor.fetchall()
 
-        if len(result) == 0:
-            return None
-
-        embed = discord.Embed(colour=discord.Colour(0x1f3446))
+        fields = []
         for row in result:
-            embed.add_field(name=row[1], value=row[2], inline=False)
+            fields.append((row[1], row[2]))
 
-        return embed
+        return fields
 
     #
     # Returns true if a roll by the given name has been stored.

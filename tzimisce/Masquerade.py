@@ -86,11 +86,13 @@ class Masquerade(discord.Client):
 
         # Display all of the user's stored rolls.
         elif self.disp.match(message.content):
-            embed = self.database.list_stored_rolls(message.author.mention)
-            if embed is None:
+            #embed = self.database.list_stored_rolls(message.author.mention)
+            stored_rolls = self.database.stored_rolls(message.author.mention)
+            if len(stored_rolls) == 0:
                 await message.channel.send(message.author.mention + ', you have no stored rolls!')
             else:
-                await message.channel.send(content=message.author.mention + ', you have the following rolls stored:', embed=embed)
+                embed = self.__build_embed(message, 'Stored Rolls', 0x1f3446, '', stored_rolls)
+                await message.channel.send(content=message.author.mention, embed=embed)
 
         # No idea what the user is asking
         else:
@@ -225,3 +227,19 @@ class Masquerade(discord.Client):
             return message.author.nick
         else:
             return message.author.name
+
+    def __build_embed(self, message, title, color, description, fields):
+        embed = discord.Embed(title=title, colour=discord.Colour(color), description=description)
+        embed.set_author(name=self.__get_author(message), icon_url=message.author.avatar_url)
+
+        for field in fields:
+            name = field[0]
+            value = field[1]
+            inline = False
+
+            if len(field) == 3:
+                inline = field[2]
+
+            embed.add_field(name=name, value=value, inline=inline)
+
+        return embed
