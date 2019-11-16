@@ -194,7 +194,7 @@ class Masquerade(discord.Client):
         ]
 
         if comment is not None:
-            fields.append('Comment', comment, False)
+            fields.append(('Comment', comment, False))
 
         return self.__build_embed(message, title, 0x14a1a0, '', fields)
 
