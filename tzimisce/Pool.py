@@ -10,11 +10,11 @@ class Pool:
     #
     # Roll a specific die a number of times and return the results as an array.
     #
-    def roll(self, pool, difficulty, wp, spec):
+    def roll(self, pool, difficulty, wp, spec, autos):
         pool = int(pool)
         self.raw = sorted([random.randint(1, 10) for _ in range(pool)], reverse=True)
         self.formatted = self.__format_rolls(self.raw, difficulty, spec)
-        self.result_str = self.__count_successes(self.raw, difficulty, wp, spec)
+        self.result_str = self.__count_successes(self.raw, difficulty, wp, spec, autos)
 
     #
     # Use Markdown formatting on the rolls.
@@ -42,8 +42,8 @@ class Pool:
     #   Failure if ones > successes
     #   Success if successes > ones
     #
-    def __count_successes(self, rolls, difficulty, wp, spec):
-        suxx  = 0
+    def __count_successes(self, rolls, difficulty, wp, spec, autos):
+        suxx  = int(autos)
         fails = 0
 
         for roll in rolls:

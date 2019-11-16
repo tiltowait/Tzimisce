@@ -12,7 +12,7 @@ class Masquerade(discord.Client):
 
         # Set up the important regular expressions
         self.invoked = re.compile('^[!/]mw?')
-        self.poolx = re.compile('[!/]m(?P<will>w)? (?P<pool>\d+)(?P<difficulty> \d+)?(?P<auto> \d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
+        self.poolx = re.compile('[!/]m(?P<will>w)? (?P<pool>\d+)(?P<difficulty> \d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
         self.tradx = re.compile('^[!/]mw? (?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?(?:\s*#\s*(?P<comment>.*))?$')
         self.helpx = re.compile('^[!/]m help.*$')
 
@@ -118,14 +118,6 @@ class Masquerade(discord.Client):
         else:
             difficulty = int(difficulty)
 
-        # Optional arguments
-        specialty  = m.group('specialty')
-        comment    = m.group('comment')
-
-        # Perform rolls, format them, and figure out how many successes we have
-        results = Pool()
-        results.roll(pool, difficulty, will, specialty is not None)
-
         # Title format: 'Rolling 6 dice, difficulty 5'
         title = str(pool)
         if pool > 1:
@@ -133,6 +125,21 @@ class Masquerade(discord.Client):
         else:
             title += ' die' # For the grammar Naxi in me.
         title += ', difficulty ' + str(difficulty)
+
+        # Sometimes, a roll may have auto-successes that can be canceled by 1s.
+        autos = m.group('auto')
+        autos = '0' if autos is None else autos
+
+        # Optional arguments
+        specialty  = m.group('specialty')
+        comment    = m.group('comment')
+
+        # Perform rolls, format them, and figure out how many successes we have
+        results = Pool()
+        results.roll(pool, difficulty, will, specialty is not None, autos)
+
+        if autos is not None:
+            title += ', +' + autos
 
         # Put the results into an embed
 
@@ -202,6 +209,7 @@ class Masquerade(discord.Client):
         embed.add_field(name="Add a comment", value="```!m 5 8 # Comment!```", inline=False)
         embed.add_field(name="Add a specialty", value="```!m 8 4 Koldunism```", inline=False)
         embed.add_field(name="All together", value="```!m 8 4 Koldunism # Int + Occult```", inline=False)
+        embed.add_field(name="Add bonus successes", value="```!m 6 5 3```")
         embed.add_field(name="Traditional roll", value="Useful for Initiative rolls and other things.```!m 1d10+5 # Comments work here, too```", inline=False)
         embed.add_field(name="Store a roll", value="Does not store willpower use or comments.\n```!m danubian = 8 3 Koldunism```", inline=False)
         embed.add_field(name="Use a stored roll", value="May also use with Willpower.\n```!m danubian```", inline=False)
