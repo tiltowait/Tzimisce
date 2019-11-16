@@ -1,5 +1,7 @@
-import tzimisce
-import os
+'''Creates and connects an instance of the Tzimisce dicebot.'''
 
-client = tzimisce.Masquerade()
-client.run(os.environ['TZIMISCE_TOKEN'])
+import os
+import tzimisce
+
+CLIENT = tzimisce.Masquerade()
+CLIENT.run(os.environ['TZIMISCE_TOKEN'])

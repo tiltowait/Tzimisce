@@ -1,44 +1,47 @@
-import discord
+'''The main Tzimisce dicebot class.'''
+
 import re
 import random
 
+import discord
 from tzimisce.RollDB import RollDB
 from tzimisce.Pool import Pool
 from tzimisce import PlainRoll
 
 class Masquerade(discord.Client):
+    '''The Discord bot parses messages to see if it needs to perform a roll.'''
+
+    # pylint: disable=too-many-instance-attributes
+    # We need all of them.
+
     def __init__(self):
         discord.Client.__init__(self)
 
         random.seed()
 
         # Set up the important regular expressions
-        self.invoked = re.compile('^[!/]mw?')
-        self.poolx = re.compile('[!/]m(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
-        self.tradx = re.compile('^[!/]mw? (?P<syntax>(?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?)(?:\s*#\s*(?P<comment>.*))?$')
-        self.helpx = re.compile('^[!/]m help.*$')
+        self.invoked = re.compile(r'^[!/]mw?')
+        self.poolx = re.compile(r'[!/]m(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
+        self.tradx = re.compile(r'^[!/]mw? (?P<syntax>(?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?)(?:\s*#\s*(?P<comment>.*))?$')
+        self.helpx = re.compile(r'^[!/]m help.*$')
 
         # Colors help show, at a glance, if a roll was successful
         self.exceptional_color = 0x00ff00
-        self.success_color     = 0x14a1a0
-        self.fail_color        = 0x777777
-        self.botch_color       = 0xff0000
+        self.success_color = 0x14a1a0
+        self.fail_color = 0x777777
+        self.botch_color = 0xff0000
 
         # Database nonsense
         self.database = RollDB()
-        self.sqrx = re.compile('^[!/]mw? \w+') # Start of a saved roll query
-        self.disp = re.compile('^[!/]mw? \$\s*$') # Display all stored rolls
+        self.sqrx = re.compile(r'^[!/]mw? \w+') # Start of a saved roll query
+        self.disp = re.compile(r'^[!/]mw? \$\s*$') # Display all stored rolls
 
-    #
-    # Fires once we're logged in.
-    #
     async def on_ready(self):
+        '''Fires once we're logged in.'''
         print('Logged on as {0}!'.format(self.user))
 
-    #
-    # The meat. Fires every time a message is received.
-    #
     async def on_message(self, message):
+        '''Fires every time a message is received. Parses it to see if a roll is needed.'''
         if message.author == self.user:
             return
 
@@ -102,16 +105,20 @@ class Masquerade(discord.Client):
     # Does not check that difficulty is 1 or > 10.
     #
     def __pool_roll(self, message):
-        m = self.poolx.match(message.content)
-        will = m.group('will') is not None
-        pool = int(m.group('pool'))
+        '''
+        A pool-based VtM roll. Returns the results in a pretty embed.
+        Does not check that difficulty is 1 or > 10.
+        '''
+        match = self.poolx.match(message.content)
+        will = match.group('will') is not None
+        pool = int(match.group('pool'))
 
         if pool == 0:
-          pool = 1 # Rather than mess about with errors, just fix the mistake
+            pool = 1 # Rather than mess about with errors, just fix the mistake
 
         # Difficulty must be between 2 and 10. If it isn't supplied, go with
         # the default value of 6.
-        difficulty = m.group('difficulty')
+        difficulty = match.group('difficulty')
         if difficulty is None:
             difficulty = 6
         elif int(difficulty) > 10:
@@ -130,12 +137,12 @@ class Masquerade(discord.Client):
         title += ', difficulty ' + str(difficulty)
 
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
-        autos = m.group('auto')
+        autos = match.group('auto')
         autos = '0' if autos is None else autos
 
         # Optional arguments
-        specialty  = m.group('specialty')
-        comment    = m.group('comment')
+        specialty = match.group('specialty')
+        comment = match.group('comment')
 
         # Perform rolls, format them, and figure out how many successes we have
         results = Pool()
@@ -171,17 +178,15 @@ class Masquerade(discord.Client):
 
         return self.__build_embed(message, title, color, '', fields)
 
-    #
-    # A "traditional" roll, such as 5d10+2.
-    #
     def __traditional_roll(self, message):
-        m = self.tradx.match(message.content)
-        repeat  = int(m.group('repeat'))
-        die     = int(m.group('die'))
-        mod     = m.group('mod')
-        comment = m.group('comment')
+        '''A "traditional" roll, such as 5d10+2.'''
+        match = self.tradx.match(message.content)
+        repeat = int(match.group('repeat'))
+        die = int(match.group('die'))
+        mod = match.group('mod')
+        comment = match.group('comment')
 
-        title = 'Rolling {}'.format(m.group('syntax'))
+        title = 'Rolling {}'.format(match.group('syntax'))
 
         # Get the rolls and assemble the fields
         rolls = PlainRoll.roll(repeat, die)
@@ -198,10 +203,8 @@ class Masquerade(discord.Client):
 
         return self.__build_embed(message, title, 0x14a1a0, '', fields)
 
-    #
-    # Return a handy help embed.
-    #
     def __help(self):
+        '''Return a handy help embed.'''
         embed = discord.Embed(title="Example Usage", colour=discord.Colour(0x1f3446), description="A sampling of available commands.")
 
         embed.add_field(name="Pool 5, difficulty 6 (implied)", value="```!m 5```", inline=False)
@@ -219,12 +222,14 @@ class Masquerade(discord.Client):
         return embed
 
     def __get_author(self, message):
+        '''Returns the message author's username or, if available, nickname.'''
         if message.author.nick is not None:
             return message.author.nick
-        else:
-            return message.author.name
+
+        return message.author.name
 
     def __build_embed(self, message, title, color, description, fields):
+        '''Return a discord embed with a variable number of fields.'''
         embed = discord.Embed(title=title, colour=discord.Colour(color), description=description)
         embed.set_author(name=self.__get_author(message), icon_url=message.author.avatar_url)
 
