@@ -81,14 +81,14 @@ class RollDB:
 
     def retrieve_stored_roll(self, userid, name):
         '''Returns the Syntax for a stored roll.'''
-        query = 'SELECT * FROM SavedRolls WHERE ID=\'' + userid + '\' AND Name=\'' + name + '\';'
+        query = 'SELECT Syntax FROM SavedRolls WHERE ID=\'' + userid + '\' AND Name=\'' + name + '\';'
         self.cursor.execute(query)
         result = self.cursor.fetchone()
 
         if result is None:
             return None
 
-        return result[2]
+        return result[0]
 
     def delete_stored_roll(self, userid, name):
         '''Delete a stored roll.'''
@@ -103,13 +103,13 @@ class RollDB:
 
     def stored_rolls(self, userid):
         '''Returns an list of all the stored rolls.'''
-        query = 'SELECT * FROM SavedRolls WHERE ID=\'' + userid + '\' ORDER BY Name'
+        query = 'SELECT Name, Syntax FROM SavedRolls WHERE ID=\'' + userid + '\' ORDER BY Name'
         self.cursor.execute(query)
-        result = self.cursor.fetchall()
+        results = self.cursor.fetchall()
 
         fields = []
-        for row in result:
-            fields.append((row[1], row[2]))
+        for row in results:
+            fields.append((row[0], row[1]))
 
         return fields
 
