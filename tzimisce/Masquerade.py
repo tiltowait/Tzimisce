@@ -38,7 +38,7 @@ class Masquerade(discord.Client):
 
     async def on_ready(self):
         '''Fires once we're logged in.'''
-        print('Logged on as {0}!'.format(self.user))
+        print(f'Logged on as {self.user}!')
 
     async def on_message(self, message):
         '''Fires every time a message is received. Parses it to see if a roll is needed.'''
@@ -98,7 +98,7 @@ class Masquerade(discord.Client):
 
         # No idea what the user is asking
         else:
-            await message.channel.send('{0}: Come again?'.format(message.author.mention))
+            await message.channel.send(f'{message.author.mention}: Come again?')
 
     #
     # A pool-based VtM roll. Returns the results in a pretty embed.
@@ -186,7 +186,7 @@ class Masquerade(discord.Client):
         mod = match.group('mod')
         comment = match.group('comment')
 
-        title = 'Rolling {}'.format(match.group('syntax'))
+        title = f'Rolling {match.group("syntax")}'
 
         # Get the rolls and assemble the fields
         rolls = PlainRoll.roll(repeat, die)

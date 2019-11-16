@@ -24,7 +24,7 @@ class Pool:
         # Determine roll string
         result_str = ''
         if self.successes > 0:
-            result_str = '{} success'.format(self.successes)
+            result_str = f'{self.successes} success'
             if self.successes > 1:
                 result_str += 'es'
 
@@ -33,12 +33,10 @@ class Pool:
         elif self.successes == 0:
             result_str = 'Failure'
         else:
-            result_str = 'Botch: {}'.format(self.successes)
+            result_str = f'Botch: {self.successes}'
 
         return result_str
 
-    #
-    #
     def __format_rolls(self, rolls, difficulty, spec):
         '''
         Use Markdown formatting on the rolls.
@@ -49,13 +47,13 @@ class Pool:
         formatted = []
         for roll in rolls:
             if roll == 1:
-                formatted.append('~~**{0}**~~'.format(roll))
+                formatted.append(f'~~**{roll}**~~')
             elif roll < difficulty:
-                formatted.append('~~{0}~~'.format(roll))
+                formatted.append(f'~~{roll}~~')
             elif roll == 10 and spec:
-                formatted.append('**{0}**'.format(roll))
+                formatted.append(f'**{roll}**')
             else:
-                formatted.append('{0}'.format(roll))
+                formatted.append(str(roll))
 
         return formatted
 

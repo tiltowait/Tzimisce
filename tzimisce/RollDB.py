@@ -66,14 +66,14 @@ class RollDB:
         '''Store a new roll, or update an old one.'''
         if not self.__is_roll_stored(userid, name):
             # Create the roll
-            query = "INSERT INTO SavedRolls VALUES ('{}', '{}', '{}');".format(userid, name, syntax)
+            query = f"INSERT INTO SavedRolls VALUES ('{userid}', '{name}', '{syntax}');"
             self.cursor.execute(query)
             self.conn.commit()
 
             return 'New roll saved!'
 
         # Update an old roll
-        query = "UPDATE SavedRolls SET Syntax='{}' WHERE ID='{}' AND Name='{}';".format(syntax, userid, name)
+        query = f"UPDATE SavedRolls SET Syntax='{syntax}' WHERE ID='{userid}' AND Name='{name}';"
         self.cursor.execute(query)
         self.conn.commit()
 
@@ -81,7 +81,7 @@ class RollDB:
 
     def retrieve_stored_roll(self, userid, name):
         '''Returns the Syntax for a stored roll.'''
-        query = "SELECT Syntax FROM SavedRolls WHERE ID='{}' AND Name='{}';".format(userid, name)
+        query = f"SELECT Syntax FROM SavedRolls WHERE ID='{userid}' AND Name='{name}';"
         self.cursor.execute(query)
         result = self.cursor.fetchone()
 
@@ -95,7 +95,7 @@ class RollDB:
         if not self.__is_roll_stored(userid, name):
             return 'Can\'t delete. Roll not found!'
 
-        query = "DELETE FROM SavedRolls WHERE ID='{}' AND Name='{}';".format(userid, name)
+        query = f"DELETE FROM SavedRolls WHERE ID='{userid}' AND Name='{name}';"
         self.cursor.execute(query)
         self.conn.commit()
 
@@ -103,7 +103,7 @@ class RollDB:
 
     def stored_rolls(self, userid):
         '''Returns an list of all the stored rolls.'''
-        query = "SELECT Name, Syntax FROM SavedRolls WHERE ID='{}' ORDER BY Name".format(userid)
+        query = f"SELECT Name, Syntax FROM SavedRolls WHERE ID='{userid}' ORDER BY Name"
         self.cursor.execute(query)
         results = self.cursor.fetchall()
 
