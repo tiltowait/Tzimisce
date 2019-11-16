@@ -12,7 +12,7 @@ class Masquerade(discord.Client):
 
         # Set up the important regular expressions
         self.invoked = re.compile('^[!/]mw?')
-        self.poolx = re.compile('[!/]m(?P<will>w)? (?P<pool>\d+)(?P<difficulty> \d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
+        self.poolx = re.compile('[!/]m(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
         self.tradx = re.compile('^[!/]mw? (?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?(?:\s*#\s*(?P<comment>.*))?$')
         self.helpx = re.compile('^[!/]m help.*$')
 
@@ -138,7 +138,8 @@ class Masquerade(discord.Client):
         results = Pool()
         results.roll(pool, difficulty, will, specialty is not None, autos)
 
-        if autos is not None:
+        if autos != '0':
+            print(autos)
             title += ', +' + autos
 
         # Put the results into an embed
