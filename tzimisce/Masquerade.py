@@ -1,8 +1,10 @@
 import discord
 import re
 import random
+
 from tzimisce.RollDB import RollDB
 from tzimisce.Pool import Pool
+from tzimisce import PlainRoll
 
 class Masquerade(discord.Client):
     def __init__(self):
@@ -139,7 +141,6 @@ class Masquerade(discord.Client):
         results.roll(pool, difficulty, will, specialty is not None, autos)
 
         if autos != '0':
-            print(autos)
             title += ', +' + autos
 
         # Put the results into an embed
@@ -155,11 +156,25 @@ class Masquerade(discord.Client):
         else:
             color = self.fail_color
 
+        # Determine roll string
+        result_str = ''
+        if results.successes > 0:
+            result_str = '{} success'.format(results.successes)
+            if results.successes > 1:
+                result_str += 'es'
+
+            if will:
+                result_str += ' (inc. WP)'
+        elif results.successes == 0:
+            result_str = 'Failure'
+        else:
+            result_str = 'Botch: {}'.format(results.successes)
+
         embed = discord.Embed(title=title, colour=discord.Colour(color))
         embed.set_author(name=self.__get_author(message), icon_url=message.author.avatar_url)
 
         embed.add_field(name="Rolls", value=', '.join(results.formatted), inline=True)
-        embed.add_field(name="Result", value=results.result_str, inline=True)
+        embed.add_field(name="Result", value=result_str, inline=True)
         if specialty is not None:
             embed.add_field(name="Specialty", value=specialty, inline=True)
         if comment is not None:
@@ -179,7 +194,7 @@ class Masquerade(discord.Client):
 
         title = 'Rolling {0}d{1}'.format(repeat, die)
 
-        rolls = [random.randint(1, die) for _ in range(repeat)]
+        rolls = PlainRoll.roll(repeat, die)
         if mod is not None:
             title += '+' + mod
             rolls.append(int(mod))

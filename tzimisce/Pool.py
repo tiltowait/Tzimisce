@@ -1,10 +1,9 @@
 import random
+from tzimisce import PlainRoll
 
 class Pool:
     def __init__(self):
-        self.raw = []
         self.formatted = []
-        self.result_str = []
         self.successes = 0
 
     #
@@ -12,9 +11,9 @@ class Pool:
     #
     def roll(self, pool, difficulty, wp, spec, autos):
         pool = int(pool)
-        self.raw = sorted([random.randint(1, 10) for _ in range(pool)], reverse=True)
-        self.formatted = self.__format_rolls(self.raw, difficulty, spec)
-        self.result_str = self.__count_successes(self.raw, difficulty, wp, spec, autos)
+        raw = sorted(PlainRoll.roll(pool, 10), reverse=True)
+        self.formatted = self.__format_rolls(raw, difficulty, spec)
+        self.successes = self.__count_successes(raw, difficulty, wp, spec, autos)
 
     #
     # Use Markdown formatting on the rolls.
@@ -60,24 +59,11 @@ class Pool:
         #   # Success
         # If using Willpower, there's always one guaranteed success.
         if not wp and fails > 0 and suxx == 0: # Botch
-            self.successes = -fails
-            return 'Botch: {0}'.format(-fails)
+            return -fails
         else:
             suxx = suxx - fails
             suxx = 0 if suxx < 0 else suxx
             if wp:
                 suxx += 1
 
-            self.successes = suxx
-
-            if suxx == 0:
-                return 'Failure'
-            else:
-                output = '{0} success'.format(suxx)
-                if suxx > 1:
-                  output += 'es' # Properly pluralize!
-
-                if wp:
-                  output += ' (inc WP)'
-
-                return output
+            return suxx
