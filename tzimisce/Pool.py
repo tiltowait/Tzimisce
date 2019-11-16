@@ -5,15 +5,35 @@ class Pool:
     def __init__(self):
         self.formatted = []
         self.successes = 0
+        self.will = False
 
     #
     # Roll a specific die a number of times and return the results as an array.
     #
     def roll(self, pool, difficulty, wp, spec, autos):
-        pool = int(pool)
-        raw = sorted(PlainRoll.roll(pool, 10), reverse=True)
+        raw = sorted(PlainRoll.roll(int(pool), 10), reverse=True)
         self.formatted = self.__format_rolls(raw, difficulty, spec)
         self.successes = self.__count_successes(raw, difficulty, wp, spec, autos)
+
+    #
+    # Format the successes to something nice for people to read
+    #
+    def formatted_count(self):
+        # Determine roll string
+        result_str = ''
+        if self.successes > 0:
+            result_str = '{} success'.format(self.successes)
+            if self.successes > 1:
+                result_str += 'es'
+
+            if self.will:
+                result_str += ' (inc. WP)'
+        elif self.successes == 0:
+            result_str = 'Failure'
+        else:
+            result_str = 'Botch: {}'.format(self.successes)
+
+        return result_str
 
     #
     # Use Markdown formatting on the rolls.
@@ -42,6 +62,8 @@ class Pool:
     #   Success if successes > ones
     #
     def __count_successes(self, rolls, difficulty, wp, spec, autos):
+        self.will = wp
+
         suxx  = int(autos)
         fails = 0
 
@@ -56,7 +78,7 @@ class Pool:
         # Three possible results:
         #   * Botch
         #   * Failure
-        #   # Success
+        #   * Success
         # If using Willpower, there's always one guaranteed success.
         if not wp and fails > 0 and suxx == 0: # Botch
             return -fails
