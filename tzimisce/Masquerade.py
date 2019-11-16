@@ -17,9 +17,10 @@ class Masquerade(discord.Client):
         self.helpx = re.compile('^[!/]m help.*$')
 
         # Colors help show, at a glance, if a roll was successful
-        self.success_color = 0x14a1a0
-        self.fail_color    = 0x070707
-        self.botch_color   = 0xff0000
+        self.exceptional_color = 0x00ff00
+        self.success_color     = 0x14a1a0
+        self.fail_color        = 0x777777
+        self.botch_color       = 0xff0000
 
         # Database nonsense
         self.database = RollDB()
@@ -137,9 +138,11 @@ class Masquerade(discord.Client):
 
         # The embed's color indicates if the roll succeeded, failed, or botched
         color = 0
-        if "success" in results.result_str:
+        if results.successes >= 5:
+            color = self.exceptional_color
+        elif results.successes > 0:
             color = self.success_color
-        elif "Botch" in results.result_str:
+        elif results.successes < 0:
             color = self.botch_color
         else:
             color = self.fail_color

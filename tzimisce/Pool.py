@@ -5,6 +5,7 @@ class Pool:
         self.raw = []
         self.formatted = []
         self.result_str = []
+        self.successes = 0
 
     #
     # Roll a specific die a number of times and return the results as an array.
@@ -59,12 +60,15 @@ class Pool:
         #   # Success
         # If using Willpower, there's always one guaranteed success.
         if not wp and fails > 0 and suxx == 0: # Botch
+            self.successes = -fails
             return 'Botch: {0}'.format(-fails)
         else:
             suxx = suxx - fails
             suxx = 0 if suxx < 0 else suxx
             if wp:
                 suxx += 1
+
+            self.successes = suxx
 
             if suxx == 0:
                 return 'Failure'

@@ -109,7 +109,7 @@ class RollDB:
     # Returns an embed with all of the user's stored rolls listed.
     #
     def list_stored_rolls(self, userid):
-        query = 'SELECT * FROM SavedRolls WHERE ID=\'' + userid + '\''
+        query = 'SELECT * FROM SavedRolls WHERE ID=\'' + userid + '\' ORDER BY Name'
         self.cursor.execute(query)
         result = self.cursor.fetchall()
 
