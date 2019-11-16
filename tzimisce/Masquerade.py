@@ -15,7 +15,7 @@ class Masquerade(discord.Client):
         # Set up the important regular expressions
         self.invoked = re.compile('^[!/]mw?')
         self.poolx = re.compile('[!/]m(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$')
-        self.tradx = re.compile('^[!/]mw? (?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?(?:\s*#\s*(?P<comment>.*))?$')
+        self.tradx = re.compile('^[!/]mw? (?P<syntax>(?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?)(?:\s*#\s*(?P<comment>.*))?$')
         self.helpx = re.compile('^[!/]m help.*$')
 
         # Colors help show, at a glance, if a roll was successful
@@ -48,7 +48,6 @@ class Masquerade(discord.Client):
 
         # The author name is used in embeds. It can either be the nickname, if
         # set, or simply their username.
-        author = self.__get_author(message)
 
         # Standard roll. Pool, difficulty, specialty.
         if self.poolx.match(message.content):
@@ -158,17 +157,19 @@ class Masquerade(discord.Client):
         else:
             color = self.fail_color
 
-        embed = discord.Embed(title=title, colour=discord.Colour(color))
-        embed.set_author(name=self.__get_author(message), icon_url=message.author.avatar_url)
+        # Set up the embed fields
+        fields = [
+            ('Rolls', ', '.join(results.formatted), True),
+            ('Result', results.formatted_count(), True),
+        ]
 
-        embed.add_field(name="Rolls", value=', '.join(results.formatted), inline=True)
-        embed.add_field(name="Result", value=results.formatted_count(), inline=True)
         if specialty is not None:
-            embed.add_field(name="Specialty", value=specialty, inline=True)
-        if comment is not None:
-            embed.add_field(name="Comment", value=comment, inline=False)
+            fields.append(('Specialty', specialty, True))
 
-        return embed
+        if comment is not None:
+            fields.append(('Comment', comment))
+
+        return self.__build_embed(message, title, color, '', fields)
 
     #
     # A "traditional" roll, such as 5d10+2.
@@ -180,27 +181,22 @@ class Masquerade(discord.Client):
         mod     = m.group('mod')
         comment = m.group('comment')
 
-        title = 'Rolling {0}d{1}'.format(repeat, die)
+        title = 'Rolling {}'.format(m.group('syntax'))
 
+        # Get the rolls and assemble the fields
         rolls = PlainRoll.roll(repeat, die)
         if mod is not None:
-            title += '+' + mod
             rolls.append(int(mod))
 
-        sum = 0
-        for roll in rolls:
-            sum += roll
+        fields = [
+            ('Rolls', '+'.join([str(roll) for roll in rolls]), True),
+            ('Result', str(sum(rolls)), True)
+        ]
 
-        # Create an embed to return
-        embed = discord.Embed(title=title, colour=discord.Colour(0x14a1a0))
-        embed.set_author(name=self.__get_author(message), icon_url=message.author.avatar_url)
-
-        embed.add_field(name="Rolls", value='+'.join([str(roll) for roll in rolls]), inline=True)
-        embed.add_field(name="Result", value=str(sum), inline=True)
         if comment is not None:
-            embed.add_field(name="Comment", value=comment, inline=False)
+            fields.append('Comment', comment, False)
 
-        return embed
+        return self.__build_embed(message, title, 0x14a1a0, '', fields)
 
     #
     # Return a handy help embed.
