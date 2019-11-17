@@ -1,9 +1,10 @@
-'''A class for performing pool-based rolls and determining number of successes.'''
+"""A class for performing pool-based rolls and determining number of successes."""
 
 from tzimisce import PlainRoll
 
+
 class Pool:
-    '''Provides facilities for pool-based rolls.'''
+    """Provides facilities for pool-based rolls."""
 
     # pylint: disable=too-many-arguments
     # We don't have a choice here.
@@ -14,56 +15,56 @@ class Pool:
         self.will = False
 
     def roll(self, pool, difficulty, will, spec, autos):
-        '''Roll a specific die a number of times and return the results as an array.'''
+        """Roll a specific die a number of times and return the results as an array."""
         raw = sorted(PlainRoll.roll(int(pool), 10), reverse=True)
         self.formatted = self.__format_rolls(raw, difficulty, spec)
         self.successes = self.__count_successes(raw, difficulty, will, spec, autos)
 
     def formatted_count(self):
-        '''Format the successes to something nice for people to read.'''
+        """Format the successes to something nice for people to read."""
         # Determine roll string
-        result_str = ''
+        result_str = ""
         if self.successes > 0:
-            result_str = f'{self.successes} success'
+            result_str = f"{self.successes} success"
             if self.successes > 1:
-                result_str += 'es'
+                result_str += "es"
 
             if self.will:
-                result_str += ' (inc. WP)'
+                result_str += " (inc. WP)"
         elif self.successes == 0:
-            result_str = 'Failure'
+            result_str = "Failure"
         else:
-            result_str = f'Botch: {self.successes}'
+            result_str = f"Botch: {self.successes}"
 
         return result_str
 
     def __format_rolls(self, rolls, difficulty, spec):
-        '''
+        """
         Use Markdown formatting on the rolls.
           * Cross out failures.
           * Bold and cross out ones.
           * Bold tens if a specialty is in use.
-        '''
+        """
         formatted = []
         for roll in rolls:
             if roll == 1:
-                formatted.append(f'~~**{roll}**~~')
+                formatted.append(f"~~**{roll}**~~")
             elif roll < difficulty:
-                formatted.append(f'~~{roll}~~')
+                formatted.append(f"~~{roll}~~")
             elif roll == 10 and spec:
-                formatted.append(f'**{roll}**')
+                formatted.append(f"**{roll}**")
             else:
                 formatted.append(str(roll))
 
         return formatted
 
     def __count_successes(self, rolls, difficulty, will, spec, autos):
-        '''
+        """
         Sums the number of successes, taking into account Willpower use.
           * Botch if no successes or willpower and failures > 0
           * Failure if ones > successes
           * Success if successes > ones
-        '''
+        """
         self.will = will
 
         suxx = int(autos)
@@ -82,7 +83,7 @@ class Pool:
         #   * Failure
         #   * Success
         # If using Willpower, there's always one guaranteed success.
-        if not will and fails > 0 and suxx == 0: # Botch
+        if not will and fails > 0 and suxx == 0:  # Botch
             return -fails
 
         suxx = suxx - fails
