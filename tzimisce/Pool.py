@@ -16,7 +16,7 @@ class Pool:
 
     def roll(self, pool, difficulty, will, spec, autos):
         """Roll a specific die a number of times and return the results as an array."""
-        raw = sorted(PlainRoll.roll(int(pool), 10), reverse=True)
+        raw = sorted(PlainRoll.roll_dice(int(pool), 10), reverse=True)
         self.formatted = self.__format_rolls(raw, difficulty, spec)
         self.successes = self.__count_successes(raw, difficulty, will, spec, autos)
 

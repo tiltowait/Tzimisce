@@ -26,7 +26,7 @@ class Masquerade(discord.Client):
             r"[!/]m(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$"
         )
         self.tradx = re.compile(
-            r"^[!/]mw? (?P<syntax>(?P<repeat>\d+)d(?P<die>\d+)(?:\+(?P<mod>\d+))?)(?:\s*#\s*(?P<comment>.*))?$"
+            r"^[!/]mw? (?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)\s*(?:#\s*(?P<comment>.*))?$"
         )
         self.helpx = re.compile(r"^[!/]m help.*$")
 
@@ -66,8 +66,11 @@ class Masquerade(discord.Client):
 
         # Traditional roll. 1d10+5, etc.
         elif self.tradx.match(message.content):
-            embed = self.__traditional_roll(message)
-            await message.channel.send(content=message.author.mention, embed=embed)
+            try:
+                embed = self.__traditional_roll(message)
+                await message.channel.send(content=message.author.mention, embed=embed)
+            except ValueError as error:
+                await message.channel.send(f"{message.author.mention}: {str(error)}")
 
         # Print the help message.
         elif self.helpx.match(message.content):
@@ -194,17 +197,13 @@ class Masquerade(discord.Client):
     def __traditional_roll(self, message):
         """A "traditional" roll, such as 5d10+2."""
         match = self.tradx.match(message.content)
-        repeat = int(match.group("repeat"))
-        die = int(match.group("die"))
-        mod = match.group("mod")
+        syntax = match.group("syntax")
         comment = match.group("comment")
 
-        title = f'Rolling {match.group("syntax")}'
+        title = f"Rolling {syntax}"
 
         # Get the rolls and assemble the fields
-        rolls = PlainRoll.roll(repeat, die)
-        if mod is not None:
-            rolls.append(int(mod))
+        rolls = PlainRoll.roll_string(syntax)
 
         fields = [
             ("Rolls", "+".join([str(roll) for roll in rolls]), True),
