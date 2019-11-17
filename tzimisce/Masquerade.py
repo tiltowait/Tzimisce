@@ -84,14 +84,13 @@ class Masquerade(discord.Client):
 
             # Created, deleted, or updated a roll.
             else:
-                await message.channel.send(message.author.mention + ': ' + msg)
+                await message.channel.send(f'{message.author.mention}: {msg}')
 
         # Display all of the user's stored rolls.
         elif self.disp.match(message.content):
-            #embed = self.database.list_stored_rolls(message.author.mention)
             stored_rolls = self.database.stored_rolls(message.author.mention)
             if len(stored_rolls) == 0:
-                await message.channel.send(message.author.mention + ', you have no stored rolls!')
+                await message.channel.send(f'{message.author.mention}, you have no stored rolls!')
             else:
                 embed = self.__build_embed(message, 'Stored Rolls', 0x1f3446, '', stored_rolls)
                 await message.channel.send(content=message.author.mention, embed=embed)
@@ -100,10 +99,6 @@ class Masquerade(discord.Client):
         else:
             await message.channel.send(f'{message.author.mention}: Come again?')
 
-    #
-    # A pool-based VtM roll. Returns the results in a pretty embed.
-    # Does not check that difficulty is 1 or > 10.
-    #
     def __pool_roll(self, message):
         '''
         A pool-based VtM roll. Returns the results in a pretty embed.
@@ -134,7 +129,7 @@ class Masquerade(discord.Client):
             title += ' dice'
         else:
             title += ' die' # For the grammar Naxi in me.
-        title += ', difficulty ' + str(difficulty)
+        title += f', difficulty {difficulty}'
 
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = match.group('auto')
@@ -149,7 +144,7 @@ class Masquerade(discord.Client):
         results.roll(pool, difficulty, will, specialty is not None, autos)
 
         if autos != '0':
-            title += ', +' + autos
+            title += f', +{autos}'
 
         # Put the results into an embed
 
@@ -205,33 +200,32 @@ class Masquerade(discord.Client):
 
     def __help(self):
         '''Return a handy help embed.'''
-        embed = discord.Embed(title="Example Usage", colour=discord.Colour(0x1f3446), description="A sampling of available commands.")
+        fields = [
+            ("Pool 5, difficulty 6 (implied)", "```!m 5```"),
+            ("Pool 5, difficulty 8", "```!m 5 8```"),
+            ("Add a comment", "```!m 5 8 # Comment!```"),
+            ("Add a specialty", "```!m 8 4 Koldunism```"),
+            ("All together", "```!m 8 4 Koldunism # Int + Occult```"),
+            ("Add bonus successes", "```!m 6 5 3```"),
+            ("Traditional roll", "Useful for Initiative rolls and other things.```!m 1d10+5```"),
+            ("Store a roll", "Ignores willpower and comments.\n```!m danubian = 8 3 Koldunism```"),
+            ("Use a stored roll", "May also use with Willpower.\n```!m danubian```"),
+            ("Delete a stored roll", "```!m danubian =```"),
+            ("List stored rolls", "```!m $```"),
+        ]
 
-        embed.add_field(name="Pool 5, difficulty 6 (implied)", value="```!m 5```", inline=False)
-        embed.add_field(name="Pool 5, difficulty 8", value="```!m 5 8```", inline=False)
-        embed.add_field(name="Add a comment", value="```!m 5 8 # Comment!```", inline=False)
-        embed.add_field(name="Add a specialty", value="```!m 8 4 Koldunism```", inline=False)
-        embed.add_field(name="All together", value="```!m 8 4 Koldunism # Int + Occult```", inline=False)
-        embed.add_field(name="Add bonus successes", value="```!m 6 5 3```")
-        embed.add_field(name="Traditional roll", value="Useful for Initiative rolls and other things.```!m 1d10+5 # Comments work here, too```", inline=False)
-        embed.add_field(name="Store a roll", value="Does not store willpower use or comments.\n```!m danubian = 8 3 Koldunism```", inline=False)
-        embed.add_field(name="Use a stored roll", value="May also use with Willpower.\n```!m danubian```", inline=False)
-        embed.add_field(name="Delete a stored roll", value="```!m danubian =```", inline=False)
-        embed.add_field(name="List stored rolls", value="```!m $```", inline=False)
-
-        return embed
-
-    def __get_author(self, message):
-        '''Returns the message author's username or, if available, nickname.'''
-        if message.author.nick is not None:
-            return message.author.nick
-
-        return message.author.name
+        return self.__build_embed(None, 'Example Usage', 0x1f3446, 'A sampling of available commands', fields)
 
     def __build_embed(self, message, title, color, description, fields):
         '''Return a discord embed with a variable number of fields.'''
         embed = discord.Embed(title=title, colour=discord.Colour(color), description=description)
-        embed.set_author(name=self.__get_author(message), icon_url=message.author.avatar_url)
+
+        if message is not None:
+            author = message.author.nick
+            if author is None:
+                author = message.author.name
+
+            embed.set_author(name=author, icon_url=message.author.avatar_url)
 
         for field in fields:
             name = field[0]
