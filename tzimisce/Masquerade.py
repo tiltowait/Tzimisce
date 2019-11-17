@@ -104,7 +104,10 @@ class Masquerade(discord.Client):
                 )
             else:
                 embed = self.__build_embed(
-                    message=message, title="Stored Rolls", color=0x1F3446, fields=stored_rolls
+                    message=message,
+                    title="Stored Rolls",
+                    color=0x1F3446,
+                    fields=stored_rolls,
                 )
                 await message.channel.send(content=message.author.mention, embed=embed)
 
@@ -184,7 +187,9 @@ class Masquerade(discord.Client):
         if comment is not None:
             fields.append(("Comment", comment))
 
-        return self.__build_embed(message=message, title=title, color=color, fields=fields)
+        return self.__build_embed(
+            message=message, title=title, color=color, fields=fields
+        )
 
     def __traditional_roll(self, message):
         """A "traditional" roll, such as 5d10+2."""
@@ -209,7 +214,9 @@ class Masquerade(discord.Client):
         if comment is not None:
             fields.append(("Comment", comment, False))
 
-        return self.__build_embed(message=message, title=title, color=0x14A1A0, fields=fields)
+        return self.__build_embed(
+            message=message, title=title, color=0x14A1A0, fields=fields
+        )
 
     def __help(self):
         """Return a handy help embed."""
@@ -234,10 +241,14 @@ class Masquerade(discord.Client):
         ]
 
         return self.__build_embed(
-            title="Example Usage", description="A sampling of available commands", fields=fields
+            title="Example Usage",
+            description="A sampling of available commands",
+            fields=fields,
         )
 
-    def __build_embed(self, fields, message=None, title='', color=0x1F3446, description=''):
+    def __build_embed(
+        self, fields, message=None, title="", color=0x1F3446, description=""
+    ):
         """Return a discord embed with a variable number of fields."""
         embed = discord.Embed(
             title=title, colour=discord.Colour(color), description=description
