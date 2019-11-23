@@ -54,14 +54,9 @@ class Masquerade(discord.Client):
         if not self.invoked.match(message.content):
             return
 
-        # The author name is used in embeds. It can either be the nickname, if
-        # set, or simply their username.
-
         # Standard roll. Pool, difficulty, specialty.
         if self.poolx.match(message.content):
-            embed = self.__pool_roll(
-                message
-            )  # message.content, author, message.author.avatar_url)
+            embed = self.__pool_roll(message)
             await message.channel.send(content=message.author.mention, embed=embed)
 
         # Traditional roll. 1d10+5, etc.
@@ -133,7 +128,7 @@ class Masquerade(discord.Client):
         # Difficulty must be between 2 and 10. If it isn't supplied, go with
         # the default value of 6.
         difficulty = match.group("difficulty")
-        if difficulty is None:
+        if not difficulty:
             difficulty = 6
         elif int(difficulty) > 10:
             difficulty = 10
@@ -147,23 +142,21 @@ class Masquerade(discord.Client):
         if pool > 1:
             title += " dice"
         else:
-            title += " die"  # For the grammar Naxi in me.
+            title += " die"  # For the grammar Nazi in me.
         title += f", difficulty {difficulty}"
 
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = match.group("auto")
-        autos = "0" if autos is None else autos
+        if autos:
+            title += f", +{autos}"
+        else:
+            autos = "0"
 
-        # Optional arguments
-        specialty = match.group("specialty")
-        comment = match.group("comment")
+        specialty = match.group("specialty")  # Doubles 10s if set
 
         # Perform rolls, format them, and figure out how many successes we have
         results = Pool()
         results.roll(pool, difficulty, will, specialty is not None, autos)
-
-        if autos != "0":
-            title += f", +{autos}"
 
         # Put the results into an embed
 
@@ -184,10 +177,11 @@ class Masquerade(discord.Client):
             ("Result", results.formatted_count(), True),
         ]
 
-        if specialty is not None:
+        if specialty:
             fields.append(("Specialty", specialty, True))
 
-        if comment is not None:
+        comment = match.group("comment")
+        if comment:
             fields.append(("Comment", comment))
 
         return self.__build_embed(
@@ -210,7 +204,7 @@ class Masquerade(discord.Client):
             ("Result", str(sum(rolls)), True),
         ]
 
-        if comment is not None:
+        if comment:
             fields.append(("Comment", comment, False))
 
         return self.__build_embed(
@@ -253,9 +247,9 @@ class Masquerade(discord.Client):
             title=title, colour=discord.Colour(color), description=description
         )
 
-        if message is not None:
+        if message:
             author = message.author.nick
-            if author is None:
+            if not author:
                 author = message.author.name
 
             embed.set_author(name=author, icon_url=message.author.avatar_url)

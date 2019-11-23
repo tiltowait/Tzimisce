@@ -42,15 +42,15 @@ class RollDB:
             will = match.group("will")
             syntax = self.retrieve_stored_roll(userid, name)
 
-            if syntax is None:
+            if not syntax:
                 return "Roll doesn't exist!"
 
             comment = match.group("comment")
 
-            roll = "!m " if will is None else "!mw "
+            roll = "!m " if not will else "!mw "
             roll += syntax
 
-            if comment is not None:
+            if comment:
                 roll += " # " + comment
             else:
                 roll += " # " + name  # Provide a default comment
@@ -90,7 +90,7 @@ class RollDB:
         self.cursor.execute(query)
         result = self.cursor.fetchone()
 
-        if result is None:
+        if not result:
             return None
 
         return result[0]
