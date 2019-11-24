@@ -13,7 +13,7 @@ You will need version 3.7 or greater of [Python](https://www.python.org), as wel
 
 Additionally, you will need to install `psycopg2` and `discord.py`.
 
-### Setting the Environment Variables
+##### Setting the Environment Variables
 Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store your PostgreSQL server address in an environment variable named `DATABASE_URL`.
 
 ## Usage
