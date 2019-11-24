@@ -71,23 +71,23 @@ class RollDB:
         """Store a new roll, or update an old one."""
         if not self.__is_roll_stored(userid, name):
             # Create the roll
-            query = f"INSERT INTO SavedRolls VALUES ('{userid}', '{name}', '{syntax}');"
-            self.cursor.execute(query)
+            query = "INSERT INTO SavedRolls VALUES (%s, %s, %s);"
+            self.cursor.execute(query, (userid, name, syntax,))
             self.conn.commit()
 
             return "New roll saved!"
 
         # Update an old roll
-        query = f"UPDATE SavedRolls SET Syntax='{syntax}' WHERE ID='{userid}' AND Name='{name}';"
-        self.cursor.execute(query)
+        query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name=%s;"
+        self.cursor.execute(query, (syntax, userid, name,))
         self.conn.commit()
 
         return "Roll updated!"
 
     def retrieve_stored_roll(self, userid, name):
         """Returns the Syntax for a stored roll."""
-        query = f"SELECT Syntax FROM SavedRolls WHERE ID='{userid}' AND Name='{name}';"
-        self.cursor.execute(query)
+        query = "SELECT Syntax FROM SavedRolls WHERE ID=%s AND Name=%s;"
+        self.cursor.execute(query, (userid, name,))
         result = self.cursor.fetchone()
 
         if not result:
@@ -100,16 +100,16 @@ class RollDB:
         if not self.__is_roll_stored(userid, name):
             return "Can't delete. Roll not found!"
 
-        query = f"DELETE FROM SavedRolls WHERE ID='{userid}' AND Name='{name}';"
-        self.cursor.execute(query)
+        query = "DELETE FROM SavedRolls WHERE ID=%s AND Name=%s;"
+        self.cursor.execute(query, (userid, name,))
         self.conn.commit()
 
         return "Roll deleted!"
 
     def stored_rolls(self, userid):
         """Returns an list of all the stored rolls."""
-        query = f"SELECT Name, Syntax FROM SavedRolls WHERE ID='{userid}' ORDER BY Name"
-        self.cursor.execute(query)
+        query = "SELECT Name, Syntax FROM SavedRolls WHERE ID=%s ORDER BY Name;"
+        self.cursor.execute(query, (userid,))
         results = self.cursor.fetchall()
 
         fields = []
