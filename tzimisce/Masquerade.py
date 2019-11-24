@@ -42,8 +42,23 @@ class Masquerade(discord.Client):
         self.disp = re.compile(r"^[!/]mw? \$\s*$")  # Display all stored rolls
 
     async def on_ready(self):
-        """Fires once we're logged in."""
+        """Print a message letting us know the bot logged in to Discord."""
         print(f"Logged on as {self.user}!")
+
+    async def on_guild_join(self, guild):
+        """When joining a guild, log it for statistics purposes."""
+        print(f"Joining {guild}")
+        self.database.add_guild(guild.id, guild.name)
+
+    async def on_guild_remove(self, guild):
+        """We don't want to keep track of guilds we no longer belong to."""
+        print(f"Removing {guild}")
+        self.database.remove_guild(guild.id)
+
+    async def on_guild_update(self, before, after):
+        """Sometimes guilds are renamed. Fix that."""
+        print(f"Renaming {before} to {after}")
+        self.database.rename_guild(after.id, after.name)
 
     async def on_message(self, message):
         """Fires every time a message is received. Parses it to see if a roll is needed."""

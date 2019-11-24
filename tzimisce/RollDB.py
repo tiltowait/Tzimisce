@@ -11,12 +11,22 @@ class RollDB:
     def __init__(self):
         self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
         self.cursor = self.conn.cursor()
+
+        # The main table for storing rolls.
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS SavedRolls
                               (ID     bigint NOT NULL,
                                Name   Text   NOT NULL,
                                Syntax Text   NOT NULL);"""
         )
+
+        # This table is just used for statistics purposes.
+        self.cursor.execute(
+            """CREATE TABLE IF NOT EXISTS Guilds
+                              (ID   bigint PRIMARY KEY,
+                               NAME Text   NOT NULL);"""
+        )
+
         self.conn.commit()
 
     def query_saved_rolls(self, userid, message):
@@ -121,3 +131,24 @@ class RollDB:
     def __is_roll_stored(self, userid, name):
         """Returns true if a roll by the given name has been stored."""
         return self.retrieve_stored_roll(userid, name) is not None
+
+    def add_guild(self, guildid, name):
+        """Adds a guild to the Guilds table."""
+        query = "INSERT INTO Guilds VALUES (%s, %s);"
+
+        self.cursor.execute(query, (guildid, name,))
+        self.conn.commit()
+
+    def remove_guild(self, guildid):
+        """Removes a guild from the Guilds table."""
+        query = "DELETE FROM Guilds WHERE ID=%s;"
+
+        self.cursor.execute(query, (guildid,))
+        self.conn.commit()
+
+    def rename_guild(self, guildid, name):
+        """Updates the name of a guild in the Guilds table."""
+        query = "UPDATE Guilds SET Name=%s WHERE ID=%s;"
+
+        self.cursor.execute(query, (name, guildid,))
+        self.conn.commit()
