@@ -13,9 +13,9 @@ class RollDB:
         self.cursor = self.conn.cursor()
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS SavedRolls
-                              (ID     Text NOT NULL,
-                               Name   Text NOT NULL,
-                               Syntax Text NOT NULL);"""
+                              (ID     bigint NOT NULL,
+                               Name   Text   NOT NULL,
+                               Syntax Text   NOT NULL);"""
         )
         self.conn.commit()
 
