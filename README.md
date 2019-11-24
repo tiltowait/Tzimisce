@@ -18,7 +18,13 @@ Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store y
 
 ## Usage
 ### Pool-Based Rolls
-*Tzimisce* has a number of options for pool-based rolls and has been designed for quick command entry. As an example, here is how to roll 8 dice, difficulty 4, with a specialty in Koldunism:
+*Tzimisce* has a number of options for pool-based rolls and has been designed for quick command entry. At its most basic, it requires only a few keystrokes:
+
+```
+!m 5
+```
+
+The above rolls 5 dice at difficulty 6. You can also specify a different difficulty, add a specialty, and add a comment. Doing so is straightforward. The following rolls 8 dice, difficulty 4, with a specialty in Koldunism:
 
 ```
 !m 8 4 Koldunism
@@ -26,7 +32,7 @@ Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store y
 
 This compares favorably with Sidekick, where the same command looks like this: `/r 8d10>=4f1t10`. Sidekick’s output is also often incorrect, as it uses first-edition *Vampire’s* rules instead of *V20’s*.
 
-To see a list of all available options, enter `!m help`.
+The bot also supports storing rolls for later use. To see a list of all available options, enter `!m help`.
 
 ### Traditional Rolls
 *Tzimisce* has moderately robust capability for “traditional” rolls, such as `1d10+5`. Invocation is simple:
