@@ -17,7 +17,8 @@ class RollDB:
             """CREATE TABLE IF NOT EXISTS SavedRolls
                               (ID     bigint NOT NULL,
                                Name   Text   NOT NULL,
-                               Syntax Text   NOT NULL);"""
+                               Syntax Text   NOT NULL,
+                               Guild  bigint NOT NULL);"""
         )
 
         # This table is just used for statistics purposes.
@@ -29,7 +30,7 @@ class RollDB:
 
         self.conn.commit()
 
-    def query_saved_rolls(self, userid, message):
+    def query_saved_rolls(self, guild, userid, message):
         """Parses the message to see what kind of query is needed, then performs it."""
 
         # Store a new roll or change an old one.
@@ -40,7 +41,7 @@ class RollDB:
         if match:
             name = match.group("name")
             syntax = match.group("syn")
-            return self.store_roll(userid, name, syntax)
+            return self.store_roll(guild, userid, name, syntax)
 
         # Use a stored roll.
         pattern = re.compile(
@@ -50,7 +51,7 @@ class RollDB:
         if match:
             name = match.group("name")
             will = match.group("will")
-            syntax = self.retrieve_stored_roll(userid, name)
+            syntax = self.retrieve_stored_roll(guild, userid, name)
 
             if not syntax:
                 return "Roll doesn't exist!"
@@ -72,17 +73,17 @@ class RollDB:
         match = pattern.match(message)
         if match:
             name = match.group("name")
-            return self.delete_stored_roll(userid, name)
+            return self.delete_stored_roll(guild, userid, name)
 
         # We have no idea what the user wanted to do.
         return "Come again?"
 
-    def store_roll(self, userid, name, syntax):
+    def store_roll(self, guild, userid, name, syntax):
         """Store a new roll, or update an old one."""
-        if not self.__is_roll_stored(userid, name):
+        if not self.__is_roll_stored(guild, userid, name):
             # Create the roll
-            query = "INSERT INTO SavedRolls VALUES (%s, %s, %s);"
-            self.cursor.execute(query, (userid, name, syntax,))
+            query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s);"
+            self.cursor.execute(query, (userid, name, syntax, guild,))
             self.conn.commit()
 
             return "New roll saved!"
@@ -94,10 +95,10 @@ class RollDB:
 
         return "Roll updated!"
 
-    def retrieve_stored_roll(self, userid, name):
+    def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
-        query = "SELECT Syntax FROM SavedRolls WHERE ID=%s AND Name=%s;"
-        self.cursor.execute(query, (userid, name,))
+        query = "SELECT Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name=%s;"
+        self.cursor.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
         if not result:
@@ -105,21 +106,21 @@ class RollDB:
 
         return result[0]
 
-    def delete_stored_roll(self, userid, name):
+    def delete_stored_roll(self, guild, userid, name):
         """Delete a stored roll."""
-        if not self.__is_roll_stored(userid, name):
+        if not self.__is_roll_stored(guild, userid, name):
             return "Can't delete. Roll not found!"
 
-        query = "DELETE FROM SavedRolls WHERE ID=%s AND Name=%s;"
-        self.cursor.execute(query, (userid, name,))
+        query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name=%s;"
+        self.cursor.execute(query, (guild, userid, name,))
         self.conn.commit()
 
         return "Roll deleted!"
 
-    def stored_rolls(self, userid):
+    def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
-        query = "SELECT Name, Syntax FROM SavedRolls WHERE ID=%s ORDER BY Name;"
-        self.cursor.execute(query, (userid,))
+        query = "SELECT Name, Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s ORDER BY Name;"
+        self.cursor.execute(query, (guild, userid,))
         results = self.cursor.fetchall()
 
         fields = []
@@ -128,9 +129,9 @@ class RollDB:
 
         return fields
 
-    def __is_roll_stored(self, userid, name):
+    def __is_roll_stored(self, guild, userid, name):
         """Returns true if a roll by the given name has been stored."""
-        return self.retrieve_stored_roll(userid, name) is not None
+        return self.retrieve_stored_roll(guild, userid, name) is not None
 
     def add_guild(self, guildid, name):
         """Adds a guild to the Guilds table."""

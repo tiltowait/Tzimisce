@@ -89,7 +89,7 @@ class Masquerade(discord.Client):
 
         # Stored roll shenanigans. Create, edit, delete.
         elif self.sqrx.match(message.content):
-            msg = self.database.query_saved_rolls(message.author.id, message.content)
+            msg = self.database.query_saved_rolls(message.guild.id, message.author.id, message.content)
 
             # If the user has retrieved a roll, go ahead and roll it.
             if self.poolx.match(msg):
@@ -108,7 +108,7 @@ class Masquerade(discord.Client):
 
         # Display all of the user's stored rolls.
         elif self.disp.match(message.content):
-            stored_rolls = self.database.stored_rolls(message.author.id)
+            stored_rolls = self.database.stored_rolls(message.guild.id, message.author.id)
             if len(stored_rolls) == 0:
                 await message.channel.send(
                     f"{message.author.mention}, you have no stored rolls!"
