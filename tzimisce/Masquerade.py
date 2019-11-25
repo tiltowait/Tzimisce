@@ -44,6 +44,7 @@ class Masquerade(discord.Client):
     async def on_ready(self):
         """Print a message letting us know the bot logged in to Discord."""
         print(f"Logged on as {self.user}!")
+        print(discord.version_info)
 
     async def on_guild_join(self, guild):
         """When joining a guild, log it for statistics purposes."""
