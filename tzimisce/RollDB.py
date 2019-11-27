@@ -24,8 +24,9 @@ class RollDB:
         # This table is just used for statistics purposes.
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS Guilds
-                              (ID   bigint PRIMARY KEY,
-                               NAME Text   NOT NULL);"""
+                              (ID    bigint PRIMARY KEY,
+                               NAME  Text   NOT NULL,
+                               Rolls int    NOT NULL DEFAULT 0);"""
         )
 
         self.conn.commit()
@@ -152,4 +153,11 @@ class RollDB:
         query = "UPDATE Guilds SET Name=%s WHERE ID=%s;"
 
         self.cursor.execute(query, (name, guildid,))
+        self.conn.commit()
+
+    def increment_rolls(self, guildid):
+        """Keep track of the number of rolls performed on each server."""
+        query = "UPDATE Guilds SET Rolls = Rolls + 1 WHERE ID=%s;"
+
+        self.cursor.execute(query, (guildid,))
         self.conn.commit()

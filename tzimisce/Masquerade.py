@@ -74,12 +74,14 @@ class Masquerade(discord.Client):
         if self.poolx.match(message.content):
             embed = self.__pool_roll(message)
             await message.channel.send(content=message.author.mention, embed=embed)
+            self.database.increment_rolls(message.guild.id)
 
         # Traditional roll. 1d10+5, etc.
         elif self.tradx.match(message.content):
             try:
                 embed = self.__traditional_roll(message)
                 await message.channel.send(content=message.author.mention, embed=embed)
+                self.database.increment_rolls(message.guild.id)
             except ValueError as error:
                 await message.channel.send(f"{message.author.mention}: {str(error)}")
 
@@ -97,11 +99,13 @@ class Masquerade(discord.Client):
                 message.content = msg
                 embed = self.__pool_roll(message)
                 await message.channel.send(content=message.author.mention, embed=embed)
+                self.database.increment_rolls(message.guild.id)
 
             elif self.tradx.match(msg):
                 message.content = msg
                 embed = self.__traditional_roll(message)
                 await message.channel.send(content=message.author.mention, embed=embed)
+                self.database.increment_rolls(message.guild.id)
 
             # Created, deleted, or updated a roll.
             else:
