@@ -36,7 +36,7 @@ class RollDB:
 
         # Store a new roll or change an old one.
         pattern = re.compile(
-            r"^[/!]mw?\s+(?P<name>\w+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
+            r"^[/!]mw?\s+(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
         )
         match = pattern.match(message)
         if match:
@@ -46,7 +46,7 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^[/!]m(?P<will>w)?\s+(?P<name>\w+)\s*(?:#\s*(?P<comment>.*))?$"
+            r"^[/!]m(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?:#\s*(?P<comment>.*))?$"
         )
         match = pattern.match(message)
         if match:
@@ -70,7 +70,7 @@ class RollDB:
             return roll
 
         # Delete a stored roll.
-        pattern = re.compile(r"^[/!]mw?\s+(?P<name>\w+)\s*=\s*$")
+        pattern = re.compile(r"^[/!]mw?\s+(?P<name>[\w-]+)\s*=\s*$")
         match = pattern.match(message)
         if match:
             name = match.group("name")

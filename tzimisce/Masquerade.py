@@ -38,7 +38,7 @@ class Masquerade(discord.Client):
 
         # Database nonsense
         self.database = RollDB()
-        self.sqrx = re.compile(r"^[!/]mw? \w+")  # Start of a saved roll query
+        self.sqrx = re.compile(r"^[!/]mw? [\w-]+")  # Start of a saved roll query
         self.disp = re.compile(r"^[!/]mw? \$\s*$")  # Display all stored rolls
 
     async def on_ready(self):
