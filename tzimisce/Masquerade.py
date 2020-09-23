@@ -199,8 +199,6 @@ class Masquerade(discord.Client):
             fields.append(("Specialty", specialty, True))
 
         comment = match.group("comment")
-        if comment:
-            comment = "Comment: " + comment
 
         return self.__build_embed(
             message=message, title=title, color=color, fields=fields,
@@ -222,9 +220,6 @@ class Masquerade(discord.Client):
             ("Rolls", "+".join([str(roll) for roll in rolls]), True),
             ("Result", str(sum(rolls)), True),
         ]
-
-        if comment:
-            comment = "Comment: " + comment
 
         return self.__build_embed(
             message=message, title=title, color=0x14A1A0, fields=fields,
