@@ -191,7 +191,7 @@ class Masquerade(discord.Client):
 
         # Set up the embed fields
         fields = [
-            ("Rolls", ", ".join(results.formatted), True),
+            ("Dice", ", ".join(results.formatted), True),
             ("Result", results.formatted_count(), True),
         ]
 
@@ -200,10 +200,11 @@ class Masquerade(discord.Client):
 
         comment = match.group("comment")
         if comment:
-            fields.append(("Comment", comment))
+            comment = "Comment: " + comment
 
         return self.__build_embed(
-            message=message, title=title, color=color, fields=fields
+            message=message, title=title, color=color, fields=fields,
+            footer=comment
         )
 
     def __traditional_roll(self, message):
@@ -223,10 +224,11 @@ class Masquerade(discord.Client):
         ]
 
         if comment:
-            fields.append(("Comment", comment, False))
+            comment = "Comment: " + comment
 
         return self.__build_embed(
-            message=message, title=title, color=0x14A1A0, fields=fields
+            message=message, title=title, color=0x14A1A0, fields=fields,
+            footer=comment
         )
 
     def __help(self):
@@ -258,12 +260,16 @@ class Masquerade(discord.Client):
         )
 
     def __build_embed(
-        self, fields, message=None, title="", color=0x1F3446, description=""
+        self, fields, message=None, title="", color=0x1F3446, description="",
+        footer=None
     ):
         """Return a discord embed with a variable number of fields."""
         embed = discord.Embed(
             title=title, colour=discord.Colour(color), description=description
         )
+
+        if footer is not None:
+            embed.set_footer(text=footer)
 
         if message:
             author = message.author.nick
