@@ -232,23 +232,23 @@ class Masquerade(discord.Client):
     def __help(self):
         """Return a handy help embed."""
         fields = [
-            ("Pool 5, difficulty 6 (implied)", "```!m 5```"),
-            ("Pool 5, difficulty 8", "```!m 5 8```"),
-            ("Add a comment", "```!m 5 8 # Comment!```"),
-            ("Add a specialty", "```!m 8 4 Koldunism```"),
-            ("All together", "```!m 8 4 Koldunism # Int + Occult```"),
-            ("Add bonus successes", "```!m 6 5 3```"),
+            ("Pool 5, difficulty 6 (implied)", "```/m 5```"),
+            ("Pool 5, difficulty 8", "```/m 5 8```"),
+            ("Add a comment", "```/m 5 8 # Comment!```"),
+            ("Add a specialty", "```/m 8 4 Koldunism```"),
+            ("All together", "```/m 8 4 Koldunism # Int + Occult```"),
+            ("Add bonus successes", "```/m 6 5 3```"),
             (
                 "Traditional roll",
-                "Useful for Initiative rolls and other things.```!m 1d10+5```",
+                "Useful for Initiative rolls and other things.```/m 1d10+5```",
             ),
             (
                 "Store a roll",
-                "Ignores willpower and comments.\n```!m danubian = 8 3 Koldunism```",
+                "Ignores willpower and comments.\n```/m danubian = 8 3 Koldunism```",
             ),
-            ("Use a stored roll", "May also use with Willpower.\n```!m danubian```"),
-            ("Delete a stored roll", "```!m danubian =```"),
-            ("List stored rolls", "```!m $```"),
+            ("Use a stored roll", "May also use with Willpower.\n```/m danubian```"),
+            ("Delete a stored roll", "```/m danubian =```"),
+            ("List stored rolls", "```/m $```"),
         ]
 
         return self.__build_embed(
