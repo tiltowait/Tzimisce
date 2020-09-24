@@ -217,9 +217,12 @@ class Masquerade(discord.Client):
         rolls = PlainRoll.roll_string(syntax)
 
         fields = [
-            ("Rolls", "+".join([str(roll) for roll in rolls]), True),
             ("Result", str(sum(rolls)), True),
         ]
+
+        # Show the individual dice if more than 1 were rolled
+        if len(rolls) > 1:
+            fields.insert(0, ("Dice", "+".join([str(roll) for roll in rolls]), True))
 
         return self.__build_embed(
             message=message, title=title, color=0x14A1A0, fields=fields,
