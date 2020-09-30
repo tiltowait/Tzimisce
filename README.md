@@ -3,7 +3,7 @@ A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary*.
 
 ## Installation
 ### The Easy Way
-Simply [click this link](https://discordapp.com/api/oauth2/authorize?client_id=642775025770037279&permissions=67584&scope=bot) to add the bot to your server.
+Simply [click this link](https://discordapp.com/api/oauth2/authorize?client_id=642775025770037279&permissions=0&scope=bot) to add the bot to your server. Not ready to add it yet? [Try out the demo server!](https://discord.gg/rK3RFqV)
 
 ### The Hard Way
 Should you wish to locally run the bot (perhaps to make your own, local changes), you will need to acquire a Discord developer key.
@@ -47,11 +47,7 @@ You may enter an arbitrary number of dice and modifiers, *so long as they are al
 /m 1d10+2d6+3
 ```
 
-As of now, *Tzimisce* does not know how to subtract, multiply, divide, etc. on traditional rolls.
-
-## Give it a whirl!
-Join the [support server](https://discord.gg/yVhkpQj), which doubles as a testbed.
-
+At this moment, *Tzimisce* does not know how to subtract, multiply, divide, etc. on traditional rolls.
 
 ## Improvements Over Sidekick
 While the main benefit over Sidekick is command brevity, the output is more intelligent when it comes to the *V20* product line. “Negative successes” are only botches when there are zero rolls at or above the difficulty. Botches keep track of “severity” in case of house rules where a “multi-botch” is more detrimental. And Willpower use is clearly stated.
