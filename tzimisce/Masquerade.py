@@ -155,18 +155,13 @@ class Masquerade(discord.Client):
         else:
             difficulty = int(difficulty)
 
-        # Title format: 'Rolling 6 dice, difficulty 5'
-        title = str(pool)
-        if pool > 1:
-            title += " dice"
-        else:
-            title += " die"  # For the grammar Nazi in me.
-        title += f", difficulty {difficulty}"
+        # Title format: 'Pool X, difficulty Y'
+        title = f"Pool {pool}, diff. {difficulty}"
 
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = match.group("auto")
         if autos:
-            title += f", +{autos}"
+            title += f", +{autos} autos"
         else:
             autos = "0"
 
@@ -190,18 +185,17 @@ class Masquerade(discord.Client):
             color = self.fail_color
 
         # Set up the embed fields
-        fields = [
-            ("Dice", ", ".join(results.formatted), True),
-            ("Result", results.formatted_count(), True),
-        ]
+        fields = [("Dice", ", ".join(results.formatted), True)]
 
         if specialty:
             fields.append(("Specialty", specialty, True))
+            
+        fields.append(("Result", results.formatted_count(), False))
 
         comment = match.group("comment")
 
         return self.__build_embed(
-            message=message, title=title, color=color, fields=fields,
+            message=message, header=title, color=color, fields=fields,
             footer=comment
         )
 
@@ -210,23 +204,22 @@ class Masquerade(discord.Client):
         match = self.tradx.match(message.content)
         syntax = match.group("syntax")
         comment = match.group("comment")
-
-        title = f"Rolling {syntax}"
+        description = None
 
         # Get the rolls and assemble the fields
         rolls = PlainRoll.roll_string(syntax)
 
         fields = [
-            ("Result", str(sum(rolls)), True),
+            ("Result", str(sum(rolls)), False),
         ]
 
         # Show the individual dice if more than 1 were rolled
         if len(rolls) > 1:
-            fields.insert(0, ("Dice", "+".join([str(roll) for roll in rolls]), True))
+            description = "+".join([str(roll) for roll in rolls])
 
         return self.__build_embed(
-            message=message, title=title, color=0x14A1A0, fields=fields,
-            footer=comment
+            message=message, header=syntax, color=0x14A1A0, fields=fields,
+            footer=comment, description=description
         )
 
     def __help(self):
@@ -260,7 +253,7 @@ class Masquerade(discord.Client):
 
     def __build_embed(
         self, fields, message=None, title="", color=0x1F3446, description="",
-        footer=None
+        header=None, footer=None
     ):
         """Return a discord embed with a variable number of fields."""
         embed = discord.Embed(
@@ -274,6 +267,9 @@ class Masquerade(discord.Client):
             author = message.author.nick
             if not author:
                 author = message.author.name
+            
+            if header:
+                author += f": {header}"
 
             embed.set_author(name=author, icon_url=message.author.avatar_url)
 
