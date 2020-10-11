@@ -189,7 +189,7 @@ class Masquerade(discord.Client):
 
         if specialty:
             fields.append(("Specialty", specialty, True))
-            
+
         fields.append(("Result", results.formatted_count(), False))
 
         comment = match.group("comment")
@@ -218,7 +218,7 @@ class Masquerade(discord.Client):
             description = "+".join([str(roll) for roll in rolls])
 
         return self.__build_embed(
-            message=message, header=syntax, color=0x14A1A0, fields=fields,
+            message=message, header=syntax, color=0x000000, fields=fields,
             footer=comment, description=description
         )
 
@@ -267,7 +267,7 @@ class Masquerade(discord.Client):
             author = message.author.nick
             if not author:
                 author = message.author.name
-            
+
             if header:
                 author += f": {header}"
 
