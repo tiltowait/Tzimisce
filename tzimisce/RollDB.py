@@ -46,7 +46,7 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^[/!]m(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>[+-]\d+(?:\s+[+-]?\d+)?)?\s*(?:#\s*(?P<comment>.*))?$"
+            r"^[/!]m(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?\s*(?:#\s*(?P<comment>.*))?$"
         )
         match = pattern.match(message)
         if match:
