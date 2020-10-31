@@ -47,6 +47,9 @@ class Masquerade(discord.Client):
         print(f"Logged on as {self.user}!")
         print(discord.version_info)
 
+        servers = len(self.guilds)
+        await self.change_presence(activity=discord.Game(f"on {servers} chronicles | /m help"))
+
     async def on_guild_join(self, guild):
         """When joining a guild, log it for statistics purposes."""
         print(f"Joining {guild}")
