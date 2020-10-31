@@ -290,6 +290,11 @@ class Masquerade(discord.Client):
             ("Use a stored roll", "May also use with Willpower.\n```/m danubian```"),
             ("Delete a stored roll", "```/m danubian =```"),
             ("List stored rolls", "```/m $```"),
+            ("Use compact mode", "```/mc```\nOr, with Willpower:\n```/mcw```"),
+            (
+                "Modify a stored roll",
+                "```/m attack -2 +1 # Pool -2, difficulty +1```\nFirst number modifies the pool. Second modifies the difficulty. If the difficulty modifier does not have a sign, it will *set* the difficulty to that value. Difficulty is optional. Pool modifier requires a sign, unless the number is 0."
+            ),
         ]
 
         return self.__build_embed(
