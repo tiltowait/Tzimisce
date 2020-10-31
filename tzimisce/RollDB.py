@@ -46,7 +46,7 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^[/!]m(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>[+-]?\d+\s+[+-]?\d+)?\s*(?:#\s*(?P<comment>.*))?$"
+            r"^[/!]m(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>[+-]\d+(?:\s+[+-]?\d+)?)?\s*(?:#\s*(?P<comment>.*))?$"
         )
         match = pattern.match(message)
         if match:
@@ -76,7 +76,9 @@ class RollDB:
                 syntax[0] = str(current_pool + pool_mod)
 
                 # Modify or replace the difficulty
-                diff_mod = mods[1]
+                diff_mod = "+0"
+                if len(mods) is 2: # diff mod is optional; unchanged if omitted
+                    diff_mod = mods[1]
 
                 if diff_mod.isdigit():
                     syntax[1] = diff_mod
