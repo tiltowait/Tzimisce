@@ -2,6 +2,7 @@
 
 import re
 import random
+import asyncio
 
 import discord
 from tzimisce.RollDB import RollDB
@@ -23,10 +24,10 @@ class Masquerade(discord.Client):
         # Set up the important regular expressions
         self.invoked = re.compile(r"^[!/]mw?")
         self.poolx = re.compile(
-            r"[!/]m(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$"
+            r"[!/]m(?P<compact>c)?(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$"
         )
         self.tradx = re.compile(
-            r"^[!/]mw? (?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)\s*(?:#\s*(?P<comment>.*))?$"
+            r"^[!/]m(?P<compact>c)?w? (?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)\s*(?:#\s*(?P<comment>.*))?$"
         )
         self.helpx = re.compile(r"^[!/]m help.*$")
 
@@ -38,8 +39,8 @@ class Masquerade(discord.Client):
 
         # Database nonsense
         self.database = RollDB()
-        self.sqrx = re.compile(r"^[!/]mw? [\w-]+")  # Start of a saved roll query
-        self.disp = re.compile(r"^[!/]mw? \$\s*$")  # Display all stored rolls
+        self.sqrx = re.compile(r"^[!/]mc?w? [\w-]+")  # Start of a saved roll query
+        self.disp = re.compile(r"^[!/]mc?w? \$\s*$")  # Display all stored rolls
 
     async def on_ready(self):
         """Print a message letting us know the bot logged in to Discord."""
@@ -73,14 +74,14 @@ class Masquerade(discord.Client):
         # Standard roll. Pool, difficulty, specialty.
         if self.poolx.match(message.content):
             embed = self.__pool_roll(message)
-            await message.channel.send(content=message.author.mention, embed=embed)
+            if embed:
+                await message.channel.send(content=message.author.mention, embed=embed)
             self.database.increment_rolls(message.guild.id)
 
         # Traditional roll. 1d10+5, etc.
         elif self.tradx.match(message.content):
             try:
-                embed = self.__traditional_roll(message)
-                await message.channel.send(content=message.author.mention, embed=embed)
+                self.__traditional_roll(message)
                 self.database.increment_rolls(message.guild.id)
             except ValueError as error:
                 await message.channel.send(f"{message.author.mention}: {str(error)}")
@@ -98,13 +99,13 @@ class Masquerade(discord.Client):
             if self.poolx.match(msg):
                 message.content = msg
                 embed = self.__pool_roll(message)
-                await message.channel.send(content=message.author.mention, embed=embed)
+                if embed:
+                    await message.channel.send(content=message.author.mention, embed=embed)
                 self.database.increment_rolls(message.guild.id)
 
             elif self.tradx.match(msg):
                 message.content = msg
-                embed = self.__traditional_roll(message)
-                await message.channel.send(content=message.author.mention, embed=embed)
+                self.__traditional_roll(message)
                 self.database.increment_rolls(message.guild.id)
 
             # Created, deleted, or updated a roll.
@@ -131,6 +132,10 @@ class Masquerade(discord.Client):
         else:
             await message.channel.send(f"{message.author.mention}: Come again?")
 
+
+    async def __send_message(self, channel, message):
+        await channel.send(message)
+
     def __pool_roll(self, message):
         """
         A pool-based VtM roll. Returns the results in a pretty embed.
@@ -138,6 +143,7 @@ class Masquerade(discord.Client):
         """
         match = self.poolx.match(message.content)
         will = match.group("will") is not None
+        compact = match.group("compact") is not None
         pool = int(match.group("pool"))
 
         if pool == 0:
@@ -161,7 +167,7 @@ class Masquerade(discord.Client):
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = match.group("auto")
         if autos:
-            title += f", +{autos} autos"
+            title += f", +{self.__pluralize_autos(autos)}"
         else:
             autos = "0"
 
@@ -171,7 +177,27 @@ class Masquerade(discord.Client):
         results = Pool()
         results.roll(pool, difficulty, will, specialty is not None, autos)
 
-        # Put the results into an embed
+        comment = match.group("comment")
+
+        # Compact formatting
+        if compact:
+            results_string = results.formatted_count()
+            if int(autos) > 0:
+                results_string += f" ({self.__pluralize_autos(autos)})"
+
+            compact_string = f"{' '.join(results.formatted)} = {results_string}"
+            if comment:
+                compact_string += f"\n> {comment}"
+
+            if specialty:
+                compact_string += f"\n> ***{specialty}***"
+
+            send = f"{message.author.mention}\n{compact_string}"
+            asyncio.create_task(self.__send_message(message.channel, send))
+
+            return
+
+        # If not compact, put the results into an embed
 
         # The embed's color indicates if the roll succeeded, failed, or botched
         color = 0
@@ -192,8 +218,6 @@ class Masquerade(discord.Client):
 
         fields.append(("Result", results.formatted_count(), False))
 
-        comment = match.group("comment")
-
         return self.__build_embed(
             message=message, header=title, color=color, fields=fields,
             footer=comment
@@ -202,24 +226,47 @@ class Masquerade(discord.Client):
     def __traditional_roll(self, message):
         """A "traditional" roll, such as 5d10+2."""
         match = self.tradx.match(message.content)
+        compact = match.group("compact")
         syntax = match.group("syntax")
         comment = match.group("comment")
         description = None
 
         # Get the rolls and assemble the fields
         rolls = PlainRoll.roll_string(syntax)
-
-        fields = [
-            ("Result", str(sum(rolls)), False),
-        ]
+        result = str(sum(rolls))
 
         # Show the individual dice if more than 1 were rolled
         if len(rolls) > 1:
             description = "+".join([str(roll) for roll in rolls])
 
-        return self.__build_embed(
+        # Compact mode means no embed
+        if compact:
+            compact_string = ""
+            if description:
+                compact_string = f"{description} ="
+
+            compact_string = f"{compact_string} {result}"
+            if comment:
+                compact_string += f"\n> {comment}"
+            send = f"{message.author.mention}\n{compact_string}"
+
+            asyncio.create_task(self.__send_message(message.channel, send))
+            return
+
+        # Not using compact mode!
+        fields = [
+            ("Result", result, False),
+        ]
+
+        embed = self.__build_embed(
             message=message, header=syntax, color=0x000000, fields=fields,
             footer=comment, description=description
+        )
+
+        asyncio.create_task(message.channel.send(
+            content=message.author.mention,
+            embed=embed
+            )
         )
 
     def __help(self):
@@ -284,3 +331,10 @@ class Masquerade(discord.Client):
             embed.add_field(name=name, value=value, inline=inline)
 
         return embed
+
+    def __pluralize_autos(self, autos):
+        string = f"{autos} auto"
+        if int(autos) > 1:
+            string += "s"
+
+        return string

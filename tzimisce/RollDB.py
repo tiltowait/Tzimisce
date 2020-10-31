@@ -36,7 +36,7 @@ class RollDB:
 
         # Store a new roll or change an old one.
         pattern = re.compile(
-            r"^[/!]mw?\s+(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
+            r"^[/!]mc?w?\s+(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
         )
         match = pattern.match(message)
         if match:
@@ -46,12 +46,13 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^[/!]m(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?\s*(?:#\s*(?P<comment>.*))?$"
+            r"^[/!]m(?P<compact>c)?(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?\s*(?:#\s*(?P<comment>.*))?$"
         )
         match = pattern.match(message)
         if match:
             name = match.group("name")
-            will = match.group("will")
+            will = match.group("will") or ""
+            compact = match.group("compact") or ""
             syntax = self.retrieve_stored_roll(guild, userid, name)
             mods = match.group("mods")
 
@@ -90,8 +91,7 @@ class RollDB:
 
             comment = match.group("comment")
 
-            roll = "!m " if not will else "!mw "
-            roll += syntax
+            roll = f"!m{compact}{will} {syntax}"
 
             if comment:
                 roll += " # " + comment
