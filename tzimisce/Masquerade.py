@@ -242,7 +242,7 @@ class Masquerade(discord.Client):
         compact = command["compact"]
         syntax = command["syntax"]
         comment = command["comment"]
-        description = None
+        description = None # Used to show individual dice results
 
         # Get the rolls and assemble the fields
         rolls = PlainRoll.roll_string(syntax)
