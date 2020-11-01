@@ -2,7 +2,6 @@
 
 import re
 import random
-import asyncio
 from collections import defaultdict
 
 import discord
