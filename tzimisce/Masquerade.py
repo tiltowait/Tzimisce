@@ -42,23 +42,28 @@ class Masquerade(discord.Client):
         self.sqrx = re.compile(r"^[!/]mc?w? [\w-]+")  # Start of a saved roll query
         self.disp = re.compile(r"^[!/]mc?w? \$\s*$")  # Display all stored rolls
 
+    def __status_message(self):
+        servers = len(self.guilds)
+        return f"/m help | {servers} chronicles"
+
     async def on_ready(self):
         """Print a message letting us know the bot logged in to Discord."""
         print(f"Logged on as {self.user}!")
         print(discord.version_info)
 
-        servers = len(self.guilds)
-        await self.change_presence(activity=discord.Game(f"with /m help | {servers} chronicles"))
+        await self.change_presence(activity=discord.Game(self.__status_message()))
 
     async def on_guild_join(self, guild):
         """When joining a guild, log it for statistics purposes."""
         print(f"Joining {guild}")
         self.database.add_guild(guild.id, guild.name)
+        await self.change_presence(activity=discord.Game(self.__status_message()))
 
     async def on_guild_remove(self, guild):
         """We don't want to keep track of guilds we no longer belong to."""
         print(f"Removing {guild}")
         self.database.remove_guild(guild.id)
+        await self.change_presence(activity=discord.Game(self.__status_message()))
 
     async def on_guild_update(self, before, after):
         """Sometimes guilds are renamed. Fix that."""
@@ -188,7 +193,7 @@ class Masquerade(discord.Client):
             if int(autos) > 0:
                 results_string += f" ({self.__pluralize_autos(autos)})"
 
-            compact_string = f"{' '.join(results.formatted)} = {results_string}"
+            compact_string = f"{', '.join(results.formatted)} = {results_string}"
             if comment:
                 compact_string += f"\n> {comment}"
 
