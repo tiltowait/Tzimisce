@@ -183,7 +183,6 @@ class Masquerade(discord.Client):
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = command["auto"]
         if autos:
-            autos = command["auto"]
             title += f", +{self.__pluralize_autos(autos)}"
         else:
             autos = "0"
