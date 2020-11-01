@@ -153,10 +153,6 @@ class Masquerade(discord.Client):
                 )
                 await message.channel.send(content=message.author.mention, embed=embed)
 
-    async def __send_message(self, channel, message):
-        """Just sends a text message to the given channel."""
-        await channel.send(message)
-
     def __pool_roll(self, message, command):
         """
         A pool-based VtM roll. Returns the results in a pretty embed.
