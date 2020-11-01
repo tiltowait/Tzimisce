@@ -3,6 +3,7 @@
 import re
 import random
 import asyncio
+from collections import defaultdict
 
 import discord
 from tzimisce.RollDB import RollDB
@@ -22,14 +23,15 @@ class Masquerade(discord.Client):
         random.seed()
 
         # Set up the important regular expressions
-        self.invoked = re.compile(r"^[!/]mw?")
+        self.invoked = re.compile(
+            r"^[!/]m(?P<compact>c)?(?P<will>w)?\s(?P<syntax>[^#]+)(?:#\s*(?P<comment>.*))?$"
+        )
         self.poolx = re.compile(
-            r"[!/]m(?P<compact>c)?(?P<will>w)?\s+(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?\s*(?:#\s*(?P<comment>.*))?$"
+            r"^(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> [^#]+)?$"
         )
         self.tradx = re.compile(
-            r"^[!/]m(?P<compact>c)?w? (?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)\s*(?:#\s*(?P<comment>.*))?$"
+            r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
         )
-        self.helpx = re.compile(r"^[!/]m help.*$")
 
         # Colors help show, at a glance, if a roll was successful
         self.exceptional_color = 0x00FF00
@@ -40,7 +42,6 @@ class Masquerade(discord.Client):
         # Database nonsense
         self.database = RollDB()
         self.sqrx = re.compile(r"^[!/]mc?w? [\w-]+")  # Start of a saved roll query
-        self.disp = re.compile(r"^[!/]mc?w? \$\s*$")  # Display all stored rolls
 
     def __status_message(self):
         servers = len(self.guilds)
@@ -76,52 +77,69 @@ class Masquerade(discord.Client):
             return
 
         # Check if we're invoking the bot at all
-        if not self.invoked.match(message.content):
+        match = self.invoked.match(message.content)
+        if not match:
             return
 
-        # Standard roll. Pool, difficulty, specialty.
-        if self.poolx.match(message.content):
-            embed = self.__pool_roll(message)
-            if embed:
-                await message.channel.send(content=message.author.mention, embed=embed)
-            self.database.increment_rolls(message.guild.id)
+        # NEW FLOW
+        command = defaultdict(lambda: None)
+        command.update(match.groupdict())
+        command["syntax"] = command["syntax"].strip()
 
-        # Traditional roll. 1d10+5, etc.
-        elif self.tradx.match(message.content):
+        # First, check if it's help
+        if command["syntax"] == "help":
+            embed = self.help()
+            await message.channel.send(content=message.author.mention, embed=embed)
+
+        # If the command involves the RollDB, we need to modify the syntax first
+        if command["syntax"][0].isalpha():
+            msg = self.database.query_saved_rolls(
+                guild=message.guild.id,
+                userid=message.author.id,
+                syntax=command["syntax"]
+            )
+
+            # Created, updated, or deleted a roll
+            if msg[0].isalpha():
+                await message.channel.send(f"{message.author.mention}: {msg}")
+                return
+
+            # Retrieved a roll
+            command["syntax"] = msg.strip()
+
+        # Pooled roll
+        pool = self.poolx.match(command["syntax"])
+        if pool:
+            command.update(pool.groupdict())
+            send = self.__pool_roll(message, command)
+
+            if isinstance(send, discord.Embed):
+                await message.channel.send(content=message.author.mention, embed=send)
+            else:
+                await message.channel.send(send)
+
+            self.database.increment_rolls(message.guild.id)
+            return
+
+        # Traditional roll
+        traditional = self.tradx.match(command["syntax"])
+        if traditional:
+            command.update(traditional.groupdict())
             try:
-                self.__traditional_roll(message)
+                send = self.__traditional_roll(message, command)
+                if isinstance(send, discord.Embed):
+                    await message.channel.send(content=message.author.mention, embed=send)
+                else:
+                    await message.channel.send(send)
+
                 self.database.increment_rolls(message.guild.id)
             except ValueError as error:
                 await message.channel.send(f"{message.author.mention}: {str(error)}")
 
-        # Print the help message.
-        elif self.helpx.match(message.content):
-            embed = self.__help()
-            await message.channel.send(content=message.author.mention, embed=embed)
-
-        # Stored roll shenanigans. Create, edit, delete.
-        elif self.sqrx.match(message.content):
-            msg = self.database.query_saved_rolls(message.guild.id, message.author.id, message.content)
-
-            # If the user has retrieved a roll, go ahead and roll it.
-            if self.poolx.match(msg):
-                message.content = msg
-                embed = self.__pool_roll(message)
-                if embed:
-                    await message.channel.send(content=message.author.mention, embed=embed)
-                self.database.increment_rolls(message.guild.id)
-
-            elif self.tradx.match(msg):
-                message.content = msg
-                self.__traditional_roll(message)
-                self.database.increment_rolls(message.guild.id)
-
-            # Created, deleted, or updated a roll.
-            else:
-                await message.channel.send(f"{message.author.mention}: {msg}")
+            return
 
         # Display all of the user's stored rolls.
-        elif self.disp.match(message.content):
+        if command["syntax"] == "$":
             stored_rolls = self.database.stored_rolls(message.guild.id, message.author.id)
             if len(stored_rolls) == 0:
                 await message.channel.send(
@@ -136,56 +154,52 @@ class Masquerade(discord.Client):
                 )
                 await message.channel.send(content=message.author.mention, embed=embed)
 
-        # No idea what the user is asking
-        else:
-            await message.channel.send(f"{message.author.mention}: Come again?")
-
-
     async def __send_message(self, channel, message):
+        """Just sends a text message to the given channel."""
         await channel.send(message)
 
-    def __pool_roll(self, message):
+    def __pool_roll(self, message, command):
         """
         A pool-based VtM roll. Returns the results in a pretty embed.
         Does not check that difficulty is 1 or > 10.
         """
-        match = self.poolx.match(message.content)
-        will = match.group("will") is not None
-        compact = match.group("compact") is not None
-        pool = int(match.group("pool"))
+        will = command["will"]
+        compact = command["compact"]
+        pool = int(command["pool"])
 
         if pool == 0:
             pool = 1  # Rather than mess about with errors, just fix the mistake
 
         # Difficulty must be between 2 and 10. If it isn't supplied, go with
         # the default value of 6.
-        difficulty = match.group("difficulty")
+        difficulty = command["difficulty"]
         if not difficulty:
             difficulty = 6
-        elif int(difficulty) > 10:
-            difficulty = 10
-        elif int(difficulty) < 2:
-            difficulty = 2
         else:
             difficulty = int(difficulty)
+            if difficulty > 10:
+                difficulty = 10
+            elif difficulty < 2:
+                difficulty = 2
 
         # Title format: 'Pool X, difficulty Y'
         title = f"Pool {pool}, diff. {difficulty}"
 
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
-        autos = match.group("auto")
+        autos = command["auto"]
         if autos:
+            autos = command["auto"]
             title += f", +{self.__pluralize_autos(autos)}"
         else:
             autos = "0"
 
-        specialty = match.group("specialty")  # Doubles 10s if set
+        specialty = command["specialty"] # Doubles 10s if set
 
         # Perform rolls, format them, and figure out how many successes we have
         results = Pool()
         results.roll(pool, difficulty, will, specialty is not None, autos)
 
-        comment = match.group("comment")
+        comment = command["comment"]
 
         # Compact formatting
         if compact:
@@ -200,10 +214,7 @@ class Masquerade(discord.Client):
             if specialty:
                 compact_string += f"\n> ***{specialty}***"
 
-            send = f"{message.author.mention}\n{compact_string}"
-            asyncio.create_task(self.__send_message(message.channel, send))
-
-            return
+            return f"{message.author.mention}\n{compact_string}"
 
         # If not compact, put the results into an embed
 
@@ -231,12 +242,11 @@ class Masquerade(discord.Client):
             footer=comment
         )
 
-    def __traditional_roll(self, message):
+    def __traditional_roll(self, message, command):
         """A "traditional" roll, such as 5d10+2."""
-        match = self.tradx.match(message.content)
-        compact = match.group("compact")
-        syntax = match.group("syntax")
-        comment = match.group("comment")
+        compact = command["compact"]
+        syntax = command["syntax"]
+        comment = command["comment"]
         description = None
 
         # Get the rolls and assemble the fields
@@ -256,10 +266,8 @@ class Masquerade(discord.Client):
             compact_string = f"{compact_string} {result}"
             if comment:
                 compact_string += f"\n> {comment}"
-            send = f"{message.author.mention}\n{compact_string}"
 
-            asyncio.create_task(self.__send_message(message.channel, send))
-            return
+            return f"{message.author.mention}\n{compact_string}"
 
         # Not using compact mode!
         fields = [
@@ -271,11 +279,7 @@ class Masquerade(discord.Client):
             footer=comment, description=description
         )
 
-        asyncio.create_task(message.channel.send(
-            content=message.author.mention,
-            embed=embed
-            )
-        )
+        return embed
 
     def __help(self):
         """Return a handy help embed."""

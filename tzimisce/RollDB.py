@@ -31,14 +31,14 @@ class RollDB:
 
         self.conn.commit()
 
-    def query_saved_rolls(self, guild, userid, message):
+    def query_saved_rolls(self, guild, userid, syntax):
         """Parses the message to see what kind of query is needed, then performs it."""
 
         # Store a new roll or change an old one.
         pattern = re.compile(
-            r"^[/!]mc?w?\s+(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
+            r"^(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
         )
-        match = pattern.match(message)
+        match = pattern.match(syntax)
         if match:
             name = match.group("name")
             syntax = match.group("syn")
@@ -46,16 +46,13 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^[/!]m(?P<compact>c)?(?P<will>w)?\s+(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?\s*(?:#\s*(?P<comment>.*))?$"
+            r"^(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?$"
         )
-        match = pattern.match(message)
+        match = pattern.match(syntax)
         if match:
             name = match.group("name")
-            will = match.group("will") or ""
-            compact = match.group("compact") or ""
             syntax = self.retrieve_stored_roll(guild, userid, name)
             mods = match.group("mods")
-
 
             if not syntax:
                 return "Roll doesn't exist!"
@@ -89,20 +86,10 @@ class RollDB:
 
                 syntax = " ".join(syntax)
 
-            comment = match.group("comment")
-
-            roll = f"!m{compact}{will} {syntax}"
-
-            if comment:
-                roll += " # " + comment
-            else:
-                roll += " # " + name  # Provide a default comment
-
-            return roll
+            return syntax
 
         # Delete a stored roll.
-        pattern = re.compile(r"^[/!]mw?\s+(?P<name>[\w-]+)\s*=\s*$")
-        match = pattern.match(message)
+        match = re.match(r"^(?P<name>[\w-]+)\s*=$", syntax)
         if match:
             name = match.group("name")
             return self.delete_stored_roll(guild, userid, name)
