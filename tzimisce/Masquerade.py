@@ -80,7 +80,6 @@ class Masquerade(discord.Client):
         if not match:
             return
 
-        # NEW FLOW
         command = defaultdict(lambda: None)
         command.update(match.groupdict())
         command["syntax"] = command["syntax"].strip()
