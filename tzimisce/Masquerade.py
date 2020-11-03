@@ -92,19 +92,20 @@ class Masquerade(discord.Client):
 
         # If the command involves the RollDB, we need to modify the syntax first
         if command["syntax"][0].isalpha():
-            msg = self.database.query_saved_rolls(
+            query_result = self.database.query_saved_rolls(
                 guild=message.guild.id,
                 userid=message.author.id,
-                syntax=command["syntax"]
+                command=command
             )
 
             # Created, updated, or deleted a roll
-            if msg[0].isalpha():
-                await message.channel.send(f"{message.author.mention}: {msg}")
+            if isinstance(query_result, str):
+                await message.channel.send(f"{message.author.mention}: {query_result}")
                 return
 
             # Retrieved a roll
-            command["syntax"] = msg.strip()
+            command = query_result
+            command["syntax"] = command["syntax"].strip()
 
         # Pooled roll
         pool = self.poolx.match(command["syntax"])

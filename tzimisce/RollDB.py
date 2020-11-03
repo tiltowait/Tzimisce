@@ -31,8 +31,10 @@ class RollDB:
 
         self.conn.commit()
 
-    def query_saved_rolls(self, guild, userid, syntax):
+    def query_saved_rolls(self, guild, userid, command):
         """Parses the message to see what kind of query is needed, then performs it."""
+        syntax = command["syntax"]
+        comment = command["comment"]
 
         # Store a new roll or change an old one.
         pattern = re.compile(
@@ -42,7 +44,7 @@ class RollDB:
         if match:
             name = match.group("name")
             syntax = match.group("syn")
-            return self.store_roll(guild, userid, name, syntax)
+            return self.store_roll(guild, userid, name, syntax, comment)
 
         # Use a stored roll.
         pattern = re.compile(
@@ -51,11 +53,13 @@ class RollDB:
         match = pattern.match(syntax)
         if match:
             name = match.group("name")
-            syntax = self.retrieve_stored_roll(guild, userid, name)
-            mods = match.group("mods")
+            compound = self.retrieve_stored_roll(guild, userid, name)
 
-            if not syntax:
+            if not compound:
                 return "Roll doesn't exist!"
+
+            syntax = compound[0]
+            mods = match.group("mods")
 
             # Mods can modify a stored roll by changing the pool, diff, or both
             if mods:
@@ -86,7 +90,12 @@ class RollDB:
 
                 syntax = " ".join(syntax)
 
-            return syntax
+            # Write the new command
+            command["syntax"] = syntax
+            if compound[1] and not command["comment"]:
+                command["comment"] = compound[1]
+
+            return command
 
         # Delete a stored roll.
         match = re.match(r"^(?P<name>[\w-]+)\s*=$", syntax)
@@ -97,12 +106,12 @@ class RollDB:
         # We have no idea what the user wanted to do.
         return "Come again?"
 
-    def store_roll(self, guild, userid, name, syntax):
+    def store_roll(self, guild, userid, name, syntax, comment):
         """Store a new roll, or update an old one."""
         if not self.__is_roll_stored(guild, userid, name):
             # Create the roll
-            query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s);"
-            self.cursor.execute(query, (userid, name, syntax, guild,))
+            query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
+            self.cursor.execute(query, (userid, name, syntax, guild, comment,))
             self.conn.commit()
 
             return "New roll saved!"
@@ -116,14 +125,14 @@ class RollDB:
 
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
-        query = "SELECT Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name=%s;"
+        query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name=%s;"
         self.cursor.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
         if not result:
             return None
 
-        return result[0]
+        return result
 
     def delete_stored_roll(self, guild, userid, name):
         """Delete a stored roll."""
