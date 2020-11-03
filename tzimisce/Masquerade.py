@@ -318,7 +318,7 @@ class Masquerade(discord.Client):
             title=title, colour=discord.Colour(color), description=description
         )
 
-        if footer is not None:
+        if footer:
             embed.set_footer(text=footer)
 
         if message:

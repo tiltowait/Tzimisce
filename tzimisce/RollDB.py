@@ -109,7 +109,6 @@ class RollDB:
     def store_roll(self, guild, userid, name, syntax, comment):
         """Store a new roll, or update an old one."""
         if not self.__is_roll_stored(guild, userid, name):
-            print("stored")
             # Create the roll
             query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
             self.cursor.execute(query, (userid, name, syntax, guild, comment,))
