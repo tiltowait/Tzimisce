@@ -89,6 +89,17 @@ class Masquerade(discord.Client):
             embed = self.help()
             await message.channel.send(content=message.author.mention, embed=embed)
 
+        # Coin roll
+        if command["syntax"] == "coin":
+            coin = random.randint(1, 2)
+            if coin == 1:
+                coin = "Heads!"
+            else:
+                coin = "Tails!"
+
+            await message.channel.send(f"{message.author.mention}: {coin}")
+            return
+
         # If the command involves the RollDB, we need to modify the syntax first
         if command["syntax"][0].isalpha():
             query_result = self.database.query_saved_rolls(
@@ -104,7 +115,6 @@ class Masquerade(discord.Client):
 
             # Retrieved a roll
             command = query_result
-            command["syntax"] = command["syntax"].strip()
 
         # Pooled roll
         pool = self.poolx.match(command["syntax"])
@@ -264,9 +274,7 @@ class Masquerade(discord.Client):
             return f"{message.author.mention}\n{compact_string}"
 
         # Not using compact mode!
-        fields = [
-            ("Result", result, False),
-        ]
+        fields = [("Result", result, False),]
 
         embed = self.__build_embed(
             message=message, header=syntax, color=0x000000, fields=fields,

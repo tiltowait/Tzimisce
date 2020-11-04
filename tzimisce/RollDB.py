@@ -15,10 +15,11 @@ class RollDB:
         # The main table for storing rolls.
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS SavedRolls
-                              (ID     bigint NOT NULL,
-                               Name   Text   NOT NULL,
-                               Syntax Text   NOT NULL,
-                               Guild  bigint NOT NULL);"""
+                              (ID      bigint NOT NULL,
+                               Name    Text   NOT NULL,
+                               Syntax  Text   NOT NULL,
+                               Guild   bigint NOT NULL,
+                               Comment Text   NULL);"""
         )
 
         # This table is just used for statistics purposes.
@@ -68,9 +69,9 @@ class RollDB:
 
                 # Modify the pool first
                 syntax = syntax.split()
-                if len(syntax) is 1: # Need a default difficulty
+                if len(syntax) == 1: # Need a default difficulty
                     syntax.append(6)
-                elif len(syntax) is 2:
+                elif len(syntax) == 2:
                     if not syntax[1][0].isdigit(): # it's a specialty
                         syntax.insert(1, 6)
 
@@ -79,7 +80,7 @@ class RollDB:
 
                 # Modify or replace the difficulty
                 diff_mod = "+0"
-                if len(mods) is 2: # diff mod is optional; unchanged if omitted
+                if len(mods) == 2: # diff mod is optional; unchanged if omitted
                     diff_mod = mods[1]
 
                 if diff_mod.isdigit():
