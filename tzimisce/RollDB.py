@@ -47,6 +47,14 @@ class RollDB:
             syntax = match.group("syn")
             return self.store_roll(guild, userid, name, syntax, comment)
 
+        # Change the comment of a stored roll
+        pattern = re.compile(r"^(?P<name>[\w-]+)\s+c=(?P<comment>.*)$")
+        match = pattern.match(syntax)
+        if match:
+            name = match.group("name")
+            comment = match.group("comment")
+            return self.update_stored_comment(guild, userid, name, comment)
+
         # Use a stored roll.
         pattern = re.compile(
             r"^(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?$"
@@ -123,6 +131,21 @@ class RollDB:
         self.conn.commit()
 
         return "Roll updated!"
+
+    def update_stored_comment(self, guild, userid, name, comment):
+        """Set or delete a stored roll's comment"""
+        if self.__is_roll_stored(guild, userid, name):
+            comment = comment.strip()
+            if len(comment) == 0:
+                comment = None
+
+            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name=%s;"
+            self.cursor.execute(query, (comment, userid, name,))
+            self.conn.commit()
+
+            return "Comment set!"
+
+        return "Roll not found!"
 
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
