@@ -38,7 +38,7 @@ class Masquerade(discord.Client):
         self.fail_color = 0x777777
         self.botch_color = 0xFF0000
 
-        # Database nonsense
+        # Database stuff
         self.database = RollDB()
         self.sqrx = re.compile(r"^[!/]mc?w? [\w-]+")  # Start of a saved roll query
 
