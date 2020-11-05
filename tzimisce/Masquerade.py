@@ -131,7 +131,7 @@ class Masquerade(discord.Client):
         pool = self.poolx.match(command["syntax"])
         if pool:
             command.update(pool.groupdict())
-            send = self.__pool_roll(message, command)
+            send = self.__pool_roll(message.author, command)
 
             if isinstance(send, discord.Embed):
                 await message.channel.send(content=message.author.mention, embed=send)
@@ -146,7 +146,7 @@ class Masquerade(discord.Client):
         if traditional:
             command.update(traditional.groupdict())
             try:
-                send = self.__traditional_roll(message, command)
+                send = self.__traditional_roll(message.author, command)
                 if isinstance(send, discord.Embed):
                     await message.channel.send(content=message.author.mention, embed=send)
                 else:
@@ -167,14 +167,16 @@ class Masquerade(discord.Client):
                 )
             else:
                 embed = self.__build_embed(
-                    message=message,
+                    author=message.author,
                     title="Stored Rolls",
                     color=0x1F3446,
                     fields=stored_rolls,
                 )
                 await message.channel.send(content=message.author.mention, embed=embed)
 
-    def __pool_roll(self, message, command):
+            return # Unnecessary, but here in case we add more cases in future
+
+    def __pool_roll(self, author, command):
         """
         A pool-based VtM roll. Returns the results in a pretty embed.
         Does not check that difficulty is 1 or > 10.
@@ -187,7 +189,7 @@ class Masquerade(discord.Client):
             pool = 1  # Rather than mess about with errors, just fix the mistake
 
         if pool > 100:
-            return f"{message.author.mention}: Error! Pools cannot be larger than 100."
+            return f"{author.mention}: Error! Pools cannot be larger than 100."
 
         # Difficulty must be between 2 and 10. If it isn't supplied, go with
         # the default value of 6.
@@ -232,7 +234,7 @@ class Masquerade(discord.Client):
             if specialty:
                 compact_string += f"\n> ***{specialty}***"
 
-            return f"{message.author.mention}\n{compact_string}"
+            return f"{author.mention}\n{compact_string}"
 
         # If not compact, put the results into an embed
 
@@ -256,11 +258,11 @@ class Masquerade(discord.Client):
         fields.append(("Result", results.formatted_count(), False))
 
         return self.__build_embed(
-            message=message, header=title, color=color, fields=fields,
+            author=author, header=title, color=color, fields=fields,
             footer=comment
         )
 
-    def __traditional_roll(self, message, command):
+    def __traditional_roll(self, author, command):
         """A "traditional" roll, such as 5d10+2."""
         compact = command["compact"]
         syntax = command["syntax"]
@@ -285,13 +287,13 @@ class Masquerade(discord.Client):
             if comment:
                 compact_string += f"\n> {comment}"
 
-            return f"{message.author.mention}\n{compact_string}"
+            return f"{author.mention}\n{compact_string}"
 
         # Not using compact mode!
         fields = [("Result", result, False),]
 
         embed = self.__build_embed(
-            message=message, header=syntax, color=0x000000, fields=fields,
+            author=author, header=syntax, color=0x000000, fields=fields,
             footer=comment, description=description
         )
 
@@ -332,7 +334,7 @@ class Masquerade(discord.Client):
         )
 
     def __build_embed(
-        self, fields, message=None, title="", color=0x1F3446, description="",
+        self, fields, author=None, title="", color=0x1F3446, description="",
         header=None, footer=None
     ):
         """Return a discord embed with a variable number of fields."""
@@ -343,15 +345,14 @@ class Masquerade(discord.Client):
         if footer:
             embed.set_footer(text=footer)
 
-        if message:
-            author = message.author.nick
-            if not author:
-                author = message.author.name
+        if author:
+            avatar = author.avatar_url
+            author = author.nick or author.name
 
             if header:
                 author += f": {header}"
 
-            embed.set_author(name=author, icon_url=message.author.avatar_url)
+            embed.set_author(name=author, icon_url=avatar)
 
         for field in fields:
             name = field[0]
