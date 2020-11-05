@@ -186,6 +186,9 @@ class Masquerade(discord.Client):
         if pool == 0:
             pool = 1  # Rather than mess about with errors, just fix the mistake
 
+        if pool > 100:
+            return f"{message.author.mention}: Error! Pools cannot be larger than 100."
+
         # Difficulty must be between 2 and 10. If it isn't supplied, go with
         # the default value of 6.
         difficulty = command["difficulty"]
