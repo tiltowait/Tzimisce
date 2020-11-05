@@ -43,8 +43,11 @@ class Masquerade(discord.Client):
         self.sqrx = re.compile(r"^[!/]mc?w? [\w-]+")  # Start of a saved roll query
 
     def __status_message(self):
+        """Sets the bot's Discord presence message."""
         servers = len(self.guilds)
         return f"/m help | {servers} chronicles"
+
+    # Various bookkeeping methods
 
     async def on_ready(self):
         """Print a message letting us know the bot logged in to Discord."""
@@ -70,8 +73,10 @@ class Masquerade(discord.Client):
         print(f"Renaming {before} to {after}")
         self.database.rename_guild(after.id, after.name)
 
+    # Main handler
+
     async def on_message(self, message):
-        """Fires every time a message is received. Parses it to see if a roll is needed."""
+        """Parse every message and determine if action is needed."""
         if message.author == self.user:
             return
 
@@ -80,16 +85,22 @@ class Masquerade(discord.Client):
         if not match:
             return
 
-        command = defaultdict(lambda: None)
+        # The COMMAND dict contains info on compact mode, willpower, comment,
+        # and the command syntax. At this poitn, the syntax is unvalidated and
+        # may be in error. Validators below determine if syntax is actionable
+        # or display an error message.
+
+        command = defaultdict(lambda: None) # Avoid testing optional components
         command.update(match.groupdict())
         command["syntax"] = command["syntax"].strip()
 
-        # First, check if it's help
+        # Check if the user is invoking the help command
         if command["syntax"] == "help":
-            embed = self.help()
+            embed = self.__help()
             await message.channel.send(content=message.author.mention, embed=embed)
+            return
 
-        # Coin roll
+        # Coin flip
         if command["syntax"] == "coin":
             coin = random.randint(1, 2)
             if coin == 1:
@@ -101,14 +112,14 @@ class Masquerade(discord.Client):
             return
 
         # If the command involves the RollDB, we need to modify the syntax first
-        if command["syntax"][0].isalpha():
+        if command["syntax"][0].isalpha(): # No valid roll starts with alpha
             query_result = self.database.query_saved_rolls(
                 guild=message.guild.id,
                 userid=message.author.id,
                 command=command
             )
 
-            # Created, updated, or deleted a roll
+            # Created, updated, or deleted a roll (or error)
             if isinstance(query_result, str):
                 await message.channel.send(f"{message.author.mention}: {query_result}")
                 return
@@ -124,13 +135,13 @@ class Masquerade(discord.Client):
 
             if isinstance(send, discord.Embed):
                 await message.channel.send(content=message.author.mention, embed=send)
-            else:
+            else: # It's a string
                 await message.channel.send(send)
 
             self.database.increment_rolls(message.guild.id)
             return
 
-        # Traditional roll
+        # Traditional roll (e.g. 2d10+4)
         traditional = self.tradx.match(command["syntax"])
         if traditional:
             command.update(traditional.groupdict())
