@@ -1,5 +1,5 @@
-# Tzimisce
-A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary*.
+# \[Tzimisce\]
+A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary* and other "20th Anniversary" White Wolf Storyteller games. At its most basic, it allows for rapid entry of rolls, requiring as few as five keystrokes (including return!) or four taps on a mobile screen. It also possesses some more advanced features, such as roll saving, Willpower-based rolls, and automatic successes.
 
 ## Installation
 ### The Easy Way
@@ -11,31 +11,53 @@ Should you wish to locally run the bot (perhaps to make your own, local changes)
 #### Setup
 You will need version 3.7 or greater of [Python](https://www.python.org), as well as [PostgreSQL](https://www.postgresql.org) with SSL support enabled (which may require creating your own certificate key).
 
-Additionally, you will need to install `psycopg2` and `discord.py`.
+Additionally, you will need to use PIP to install `psycopg2` and `discord.py`.
 
 ##### Setting the Environment Variables
 Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store your PostgreSQL server address in an environment variable named `DATABASE_URL`.
 
 ## Usage
 ### Pool-Based Rolls
-*Tzimisce* has a number of options for pool-based rolls and has been designed for quick command entry. At its most basic, it requires only a few keystrokes:
+*\[Tzimisce\]'s* basic (and most common) command is:
+```
+/m <pool> [difficulty] [autos] [specialty] [# comment]
+```
 
+* `pool`: The number of d10s to roll.
+* `difficulty` (optional): The target number for each die in the pool. Defaults to 6. If the supplied difficulty is below 2 or above 10, the bot will automatically change the difficulty to the nearest threshold.
+* `specialty` (optional): If supplied, a result of ten on an individual die will be doubled.
+* `# comment` (optional): A comment to attach to the roll. The `#` is required!
+* `autos` (optional): The number of automatic successes to apply. These are cancelable by botches. If using `autos`, `difficulty` ***must*** be supplied!
+
+#### Examples
+Roll 5 dice, difficulty 6:
 ```
 /m 5
 ```
 
-The above rolls 5 dice at difficulty 6. You can also specify a different difficulty, add a specialty, and add a comment. Doing so is straightforward. The following rolls 8 dice, difficulty 4, with a specialty in Koldunism:
-
+Roll 8 dice, difficulty 7, with a specialty in persuasion, and a comment:
 ```
-/m 8 4 Koldunism
+/m 8 7 Persuasion # Charisma + Leadership
 ```
 
-This compares favorably with Sidekick, where the same command looks like this: `/r 8d10>=4f1t10`. Sidekick’s output is also often incorrect, as it uses first-edition *Vampire’s* rules instead of *V20’s*.
+Roll 5 dice, difficulty 6, with two auto-successes:
+```
+/m 5 6 2
+```
 
-The bot also supports storing rolls for later use. To see a list of all available options, enter `/m help`.
+#### Willpower
+Willpower may be added to any roll by adding the `w` flag:
+```
+/mw 5
+```
+
+The preceding rolls five dice and adds a success *that cannot be removed by botches*.
+
+#### And more!
+See the bot's in-app help comand by entering `/m help`.
 
 ### Traditional Rolls
-*Tzimisce* has moderately robust capability for “traditional” rolls, such as `1d10+5`. Invocation is simple:
+*\[Tzimisce\]* has moderately robust capability for “traditional” rolls, such as `1d10+5`. Invocation is simple:
 
 ```
 /m 1d10+5 # Initiative
@@ -47,9 +69,4 @@ You may enter an arbitrary number of dice and modifiers, *so long as they are al
 /m 1d10+2d6+3
 ```
 
-At this moment, *Tzimisce* does not know how to subtract, multiply, divide, etc. on traditional rolls.
-
-## Improvements Over Sidekick
-While the main benefit over Sidekick is command brevity, the output is more intelligent when it comes to the *V20* product line. “Negative successes” are only botches when there are zero rolls at or above the difficulty. Botches keep track of “severity” in case of house rules where a “multi-botch” is more detrimental. And Willpower use is clearly stated.
-
-Finally, the output is much more attractive, with color-coding to easily see if a roll was a botch, failure, or success.
+At this moment, *\[Tzimisce\]* does not know how to subtract, multiply, divide, etc. on traditional rolls.
