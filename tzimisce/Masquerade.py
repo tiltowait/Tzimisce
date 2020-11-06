@@ -94,6 +94,18 @@ class Masquerade(discord.Client):
         command.update(match.groupdict())
         command["syntax"] = command["syntax"].strip()
 
+        # Discord will reject messages that are too long
+        if command["comment"] and len(command["comment"]) > 500:
+            reduction = len(command["comment"]) - 500
+            characters = "character"
+            if reduction > 1: # Because I can't risk improper pluralization
+                characters += "s"
+
+            await message.channel.send(
+                f"{message.author.mention}: Comment too long by {reduction} {characters}."
+            )
+            return
+
         # Check if the user is invoking the help command
         if command["syntax"] == "help":
             embed = self.__help()
