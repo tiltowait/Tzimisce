@@ -70,3 +70,6 @@ You may enter an arbitrary number of dice and modifiers, *so long as they are al
 ```
 
 At this moment, *\[Tzimisce\]* does not know how to subtract, multiply, divide, etc. on traditional rolls.
+
+## Troubleshooting
+Unable to see the results? You probably have website previews disabled. Go into *User Settings -> Text & Images* and enable *Show website preview info from links pasted into chat*.
