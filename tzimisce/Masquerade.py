@@ -359,7 +359,7 @@ class Masquerade(discord.Client):
 
         if author:
             avatar = author.avatar_url
-            author = author.nick or author.name
+            author = author.display_name
 
             if header:
                 author += f": {header}"
