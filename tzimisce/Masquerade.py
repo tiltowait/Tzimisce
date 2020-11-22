@@ -221,9 +221,10 @@ class Masquerade(discord.Client):
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = command["auto"]
         if autos:
+            autos = int(autos)
             title += f", +{pluralize_autos(autos)}"
         else:
-            autos = "0"
+            autos = 0
 
         specialty = command["specialty"] # Doubles 10s if set
 
@@ -378,7 +379,7 @@ class Masquerade(discord.Client):
 
 def pluralize_autos(autos):
     string = f"{autos} auto"
-    if int(autos) > 1:
+    if autos > 1:
         string += "s"
 
     return string
