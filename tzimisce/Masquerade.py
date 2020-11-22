@@ -221,7 +221,7 @@ class Masquerade(discord.Client):
         # Sometimes, a roll may have auto-successes that can be canceled by 1s.
         autos = command["auto"]
         if autos:
-            title += f", +{self.__pluralize_autos(autos)}"
+            title += f", +{pluralize_autos(autos)}"
         else:
             autos = "0"
 
@@ -236,10 +236,8 @@ class Masquerade(discord.Client):
         # Compact formatting
         if compact:
             results_string = results.formatted_count()
-            if int(autos) > 0:
-                results_string += f" ({self.__pluralize_autos(autos)})"
 
-            compact_string = f"{', '.join(results.formatted)} = {results_string}"
+            compact_string = f"{results.formatted} = **{results_string}**"
             if comment:
                 compact_string += f"\n> {comment}"
 
@@ -262,7 +260,7 @@ class Masquerade(discord.Client):
             color = self.fail_color
 
         # Set up the embed fields
-        fields = [("Dice", ", ".join(results.formatted), True)]
+        fields = [("Dice", results.formatted, True)]
 
         if specialty:
             fields.append(("Specialty", specialty, True))
@@ -378,9 +376,9 @@ class Masquerade(discord.Client):
 
         return embed
 
-    def __pluralize_autos(self, autos):
-        string = f"{autos} auto"
-        if int(autos) > 1:
-            string += "s"
+def pluralize_autos(autos):
+    string = f"{autos} auto"
+    if int(autos) > 1:
+        string += "s"
 
-        return string
+    return string

@@ -2,7 +2,6 @@
 
 from tzimisce import PlainRoll
 
-
 class Pool:
     """Provides facilities for pool-based rolls."""
 
@@ -10,14 +9,18 @@ class Pool:
     # We don't have a choice here.
 
     def __init__(self):
-        self.formatted = []
+        self.formatted = ""
         self.successes = 0
         self.will = False
 
     def roll(self, pool, difficulty, will, spec, autos):
         """Roll a specific die a number of times and return the results as an array."""
         raw = sorted(PlainRoll.roll_dice(int(pool), 10), reverse=True)
-        self.formatted = self.__format_rolls(raw, difficulty, spec)
+        self.formatted = ", ".join(self.__format_rolls(raw, difficulty, spec))
+        if will:
+            self.formatted += " *+WP*"
+        if int(autos) > 0:
+            self.formatted += f" *+{autos}*"
         self.successes = self.__count_successes(raw, difficulty, will, spec, autos)
 
     def formatted_count(self):
@@ -28,9 +31,6 @@ class Pool:
             result_str = f"{self.successes} success"
             if self.successes > 1:
                 result_str += "es"
-
-            if self.will:
-                result_str += " (inc. WP)"
         elif self.successes == 0:
             result_str = "Failure"
         else:
