@@ -126,11 +126,18 @@ class RollDB:
             return "New roll saved!"
 
         # Update an old roll
-        query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name=%s;"
-        self.cursor.execute(query, (syntax, userid, name,))
-        self.conn.commit()
+        if comment:
+            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name=%s;"
+            self.cursor.execute(query, (syntax, comment, userid, name,))
+            self.conn.commit()
 
-        return "Roll updated!"
+            return "Roll syntax and comment updated!"
+        else:
+            query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name=%s;"
+            self.cursor.execute(query, (syntax, userid, name,))
+            self.conn.commit()
+
+            return "Roll syntax updated!"
 
     def update_stored_comment(self, guild, userid, name, comment):
         """Set or delete a stored roll's comment"""
