@@ -39,7 +39,7 @@ class RollDB:
 
         # Store a new roll or change an old one.
         pattern = re.compile(
-            r"^(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*(?:\d+)?\s*[\w\s]*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
+            r"^(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*\d*\s*.*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
         )
         match = pattern.match(syntax)
         if match:
