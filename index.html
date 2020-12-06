@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+ <!-- <link rel="stylesheet" href="./bootstrap.min.css">-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <title>[Tzimisce] | Help</title>
+
+  <style>
+    code {
+      color: #ff0000;
+    }
+
+    .row + .row {
+      margin-bottom: 2em;
+    }
+  </style>
+</head>
+
+<body class="bg-dark text-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">[Tzimisce]</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Invite <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Storyteller Rolls
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="#storyteller-basic">Basic Syntax</a>
+            <a class="dropdown-item" href="#storyteller-wp">Using Willpower</a>
+            <a class="dropdown-item" href="#storyteller-autos">Automatic Successes</a>
+          </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#traditional">Traditional Rolls</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Macros
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="#macros-saving">Saving</a>
+            <a class="dropdown-item" href="#macros-deleting">Deleting</a>
+            <a class="dropdown-item" href="#macros-comment">Modifying Comment</a>
+            <a class="dropdown-item" href="#macros-modifying">Modifying Macros</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <div class="jumbotron" style="background-color:black;margin-top:2em">
+        <h1 class="display-5">[Tzimisce] | Discord Dicebot</h1>
+        <p class="lead">
+          [Tzimisce] is a Discord dicebot for <em>Vampire: The Masquerade 20th Anniversary Edition</em> and other White Wolf tabletop RPGs using the Storyteller dice system. It features simple syntax and a number of advanced features.
+        </p>
+        <ul>
+          <li><a href="https://top.gg/bot/642775025770037279" title="Invite [Tzimisce] to your server">Invite [Tzimisce] to your server</a></li>
+          <li><a href="https://discord.gg/rK3RFqV" title="Join the support server">Join the support server</a></li>
+          <li><a href="https://github.com/tiltowait/Tzimisce" title="View the source code">Source code</a></li>
+        </ul>
+      </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h2>Storyteller Rolls</h2>
+        <h4 id="storyteller-basic">Basic Syntax</h4>
+        <h6><code>/m &lt;pool&gt; [difficulty] [specialty] # comment</code></h6>
+        <ul>
+          <li><code>pool</code> <em>(mandatory)</em> is the number of dice to roll.</li>
+          <li><code>difficulty</code> <em>(optional, default 6)</em> must be a number between 2 and 10. If it is outside those bounds, [Tzimisce] will automatically adjust the difficulty to the nearest bound (i.e. 11 will become 10 and 1 will become 2).</li>
+          <li><code>specialty</code> <em>(optional)</em> will cause 10s to count as double successes when applied.
+            <li><code># comment</code> <em>(optional)</em> is a label that will be applied to the roll. The <code>#</code> is required!</li>
+          </li>
+        </ul>
+        <h5>Examples</h5>
+        <ul>
+          <li><code>/m 5</code> — roll 5 dice at difficulty 6</li>
+          <li><code>/m 5 7 # Mask of 1000 Faces</code> — 5 dice, difficulty 7, with a comment</li>
+          <li><code>/m 8 5 Domineering # Command</code> — 8 dice, difficulty 5, specialty of "Domineering", and a comment</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 id="storyteller-wp">Using Willpower</h4>
+        <h6><code>/mw &lt;syntax&gt;</code></h6>
+        <p>
+          Adding Willpower to a roll adds an extra success which cannot be canceled by botches. The rest of the roll syntax is the same as above.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 id="storyteller-autos">Automatic Successes</h4>
+        <h6><code>/m &lt;pool&gt; &lt;difficulty&gt; &lt;autos&gt; [specialty] # comment</code></h6>
+        <p>
+          In order to add Potence-style automatic successes, both the <code>pool</code> and the <code>difficulty</code> must be supplied. Unlike Willpower, automatic successes may be canceled by botches. Willpower (above) and specialties may be used on this type of roll.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h2 id="traditional">Traditional Rolls</h2>
+        <h6><code>/m XdY+...+n # comment</code></h6>
+        <p>
+          [Tzimisce] can perform traditional rolls, such as <em>1d10+5</em>, <em>2d10+3d6</em>, etc. As of this writing, only addition is allowed.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h2>Macros</h2>
+        <h4 id="macros-saving">Saving Rolls</h4>
+        <h6><code>/m &lt;macro-name&gt; = &lt;syntax&gt; # comment</code></h6>
+        <p>
+          The <code>macro-name</code> must not contain spaces but can contain both - and _ characters. The <code>roll syntax</code> can be any valid roll. If supplied, the <code># comment</code> will be used every time you use the macro.
+        </p>
+        <p>
+          If the macro already exists, invoking this command will overwrite it. In this case, the previously stored comment will be retained unless a new one is supplied.
+        </p>
+        <p>
+          To use a macro, simply type <code>/m &lt;macro-name&gt;</code>. Willpower and a new comment may be used.
+        </p>
+        <h5>Examples</h5>
+        <ul>
+          <li><code>/m attack = 7 Graceful # Dex + Brawl</code> — Saves both the syntax and the comment</li>
+          <li><code>/m attack</code> — Rolls the above macro</li>
+          <li><code>/m attack # Using claws</code> — Rolls the macro but with a different comment</li>
+          <li><code>/m attack = 8 Graceful</code> — Changes the roll of the above macro but does not touch the comment</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 id="macros-deleting">Deleting Rolls</h4>
+        <h6><code>/m &lt;macro-name&gt; =</code></h6>
+        <p>
+          This will delete the macro.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 id="macros-comment">Modifying Comments</h4>
+        <h6><code>/m &lt;macro-name&gt; c= [new comment]</code></h6>
+        <p>
+          This will modify only the comment of the macro without touching the syntax. If left blank, it will delete the stored comment.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 id="macros-modifying">Modifying Macros</h4>
+        <h6><code>/m &lt;macro-name&gt; &lt;pool-mod&gt; [difficulty-mod]</code></h6>
+        <p>
+          This allows you to perform one-time modifications on a macro without saving a new one.
+        </p>
+        <ul>
+          <li><code>pool-mod</code> must be positive (i.e. +2), negative, or zero. This will add or subtract dice from the stored pool.</li>
+          <li><code>difficulty</code> will add or subtract from the stored difficulty (if a sign is supplied) or set a new difficulty (if a sign isn't supplied).</li>
+        </ul>
+        <h5>Examples</h5>
+        <ul>
+          <li><code>/m hunt 0 +1</code> — roll your <code>hunt</code> macro at +1 difficulty.</li>
+          <li><code>/m attack -1</code> — roll your <code>attack</code> macro with 1 fewer die.</li>
+          <li><code>/m command 0 5</code> — roll your <code>command</code> macro at difficulty 5.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+</body>
+</html>
