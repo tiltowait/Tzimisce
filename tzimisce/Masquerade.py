@@ -312,37 +312,11 @@ class Masquerade(discord.Client):
 
     def __help(self):
         """Return a handy help embed."""
-        fields = [
-            ("Pool 5, difficulty 6 (implied)", "```/m 5```"),
-            ("Pool 5, difficulty 8", "```/m 5 8```"),
-            ("Add a comment", "```/m 5 8 # Comment!```"),
-            ("Add a specialty", "```/m 8 4 Koldunism```"),
-            ("Use Willpower", "```/mw 7 # One guaranteed success!```"),
-            ("All together", "```/m 8 4 Koldunism # Int + Occult```"),
-            ("Add bonus successes", "```/m 6 5 3```"),
-            (
-                "Traditional roll",
-                "Useful for Initiative rolls and other things.```/m 1d10+5```",
-            ),
-            (
-                "Store a roll",
-                "Ignores willpower and comments.\n```/m danubian = 8 3 Koldunism```",
-            ),
-            ("Use a stored roll", "May also use with Willpower.\n```/m danubian```"),
-            ("Delete a stored roll", "```/m danubian =```"),
-            ("List stored rolls", "```/m $```"),
-            ("Use compact mode", "```/mc```\nOr, with Willpower:\n```/mcw```"),
-            (
-                "Modify a stored roll",
-                "```/m attack -2 +1 # Pool -2, difficulty +1```\nFirst number modifies the pool. Second modifies the difficulty. If the difficulty modifier does not have a sign, it will *set* the difficulty to that value. Difficulty is optional. Pool modifier requires a sign, unless the number is 0."
-            ),
-        ]
+        embed=discord.Embed(title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/", description="Click above for a complete listing of commands, including macros (roll saving) and more.")
+        embed.add_field(name="Basic Syntax", value="`/m <pool> [difficulty] [specialty] # comment`", inline=False)
+        embed.add_field(name="Example", value="`/m 8 7 Domineering # Command`", inline=False)
 
-        return self.__build_embed(
-            title="Example Usage",
-            description="A sampling of available commands",
-            fields=fields,
-        )
+        return embed
 
     def __build_embed(
         self, fields, author=None, title="", color=0x1F3446, description="",
