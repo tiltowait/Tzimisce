@@ -313,8 +313,8 @@ class Masquerade(discord.Client):
     def __help(self):
         """Return a handy help embed."""
         embed=discord.Embed(title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/", description="Click above for a complete listing of commands, including macros (roll saving) and more.")
-        embed.add_field(name="Basic Syntax", value="`/m <pool> [difficulty] [specialty] # comment`", inline=False)
-        embed.add_field(name="Example", value="`/m 8 7 Domineering # Command`", inline=False)
+        embed.add_field(name="Basic Syntax", value="```/m <pool> [difficulty] [specialty] # comment```Difficulty, specialty, and comment are all optional.", inline=False)
+        embed.add_field(name="Example", value="```/m 8 7 Domineering # Command```", inline=False)
 
         return embed
 
