@@ -70,7 +70,6 @@ class Masquerade(discord.Client):
 
     async def on_guild_update(self, before, after):
         """Sometimes guilds are renamed. Fix that."""
-        print(f"Renaming {before} to {after}")
         self.database.rename_guild(after.id, after.name)
 
     # Main handler
