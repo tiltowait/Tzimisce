@@ -127,13 +127,13 @@ class RollDB:
 
         # Update an old roll
         if comment:
-            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name=%s;"
+            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name ~* %s;"
             self.cursor.execute(query, (syntax, comment, userid, name,))
             self.conn.commit()
 
             return "Roll syntax and comment updated!"
         else:
-            query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name=%s;"
+            query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name ~* %s;"
             self.cursor.execute(query, (syntax, userid, name,))
             self.conn.commit()
 
@@ -146,7 +146,7 @@ class RollDB:
             if len(comment) == 0:
                 comment = None
 
-            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name=%s;"
+            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name ~* %s;"
             self.cursor.execute(query, (comment, userid, name,))
             self.conn.commit()
 
@@ -156,7 +156,7 @@ class RollDB:
 
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
-        query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name=%s;"
+        query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
         self.cursor.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
@@ -170,7 +170,7 @@ class RollDB:
         if not self.__is_roll_stored(guild, userid, name):
             return "Can't delete. Roll not found!"
 
-        query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name=%s;"
+        query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
         self.cursor.execute(query, (guild, userid, name,))
         self.conn.commit()
 
