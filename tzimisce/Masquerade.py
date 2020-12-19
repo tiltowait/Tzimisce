@@ -297,6 +297,7 @@ def __build_embed(
     return embed
 
 def pluralize_autos(autos):
+    """Pluralize 'N auto(s)' as needed"""
     string = f"{autos} auto"
     if autos > 1:
         string += "s"
