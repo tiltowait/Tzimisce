@@ -32,6 +32,17 @@ class RollDB:
 
         self.conn.commit()
 
+    def execute(self, query, args):
+        """Executes the specified query. Tries to reconnect to the database if there's an error."""
+        try:
+            self.cursor.execute(query, args)
+        except psycopg2.errors.AdminShutdown:
+            # Connection got reset for some reason, so fix it
+            print("Database lost connection. Retrying.")
+            self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(query, args) # Reconnected, so try again!
+
     def query_saved_rolls(self, guild, userid, command):
         """Parses the message to see what kind of query is needed, then performs it."""
         syntax = command["syntax"]
@@ -120,7 +131,7 @@ class RollDB:
         if not self.__is_roll_stored(guild, userid, name):
             # Create the roll
             query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
-            self.cursor.execute(query, (userid, name, syntax, guild, comment,))
+            self.execute(query, (userid, name, syntax, guild, comment,))
             self.conn.commit()
 
             return "New roll saved!"
@@ -128,13 +139,13 @@ class RollDB:
         # Update an old roll
         if comment:
             query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name ~* %s;"
-            self.cursor.execute(query, (syntax, comment, userid, name,))
+            self.execute(query, (syntax, comment, userid, name,))
             self.conn.commit()
 
             return "Roll syntax and comment updated!"
         else:
             query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name ~* %s;"
-            self.cursor.execute(query, (syntax, userid, name,))
+            self.execute(query, (syntax, userid, name,))
             self.conn.commit()
 
             return "Roll syntax updated!"
@@ -147,7 +158,7 @@ class RollDB:
                 comment = None
 
             query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name ~* %s;"
-            self.cursor.execute(query, (comment, userid, name,))
+            self.execute(query, (comment, userid, name,))
             self.conn.commit()
 
             return "Comment set!"
@@ -157,7 +168,7 @@ class RollDB:
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
         query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
-        self.cursor.execute(query, (guild, userid, name,))
+        self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
         if not result:
@@ -171,7 +182,7 @@ class RollDB:
             return "Can't delete. Roll not found!"
 
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
-        self.cursor.execute(query, (guild, userid, name,))
+        self.execute(query, (guild, userid, name,))
         self.conn.commit()
 
         return "Roll deleted!"
@@ -179,7 +190,7 @@ class RollDB:
     def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
         query = "SELECT Name, Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s ORDER BY Name;"
-        self.cursor.execute(query, (guild, userid,))
+        self.execute(query, (guild, userid,))
         results = self.cursor.fetchall()
 
         fields = []
@@ -196,26 +207,26 @@ class RollDB:
         """Adds a guild to the Guilds table."""
         query = "INSERT INTO Guilds VALUES (%s, %s);"
 
-        self.cursor.execute(query, (guildid, name,))
+        self.execute(query, (guildid, name,))
         self.conn.commit()
 
     def remove_guild(self, guildid):
         """Removes a guild from the Guilds table."""
         query = "DELETE FROM Guilds WHERE ID=%s;"
 
-        self.cursor.execute(query, (guildid,))
+        self.execute(query, (guildid,))
         self.conn.commit()
 
     def rename_guild(self, guildid, name):
         """Updates the name of a guild in the Guilds table."""
         query = "UPDATE Guilds SET Name=%s WHERE ID=%s;"
 
-        self.cursor.execute(query, (name, guildid,))
+        self.execute(query, (name, guildid,))
         self.conn.commit()
 
     def increment_rolls(self, guildid):
         """Keep track of the number of rolls performed on each server."""
         query = "UPDATE Guilds SET Rolls = Rolls + 1 WHERE ID=%s;"
 
-        self.cursor.execute(query, (guildid,))
+        self.execute(query, (guildid,))
         self.conn.commit()
