@@ -71,10 +71,8 @@ async def on_ready():
     """Print a message letting us know the bot logged in to Discord."""
     print(f"Logged on as {bot.user}!")
 
-    users = len(bot.users)
     guilds = len(bot.guilds)
-
-    print(f"Playing on {guilds} servers with {users} users.")
+    print(f"Playing on {guilds} servers.")
     print(discord.version_info)
 
     await bot.change_presence(activity=discord.Game(__status_message()))
@@ -97,6 +95,13 @@ async def on_guild_remove(guild):
 async def on_guild_update(before, after):
     """Sometimes guilds are renamed. Fix that."""
     tzimisce.Masquerade.database.rename_guild(after.id, after.name)
+
+@bot.event
+async def on_command_error(ctx, error):
+    """Ignore CommandNotFound errors."""
+    if isinstance(error, commands.CommandNotFound):
+        return
+    raise error
 
 # Misc
 
