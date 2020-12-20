@@ -181,11 +181,11 @@ class RollDB:
         return result
 
     def __find_similar_macro(self, guild, userid, name):
-        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s) > 0.3;"
+        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s) > 0.2;"
         self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
-        if len(result) > 0:
+        if result:
             return result[0]
 
         return None
