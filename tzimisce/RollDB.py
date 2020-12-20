@@ -134,7 +134,7 @@ class RollDB:
             self.execute(query, (userid, name, syntax, guild, comment,))
             self.conn.commit()
 
-            return "New roll saved!"
+            return f"Saved new macro: `{name}`."
 
         # Update an old roll
         if comment:
@@ -142,13 +142,13 @@ class RollDB:
             self.execute(query, (syntax, comment, userid, name,))
             self.conn.commit()
 
-            return "Roll syntax and comment updated!"
+            return f"Updated `{name}` syntax and comment."
         else:
             query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name ~* %s;"
             self.execute(query, (syntax, userid, name,))
             self.conn.commit()
 
-            return "Roll syntax updated!"
+            return f"Updated `{name}` syntax."
 
     def update_stored_comment(self, guild, userid, name, comment):
         """Set or delete a stored roll's comment"""
@@ -161,7 +161,7 @@ class RollDB:
             self.execute(query, (comment, userid, name,))
             self.conn.commit()
 
-            return "Comment set!"
+            return f"Updated comment for `{name}`."
 
         return "Roll not found!"
 
@@ -179,13 +179,13 @@ class RollDB:
     def delete_stored_roll(self, guild, userid, name):
         """Delete a stored roll."""
         if not self.__is_roll_stored(guild, userid, name):
-            return "Can't delete. Roll not found!"
+            return f"Can't delete. `{name}` not found!"
 
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
         self.execute(query, (guild, userid, name,))
         self.conn.commit()
 
-        return "Roll deleted!"
+        return f"`{name}` deleted!"
 
     def delete_user_rolls(self, guild, userid):
         """Deletes all of a user's rolls on a given guild."""
