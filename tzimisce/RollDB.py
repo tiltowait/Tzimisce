@@ -30,6 +30,9 @@ class RollDB:
                                Rolls int    NOT NULL DEFAULT 0);"""
         )
 
+        # Install trigrams
+        self.cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
+
         self.conn.commit()
 
     def execute(self, query, args):
@@ -76,7 +79,11 @@ class RollDB:
             compound = self.retrieve_stored_roll(guild, userid, name)
 
             if not compound:
-                return "Roll doesn't exist!"
+                alt = self.__find_similar_macro(guild, userid, name)
+                if alt:
+                    return f"`{name}` not found. Did you mean `{alt[0]}`?"
+
+                return f"Sorry, `{name}` doesn't exist!"
 
             syntax = compound[0]
             mods = match.group("mods")
@@ -171,8 +178,12 @@ class RollDB:
         self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
-        if not result:
-            return None
+        return result
+
+    def __find_similar_macro(self, guild, userid, name):
+        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name %% %s;"
+        self.execute(query, (guild, userid, name,))
+        result = self.cursor.fetchone()
 
         return result
 
