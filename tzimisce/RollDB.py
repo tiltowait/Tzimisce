@@ -181,7 +181,7 @@ class RollDB:
         return result
 
     def __find_similar_macro(self, guild, userid, name):
-        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name % %s;"
+        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name %% %s;"
         self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
