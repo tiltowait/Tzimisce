@@ -81,7 +81,7 @@ class RollDB:
             if not compound:
                 alt = self.__find_similar_macro(guild, userid, name)
                 if alt:
-                    return f"`{name}` not found. Did you mean `{alt[0]}`?"
+                    return f"`{name}` not found. Did you mean `{alt}`?"
 
                 return f"Sorry, `{name}` doesn't exist!"
 
@@ -185,7 +185,10 @@ class RollDB:
         self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
-        return result
+        if len(result) > 0:
+            return result[0]
+
+        return None
 
     def delete_stored_roll(self, guild, userid, name):
         """Delete a stored roll."""
