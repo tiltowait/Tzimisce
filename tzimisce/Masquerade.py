@@ -19,6 +19,10 @@ tradx = re.compile(
     r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
 )
 
+# Suggestion Stuff
+suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
+invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)? (?P<syntax>.*)")
+
 # Colors help show, at a glance, if a roll was successful
 EXCEPTIONAL_COLOR = 0x00FF00
 SUCCESS_COLOR = 0x14A1A0
@@ -78,7 +82,31 @@ async def handle_command(command, args, ctx):
 
         # Created, updated, or deleted a roll (or error)
         if isinstance(query_result, str):
-            await ctx.send(f"{ctx.author.mention}: {query_result}")
+            if query_result[-1] == "?":
+                # First, create the invocation
+                will = command["will"] or ""
+                compact = command["compact"] or ""
+                invoke = f"/m{will}{compact}"
+
+                # Next, get the suggestion
+                suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
+                suggestion = suggestx.match(query_result).group("suggestion")
+
+                # Next, substitute it from the original syntax
+                split = command["syntax"].split()
+                split[0] = suggestion
+                new_syntax = " ".join(split)
+
+                # Build the new command
+                new_command = f"{invoke} {new_syntax}"
+
+                # Replace!
+                query_result = query_result.replace(suggestion, new_command)
+
+            message = await ctx.send(f"{ctx.author.mention}: {query_result}")
+
+            if query_result[-1] == "?":
+                await message.add_reaction("👍")
             return
 
         # Retrieved a roll

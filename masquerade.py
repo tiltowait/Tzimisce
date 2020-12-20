@@ -27,7 +27,7 @@ async def willpower_roll(ctx, *args):
     args = " ".join(args)
     command = defaultdict(lambda: None)
     command["syntax"] = args
-    command["will"] = True
+    command["will"] = "w"
 
     await tzimisce.Masquerade.handle_command(command, args, ctx)
 
@@ -37,7 +37,7 @@ async def compact_roll(ctx, *args):
     args = " ".join(args)
     command = defaultdict(lambda: None)
     command["syntax"] = args
-    command["compact"] = True
+    command["compact"] = "c"
 
     await tzimisce.Masquerade.handle_command(command, args, ctx)
 
@@ -47,8 +47,8 @@ async def compact_willpower_roll(ctx, *args):
     args = " ".join(args)
     command = defaultdict(lambda: None)
     command["syntax"] = args
-    command["will"] = True
-    command["compact"] = True
+    command["will"] = "w"
+    command["compact"] = "c"
 
     await tzimisce.Masquerade.handle_command(command, args, ctx)
 
@@ -65,6 +65,38 @@ async def initiative(ctx, arg):
         await ctx.send(f"{ctx.author.mention}: Please supply a positive number!")
 
 # Events
+
+def should_roll_suggestion(reaction, user):
+    """Returns a suggested macro if the correct user replies with a thumbsup."""
+    message = reaction.message
+    if reaction.emoji == "👍" and message.author == bot.user:
+        # Don't allow rolling it more than once
+        for react in message.reactions:
+            if react.emoji == "✅":
+                return None
+
+        if not message.embeds and user in message.mentions:
+            match = tzimisce.Masquerade.suggestx.search(message.content)
+            if match:
+                return match.group("suggestion")
+
+    return None
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    """Rolls a macro correction suggestion if certain conditions are met."""
+    suggestion = should_roll_suggestion(reaction, user)
+    if suggestion:
+        command = defaultdict(lambda: None)
+        match = tzimisce.Masquerade.invokex.match(suggestion)
+        command.update(match.groupdict())
+
+        ctx = await bot.get_context(reaction.message)
+        ctx.author = user # Otherwise, the user is the bot
+        await tzimisce.Masquerade.handle_command(command, match["syntax"], ctx)
+
+        # Remove the old reactions
+        await reaction.message.add_reaction("✅")
 
 @bot.event
 async def on_ready():
