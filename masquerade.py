@@ -41,7 +41,7 @@ async def compact_roll(ctx, *args):
 
     await tzimisce.Masquerade.handle_command(command, args, ctx)
 
-@bot.command(name="mcw")
+@bot.command(aliases=["mcw", "mwc",])
 async def compact_willpower_roll(ctx, *args):
     """Perform a Willpower roll with compact output."""
     args = " ".join(args)
