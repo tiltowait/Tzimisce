@@ -187,6 +187,12 @@ class RollDB:
 
         return "Roll deleted!"
 
+    def delete_user_rolls(self, guild, userid):
+        """Deletes all of a user's rolls on a given guild."""
+        query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s;"
+        self.execute(query, (guild, userid,))
+        self.conn.commit()
+
     def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
         query = "SELECT Name, Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s ORDER BY Name;"

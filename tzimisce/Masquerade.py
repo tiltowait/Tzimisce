@@ -120,7 +120,7 @@ async def handle_command(command, args, ctx):
         stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
         if len(stored_rolls) == 0:
             await ctx.send(
-                f"{ctx.author.mention}, you have no stored rolls!"
+                f"{ctx.author.mention}: You have no stored rolls!"
             )
         else:
             embed = __build_embed(
@@ -131,7 +131,13 @@ async def handle_command(command, args, ctx):
             )
             await ctx.send(content=ctx.author.mention, embed=embed)
 
-        return # Unnecessary, but here in case we add more cases in future
+        return
+
+    if command["syntax"] == "$delete-all":
+        database.delete_user_rolls(ctx.guild.id, ctx.author.id)
+        await ctx.send(f"{ctx.author.mention}: Deleted all stored rolls.")
+
+        return
 
 def __pool_roll(author, command):
     """
