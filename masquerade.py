@@ -52,6 +52,18 @@ async def compact_willpower_roll(ctx, *args):
 
     await tzimisce.Masquerade.handle_command(command, args, ctx)
 
+@bot.command(name="mi")
+async def initiative(ctx, arg):
+    """Roll a 1d10+arg."""
+    try:
+        mod = int(arg)
+        die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
+        init = die + mod
+
+        await ctx.send(f"{ctx.author.mention}: *{die} + {mod}:*   **{init}**")
+    except ValueError:
+        await ctx.send(f"{ctx.author.mention}: Please supply a positive number!")
+
 # Events
 
 @bot.event
