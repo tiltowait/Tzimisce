@@ -145,17 +145,17 @@ class RollDB:
 
         # Update an old roll
         if comment:
-            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name ~* %s;"
+            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name ILIKE %s;"
             self.execute(query, (syntax, comment, userid, name,))
             self.conn.commit()
 
             return f"Updated `{name}` syntax and comment."
-        else:
-            query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name ~* %s;"
-            self.execute(query, (syntax, userid, name,))
-            self.conn.commit()
 
-            return f"Updated `{name}` syntax."
+        query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name ILIKE %s;"
+        self.execute(query, (syntax, userid, name,))
+        self.conn.commit()
+
+        return f"Updated `{name}` syntax."
 
     def update_stored_comment(self, guild, userid, name, comment):
         """Set or delete a stored roll's comment"""
@@ -164,7 +164,7 @@ class RollDB:
             if len(comment) == 0:
                 comment = None
 
-            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name ~* %s;"
+            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name ILIKE %s;"
             self.execute(query, (comment, userid, name,))
             self.conn.commit()
 
@@ -174,14 +174,14 @@ class RollDB:
 
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
-        query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
+        query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
         self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
         return result
 
     def __find_similar_macro(self, guild, userid, name):
-        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name %% %s;"
+        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name % %s;"
         self.execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
@@ -192,7 +192,7 @@ class RollDB:
         if not self.__is_roll_stored(guild, userid, name):
             return f"Can't delete. `{name}` not found!"
 
-        query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ~* %s;"
+        query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
         self.execute(query, (guild, userid, name,))
         self.conn.commit()
 
