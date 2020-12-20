@@ -124,12 +124,12 @@ async def on_guild_remove(guild):
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
-async def on_guild_update(before, after):
+async def on_guild_update(_, after):
     """Sometimes guilds are renamed. Fix that."""
     tzimisce.Masquerade.database.rename_guild(after.id, after.name)
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(_, error):
     """Ignore CommandNotFound errors."""
     if isinstance(error, commands.CommandNotFound):
         return
