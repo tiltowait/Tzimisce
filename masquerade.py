@@ -12,7 +12,7 @@ bot = commands.Bot(command_prefix="/")
 
 # Commands
 
-@bot.command(name="m")
+@bot.group(invoke_without_command=True, name="m")
 async def standard_roll(ctx, *args):
     """Perform a roll without Willpower."""
     args = " ".join(args)
@@ -20,6 +20,28 @@ async def standard_roll(ctx, *args):
     command["syntax"] = args
 
     await tzimisce.Masquerade.handle_command(command, args, ctx)
+
+@standard_roll.command()
+async def coin(ctx):
+    """Performs a simple coinflip."""
+    coin = tzimisce.PlainRoll.roll_dice(1, 2)
+    if coin == 1:
+        coin = "Heads!"
+    else:
+        coin = "Tails!"
+
+    await ctx.send(f"{ctx.author.mention}: {coin}")
+
+@standard_roll.command()
+async def help(ctx):
+    """Displays the basic syntax and a link to the full help file."""
+    embed = tzimisce.Masquerade.help()
+    await ctx.send(content=ctx.author.mention, embed=embed)
+
+@standard_roll.command(name="$")
+async def show_stored_rolls(ctx):
+    """Displays the user's stored rolls."""
+    await tzimisce.Masquerade.show_stored_rolls(ctx)
 
 @bot.command(name="mw")
 async def willpower_roll(ctx, *args):

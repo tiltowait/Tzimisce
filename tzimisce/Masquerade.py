@@ -55,25 +55,8 @@ async def handle_command(command, args, ctx):
         )
         return
 
-    # Check if the user is invoking the help command
-    if command["syntax"] == "help":
-        embed = __help()
-        await ctx.send(content=ctx.author.mention, embed=embed)
-        return
-
-    # Coin flip
-    if command["syntax"] == "coin":
-        coin = random.randint(1, 2)
-        if coin == 1:
-            coin = "Heads!"
-        else:
-            coin = "Tails!"
-
-        await ctx.send(f"{ctx.author.mention}: {coin}")
-        return
-
     # If the command involves the RollDB, we need to modify the syntax first
-    if command["syntax"][0].isalpha(): # No valid roll starts with alpha
+    if command["syntax"][0].isalpha(): # Only macros start with alpha
         query_result = database.query_saved_rolls(
             guild=ctx.guild.id,
             userid=ctx.author.id,
@@ -82,14 +65,15 @@ async def handle_command(command, args, ctx):
 
         # Created, updated, or deleted a roll (or error)
         if isinstance(query_result, str):
-            if query_result[-1] == "?":
+            adding_reaction = False
+
+            if query_result[-2:] == "`?":
                 # First, create the invocation
                 will = command["will"] or ""
                 compact = command["compact"] or ""
                 invoke = f"/m{will}{compact}"
 
                 # Next, get the suggestion
-                suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
                 suggestion = suggestx.match(query_result).group("suggestion")
 
                 # Next, substitute it from the original syntax
@@ -102,10 +86,11 @@ async def handle_command(command, args, ctx):
 
                 # Replace!
                 query_result = query_result.replace(suggestion, new_command)
+                adding_reaction = True
 
             message = await ctx.send(f"{ctx.author.mention}: {query_result}")
 
-            if query_result[-1] == "?":
+            if adding_reaction:
                 await message.add_reaction("👍")
             return
 
@@ -143,29 +128,26 @@ async def handle_command(command, args, ctx):
 
         return
 
-    # Display all of the user's stored rolls.
-    if command["syntax"] == "$":
-        stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
-        if len(stored_rolls) == 0:
-            await ctx.send(
-                f"{ctx.author.mention}: You have no stored rolls!"
-            )
-        else:
-            embed = __build_embed(
-                author=ctx.author,
-                title="Stored Rolls",
-                color=0x1F3446,
-                fields=stored_rolls,
-            )
-            await ctx.send(content=ctx.author.mention, embed=embed)
+async def show_stored_rolls(ctx):
+    """Sends an embed describing all the user's macros."""
+    stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
+    if len(stored_rolls) == 0:
+        await ctx.send(
+            f"{ctx.author.mention}: You have no stored rolls!"
+        )
+    else:
+        embed = __build_embed(
+            author=ctx.author,
+            title="Stored Rolls",
+            color=0x1F3446,
+            fields=stored_rolls,
+        )
+        await ctx.send(content=ctx.author.mention, embed=embed)
 
-        return
-
-    if command["syntax"] == "$delete-all":
-        database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-        await ctx.send(f"{ctx.author.mention}: Deleted all stored rolls.")
-
-        return
+async def delete_user_rolls(ctx):
+    """Deletes all of a user's macros on the given guild."""
+    database.delete_user_rolls(ctx.guild.id, ctx.author.id)
+    await ctx.send(f"{ctx.author.mention}: Deleted all stored rolls.")
 
 def __pool_roll(author, command):
     """
@@ -289,7 +271,7 @@ def __traditional_roll(author, command):
 
     return embed
 
-def __help():
+def help():
     """Return a handy help embed."""
     embed=discord.Embed(title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/", description="Click above for a complete listing of commands, including macros (roll saving) and more.")
     embed.add_field(name="Basic Syntax", value="```/m <pool> [difficulty] [specialty] # comment```Difficulty, specialty, and comment are all optional.", inline=False)
