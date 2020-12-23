@@ -12,14 +12,34 @@ bot = commands.Bot(command_prefix="/")
 
 # Commands
 
-@bot.group(invoke_without_command=True, name="m")
+@bot.group(invoke_without_command=True, aliases=["m", "mw", "mc", "mcw", "mwc"])
 async def standard_roll(ctx, *args):
     """Perform a roll without Willpower."""
     args = " ".join(args)
     command = defaultdict(lambda: None)
     command["syntax"] = args
 
+    # See what options the user has selected, if any
+    if "w" in ctx.invoked_with:
+        command["will"] = "w"
+    if "c" in ctx.invoked_with:
+        command["compact"] = "c"
+
     await tzimisce.Masquerade.handle_command(command, args, ctx)
+
+@bot.command(name="mi")
+async def initiative(ctx, arg):
+    """Roll a 1d10+arg."""
+    try:
+        mod = int(arg)
+        die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
+        init = die + mod
+
+        await ctx.send(f"{ctx.author.mention}: *{die} + {mod}:*   **{init}**")
+    except ValueError:
+        await ctx.send(f"{ctx.author.mention}: Please supply a positive number!")
+
+# Subcommands
 
 @standard_roll.command()
 async def coin(ctx):
@@ -43,52 +63,14 @@ async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
     await tzimisce.Masquerade.show_stored_rolls(ctx)
 
-@bot.command(name="mw")
-async def willpower_roll(ctx, *args):
-    """Perform a roll with Willpower."""
-    args = " ".join(args)
-    command = defaultdict(lambda: None)
-    command["syntax"] = args
-    command["will"] = "w"
-
-    await tzimisce.Masquerade.handle_command(command, args, ctx)
-
-@bot.command(name="mc")
-async def compact_roll(ctx, *args):
-    """Perform a roll with compact output."""
-    args = " ".join(args)
-    command = defaultdict(lambda: None)
-    command["syntax"] = args
-    command["compact"] = "c"
-
-    await tzimisce.Masquerade.handle_command(command, args, ctx)
-
-@bot.command(aliases=["mcw", "mwc",])
-async def compact_willpower_roll(ctx, *args):
-    """Perform a Willpower roll with compact output."""
-    args = " ".join(args)
-    command = defaultdict(lambda: None)
-    command["syntax"] = args
-    command["will"] = "w"
-    command["compact"] = "c"
-
-    await tzimisce.Masquerade.handle_command(command, args, ctx)
-
-@bot.command(name="mi")
-async def initiative(ctx, arg):
-    """Roll a 1d10+arg."""
-    try:
-        mod = int(arg)
-        die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
-        init = die + mod
-
-        await ctx.send(f"{ctx.author.mention}: *{die} + {mod}:*   **{init}**")
-    except ValueError:
-        await ctx.send(f"{ctx.author.mention}: Please supply a positive number!")
+@standard_roll.command(name="$delete-all")
+async def delete_all(ctx):
+    """Deletes all of a user's stored rolls."""
+    await tzimisce.Masquerade.delete_user_rolls(ctx)
 
 # Events
 
-def should_roll_suggestion(reaction, user):
+def suggestion_to_roll(reaction, user):
     """Returns a suggested macro if the correct user replies with a thumbsup."""
     message = reaction.message
     if reaction.emoji == "👍" and message.author == bot.user:
@@ -107,7 +89,7 @@ def should_roll_suggestion(reaction, user):
 @bot.event
 async def on_reaction_add(reaction, user):
     """Rolls a macro correction suggestion if certain conditions are met."""
-    suggestion = should_roll_suggestion(reaction, user)
+    suggestion = suggestion_to_roll(reaction, user)
     if suggestion:
         command = defaultdict(lambda: None)
         match = tzimisce.Masquerade.invokex.match(suggestion)
@@ -124,9 +106,7 @@ async def on_reaction_add(reaction, user):
 async def on_ready():
     """Print a message letting us know the bot logged in to Discord."""
     print(f"Logged on as {bot.user}!")
-
-    guilds = len(bot.guilds)
-    print(f"Playing on {guilds} servers.")
+    print(f"Playing on {len(bot.guilds)} servers.")
     print(discord.version_info)
 
     await bot.change_presence(activity=discord.Game(__status_message()))
@@ -134,14 +114,14 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):
     """When joining a guild, log it for statistics purposes."""
-    print(f"Joining {guild}")
+    print(f"Joining {guild}!")
     tzimisce.Masquerade.database.add_guild(guild.id, guild.name)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
-    print(f"Removing {guild}")
+    print(f"Removing {guild}.")
     tzimisce.Masquerade.database.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
