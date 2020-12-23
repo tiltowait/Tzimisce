@@ -1,2 +1,0 @@
-discord.py==1.5.1
-psycopg2==2.8.6
