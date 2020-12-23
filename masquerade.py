@@ -41,8 +41,8 @@ async def initiative(ctx, arg):
 
 # Subcommands
 
-@standard_roll.command()
-async def coin(ctx):
+@standard_roll.command(aliases=["coin", "flip", "coinflip",])
+async def coin_flip(ctx):
     """Performs a simple coinflip."""
     coin = tzimisce.PlainRoll.roll_dice(1, 2)
     if coin == 1:
