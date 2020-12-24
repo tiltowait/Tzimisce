@@ -130,6 +130,10 @@ class RollDB:
             name = match.group("name")
             return self.delete_stored_roll(guild, userid, name)
 
+        # See if the user tried to do a multi-word macro
+        if re.match(r"[\w-]+ [\w-]+", syntax):
+            return "Sorry, macro names can't contain spaces!"
+
         # We have no idea what the user wanted to do.
         return "Come again?"
 
