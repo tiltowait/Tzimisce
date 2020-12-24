@@ -25,7 +25,8 @@ invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)? (?P<syntax>.*)")
 
 # Colors help show, at a glance, if a roll was successful
 EXCEPTIONAL_COLOR = 0x00FF00
-SUCCESS_COLOR = 0x14A1A0
+SUCCESS_COLOR = 0x0DC06B
+MARGINAL_COLOR = 0x14A1A0
 FAIL_COLOR = 0X777777
 BOTCH_COLOR = 0XfF0000
 
@@ -214,8 +215,10 @@ def __pool_roll(author, command):
     color = 0
     if results.successes >= 5:
         color = EXCEPTIONAL_COLOR
-    elif results.successes > 0:
+    elif results.successes >= 3:
         color = SUCCESS_COLOR
+    elif results.successes > 0:
+        color = MARGINAL_COLOR
     elif results.successes < 0:
         color = BOTCH_COLOR
     else:
