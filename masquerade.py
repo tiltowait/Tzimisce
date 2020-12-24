@@ -13,9 +13,9 @@ bot = commands.Bot(command_prefix="/")
 # Commands
 
 @bot.group(invoke_without_command=True, aliases=["m", "mw", "mc", "mcw", "mwc"])
-async def standard_roll(ctx, *args):
+async def standard_roll(ctx, *, args):
     """Perform a roll without Willpower."""
-    args = " ".join(args)
+    args = " ".join(args.split())
     command = defaultdict(lambda: None)
     command["syntax"] = args
 
