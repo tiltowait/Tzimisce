@@ -13,8 +13,12 @@ bot = commands.Bot(command_prefix="/")
 # Commands
 
 @bot.group(invoke_without_command=True, aliases=["m", "mw", "mc", "mcw", "mwc"])
-async def standard_roll(ctx, *, args):
+async def standard_roll(ctx, *, args=None):
     """Perform a roll without Willpower."""
+    if not args:
+        await __help(ctx)
+        return
+
     args = " ".join(args.split())
     command = defaultdict(lambda: None)
     command["syntax"] = args
@@ -52,8 +56,8 @@ async def coin_flip(ctx):
 
     await ctx.send(f"{ctx.author.mention}: {coin}")
 
-@standard_roll.command()
-async def help(ctx):
+@standard_roll.command(name="help")
+async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
     embed = tzimisce.Masquerade.help()
     await ctx.send(content=ctx.author.mention, embed=embed)
