@@ -129,6 +129,8 @@ async def handle_command(command, args, ctx):
 
         return
 
+    await ctx.send(f"{ctx.author.mention}: Come again?")
+
 async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
