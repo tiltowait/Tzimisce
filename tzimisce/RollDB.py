@@ -149,14 +149,14 @@ class RollDB:
 
         # Update an old roll
         if comment:
-            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Name ILIKE %s;"
-            self.execute(query, (syntax, comment, userid, name,))
+            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
+            self.execute(query, (syntax, comment, userid, guild, name,))
             self.conn.commit()
 
             return f"Updated `{name}` syntax and comment."
 
-        query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Name ILIKE %s;"
-        self.execute(query, (syntax, userid, name,))
+        query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
+        self.execute(query, (syntax, userid, guild, name,))
         self.conn.commit()
 
         return f"Updated `{name}` syntax."
@@ -168,8 +168,8 @@ class RollDB:
             if len(comment) == 0:
                 comment = None
 
-            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Name ILIKE %s;"
-            self.execute(query, (comment, userid, name,))
+            query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
+            self.execute(query, (comment, userid, guild, name,))
             self.conn.commit()
 
             return f"Updated comment for `{name}`."
