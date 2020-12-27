@@ -71,7 +71,7 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^(?P<name>[\w-]+)\s*(?P<mods>(?:0|[+-]\d+)(?:\s+[+-]?\d+)?)?$"
+            r"^(?P<name>[\w-]+)\s*(?P<mods>(?:0|(?P<sign>[+-])?\d+)(?:\s+[+-]?\d+)?)?$"
         )
         match = pattern.match(syntax)
         if match:
@@ -90,6 +90,9 @@ class RollDB:
 
             # Mods can modify a stored roll by changing the pool, diff, or both
             if mods:
+                if not match.group("sign"):
+                    return "Pool modifiers must be zero or have a +/- sign."
+
                 mods = mods.split()
                 pool_mod = int(mods[0])
 
@@ -98,11 +101,14 @@ class RollDB:
                 if len(syntax) == 1: # Need a default difficulty
                     syntax.append(6)
                 elif len(syntax) == 2:
-                    if not syntax[1][0].isdigit(): # it's a specialty
+                    if not syntax[1][0].isdigit(): # it's a specialty; add diff
                         syntax.insert(1, 6)
 
-                current_pool = int(syntax[0])
-                syntax[0] = str(current_pool + pool_mod)
+                new_pool = int(syntax[0]) + pool_mod
+                syntax[0] = str(new_pool)
+
+                if new_pool < 1:
+                    return f"Can't roll a pool of {new_pool}!"
 
                 # Modify or replace the difficulty
                 diff_mod = "+0"
