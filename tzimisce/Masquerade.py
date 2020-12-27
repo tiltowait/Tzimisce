@@ -161,8 +161,8 @@ def __pool_roll(author, command):
     compact = command["compact"]
     pool = int(command["pool"])
 
-    if pool == 0:
-        pool = 1  # Rather than mess about with errors, just fix the mistake
+    if pool < 1:
+        return f"{author.mention}: Pool cannot be lower than 1."
 
     if pool > 100:
         return f"{author.mention}: Error! Pools cannot be larger than 100."
