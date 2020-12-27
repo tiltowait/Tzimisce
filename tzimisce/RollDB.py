@@ -71,7 +71,7 @@ class RollDB:
 
         # Use a stored roll.
         pattern = re.compile(
-            r"^(?P<name>[\w-]+)\s*(?P<mods>(?:0|(?P<sign>[+-])?\d+)(?:\s+[+-]?\d+)?)?$"
+            r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$"
         )
         match = pattern.match(syntax)
         if match:
@@ -90,11 +90,11 @@ class RollDB:
 
             # Mods can modify a stored roll by changing the pool, diff, or both
             if mods:
-                if not match.group("sign"):
-                    return "Pool modifiers must be zero or have a +/- sign."
-
                 mods = mods.split()
                 pool_mod = int(mods[0])
+
+                if pool_mod != 0 and not match.group("sign"):
+                    return "Pool modifiers must be zero or have a +/- sign."
 
                 # Modify the pool first
                 syntax = syntax.split()
