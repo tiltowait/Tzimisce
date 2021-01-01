@@ -135,10 +135,12 @@ async def on_guild_update(_, after):
     tzimisce.Masquerade.database.rename_guild(after.id, after.name)
 
 @bot.event
-async def on_command_error(_, error):
+async def on_command_error(ctx, error):
     """Ignore CommandNotFound errors."""
     if isinstance(error, commands.CommandNotFound):
         return
+    if isinstance(error, discord.errors.Forbidden):
+        await ctx.send(f"{ctx.author.mention}: Permissions error. Please make sure I'm allowed to embed links!")
     raise error
 
 # Misc
