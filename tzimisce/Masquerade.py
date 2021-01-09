@@ -109,7 +109,8 @@ async def handle_command(command, args, ctx):
         else: # It's a string
             await ctx.send(send)
 
-        database.increment_rolls(ctx.guild.id)
+        if ctx.guild:
+            database.increment_rolls(ctx.guild.id)
         return
 
     # Traditional roll (e.g. 2d10+4)
