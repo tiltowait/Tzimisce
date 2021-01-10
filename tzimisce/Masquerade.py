@@ -11,9 +11,8 @@ from tzimisce import PlainRoll
 
 random.seed()
 
-synx = re.compile(r"(?P<syntax>[^#]+)(?:#\s*(?P<comment>.*))?")
 poolx = re.compile(
-    r"^(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \w[^#]+)?$"
+    r"^(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \w[^#]*)?$"
 )
 tradx = re.compile(
     r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
@@ -40,9 +39,6 @@ async def handle_command(command, args, ctx):
     # and the command syntax. At this poitn, the syntax is unvalidated and
     # may be in error. Validators below determine if syntax is actionable
     # or display an error message.
-
-    command.update(synx.match(args).groupdict()) # Pull in the syntax and the comment
-    command["syntax"] = command["syntax"].strip()
 
     # Discord will reject messages that are too long
     if command["comment"] and len(command["comment"]) > 500:

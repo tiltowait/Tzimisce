@@ -19,9 +19,17 @@ async def standard_roll(ctx, *, args=None):
         await __help(ctx)
         return
 
-    args = " ".join(args.split())
+    raw_split = ctx.message.content.split(' ', 1)
+    clean_split = ctx.message.clean_content.split(' ', 1)
+
+    if len(raw_split) == 1:
+        return
+
+    syntax, comment = split_comment(raw_split[1], clean_split[1])
+
     command = defaultdict(lambda: None)
-    command["syntax"] = args
+    command["syntax"] = syntax.strip()
+    command["comment"] = comment.strip() if comment else None
 
     # See what options the user has selected, if any
     if "w" in ctx.invoked_with:
@@ -149,5 +157,28 @@ def __status_message():
     """Sets the bot's Discord presence message."""
     servers = len(bot.guilds)
     return f"/m help | {servers} chronicles"
+
+def split_comment(raw: str, clean: str) -> list:
+    """Tries to use the clean user input for a command."""
+    try:
+        raw_comment = raw.index('#')
+        clean_comment = clean.index('#')
+
+        split_candidate = ''
+
+        # A comment, user, or channel tag looks something like <!@2234255345> in
+        # the background, which is the input the bot receives. If the user did
+        # not use such a tag before their comment, we can trivially sub in the
+        # clean text and make things prettier.
+
+        if raw_comment == clean_comment:
+            split_candidate = clean
+        else:
+            split_candidate = raw
+
+        return split_candidate.split('#', 1)
+    except ValueError:
+        return (raw, None)
+
 
 bot.run(os.environ["TZIMISCE_TOKEN"])
