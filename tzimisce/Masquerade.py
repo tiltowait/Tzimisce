@@ -12,7 +12,7 @@ from tzimisce import PlainRoll
 random.seed()
 
 poolx = re.compile(
-    r"^(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \w[^#]*)?$"
+    r"^(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \D[^#]*)?$"
 )
 tradx = re.compile(
     r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
