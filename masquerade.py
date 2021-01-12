@@ -37,7 +37,7 @@ async def standard_roll(ctx, *, args=None):
     if "c" in ctx.invoked_with:
         command["compact"] = "c"
 
-    await tzimisce.Masquerade.handle_command(command, args, ctx)
+    await tzimisce.Masquerade.handle_command(command, ctx)
 
 @bot.command(name="mi")
 async def initiative(ctx, arg):
@@ -47,9 +47,9 @@ async def initiative(ctx, arg):
         die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
         init = die + mod
 
-        await ctx.send(f"{ctx.author.mention}: *{die} + {mod}:*   **{init}**")
+        await ctx.message.reply(f"*{die} + {mod}:*   **{init}**")
     except ValueError:
-        await ctx.send(f"{ctx.author.mention}: Please supply a positive number!")
+        await ctx.message.reply("Please supply a positive number!")
 
 # Subcommands
 
@@ -62,13 +62,13 @@ async def coin_flip(ctx):
     else:
         coin = "Tails!"
 
-    await ctx.send(f"{ctx.author.mention}: {coin}")
+    await ctx.message.reply(f"{coin}")
 
 @standard_roll.command(name="help")
 async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
     embed = tzimisce.Masquerade.help()
-    await ctx.send(content=ctx.author.mention, embed=embed)
+    await ctx.message.reply(embed=embed)
 
 @standard_roll.command(name="$")
 async def show_stored_rolls(ctx):
@@ -109,7 +109,7 @@ async def on_reaction_add(reaction, user):
 
         ctx = await bot.get_context(reaction.message)
         ctx.author = user # Otherwise, the user is the bot
-        await tzimisce.Masquerade.handle_command(command, match["syntax"], ctx)
+        await tzimisce.Masquerade.handle_command(command, ctx, True)
 
         # Remove the old reactions
         await reaction.message.add_reaction("✅")
@@ -148,7 +148,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, discord.errors.Forbidden):
-        await ctx.send(f"{ctx.author.mention}: Permissions error. Please make sure I'm allowed to embed links!")
+        await ctx.message.reply("Permissions error. Please make sure I'm allowed to embed links!")
     raise error
 
 # Misc

@@ -32,7 +32,7 @@ BOTCH_COLOR = 0XfF0000
 # Database stuff
 database = RollDB()
 
-async def handle_command(command, args, ctx):
+async def handle_command(command, ctx, mentioning=False):
     """Parse every message and determine if action is needed."""
 
     # The COMMAND dict contains info on compact mode, willpower, comment,
@@ -47,9 +47,7 @@ async def handle_command(command, args, ctx):
         if reduction > 1: # Because I can't risk improper pluralization
             characters += "s"
 
-        await ctx.send(
-            f"{ctx.author.mention}: Comment too long by {reduction} {characters}."
-        )
+        await ctx.message.reply(f"Comment too long by {reduction} {characters}.")
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
@@ -85,7 +83,7 @@ async def handle_command(command, args, ctx):
                 query_result = query_result.replace(suggestion, new_command)
                 adding_reaction = True
 
-            message = await ctx.send(f"{ctx.author.mention}: {query_result}")
+            message = await ctx.message.reply(f"{query_result}")
 
             if adding_reaction:
                 await message.add_reaction("👍")
@@ -101,9 +99,12 @@ async def handle_command(command, args, ctx):
         send = __pool_roll(ctx.author, command)
 
         if isinstance(send, discord.Embed):
-            await ctx.send(content=ctx.author.mention, embed=send)
+            if mentioning:
+                await ctx.send(content=ctx.author.mention, embed=send)
+            else:
+                await ctx.message.reply(embed=send)
         else: # It's a string
-            await ctx.send(send)
+            await ctx.message.reply(send)
 
         if ctx.guild:
             database.increment_rolls(ctx.guild.id)
@@ -116,25 +117,26 @@ async def handle_command(command, args, ctx):
         try:
             send = __traditional_roll(ctx.author, command)
             if isinstance(send, discord.Embed):
-                await ctx.send(content=ctx.author.mention, embed=send)
+                if mentioning:
+                    await ctx.send(content=ctx.author.mention, embed=send)
+                else:
+                    await ctx.message.reply(embed=send)
             else:
-                await ctx.send(send)
+                await ctx.message.reply(send)
 
             database.increment_rolls(ctx.guild.id)
         except ValueError as error:
-            await ctx.send(f"{ctx.author.mention}: {str(error)}")
+            await ctx.message.reply(str(error))
 
         return
 
-    await ctx.send(f"{ctx.author.mention}: Come again?")
+    await ctx.message.reply("Come again?")
 
 async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     if len(stored_rolls) == 0:
-        await ctx.send(
-            f"{ctx.author.mention}: You have no stored rolls!"
-        )
+        await ctx.message.reply("You have no stored rolls!")
     else:
         embed = __build_embed(
             author=ctx.author,
@@ -142,12 +144,12 @@ async def show_stored_rolls(ctx):
             color=0x1F3446,
             fields=stored_rolls,
         )
-        await ctx.send(content=ctx.author.mention, embed=embed)
+        await ctx.message.reply(embed=embed)
 
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-    await ctx.send(f"{ctx.author.mention}: Deleted all stored rolls.")
+    await ctx.message.reply("Deleted all stored rolls.")
 
 def __pool_roll(author, command):
     """
@@ -159,10 +161,10 @@ def __pool_roll(author, command):
     pool = int(command["pool"])
 
     if pool < 1:
-        return f"{author.mention}: Pool cannot be lower than 1."
+        return "Pool cannot be lower than 1."
 
     if pool > 100:
-        return f"{author.mention}: Error! Pools cannot be larger than 100."
+        return "Error! Pools cannot be larger than 100."
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
@@ -206,7 +208,7 @@ def __pool_roll(author, command):
         if specialty:
             compact_string += f"\n> ***{specialty}***"
 
-        return f"{author.mention}\n{compact_string}"
+        return f"{compact_string}"
 
     # If not compact, put the results into an embed
 
@@ -261,7 +263,7 @@ def __traditional_roll(author, command):
         if comment:
             compact_string += f"\n> {comment}"
 
-        return f"{author.mention}\n{compact_string}"
+        return f"{compact_string}"
 
     # Not using compact mode!
     fields = [("Result", result, False),]
