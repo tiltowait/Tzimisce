@@ -269,6 +269,14 @@ class RollDB:
         result = self.cursor.fetchone()
         return result[0]
 
+    def get_all_prefixes(self):
+        """Returns a dictionary of all guild command prefixes."""
+        query = "SELECT ID, Prefix FROM Guilds;"
+
+        self.execute(query, ())
+        results = self.cursor.fetchall()
+        return dict(results)
+
     def update_prefix(self, guildid, prefix):
         """Update the bot's command prefix for a given guild."""
         query = "UPDATE Guilds SET Prefix = %s WHERE ID=%s;"

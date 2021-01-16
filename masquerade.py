@@ -10,15 +10,17 @@ import tzimisce
 
 # Setup
 
+custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
+
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
     default_prefixes = ("/", "!") # Default
-    stored = None
+    prefix = default_prefixes
 
     if message.guild:
-        stored = tzimisce.Masquerade.database.get_prefix(message.guild.id)
+        prefix = custom_prefixes[message.guild.id] or default_prefixes
 
-    return stored or default_prefixes
+    return prefix
 
 bot = commands.Bot(command_prefix=determine_prefix)
 
@@ -72,6 +74,9 @@ async def set_prefix(ctx, arg=None):
     """Set a custom prefix for the guild."""
     tzimisce.Masquerade.database.update_prefix(ctx.guild.id, arg)
 
+    global custom_prefixes
+    custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
+
     if not arg:
         await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
         return
@@ -88,6 +93,10 @@ async def set_prefix(ctx, arg=None):
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
     tzimisce.Masquerade.database.update_prefix(ctx.guild.id, None)
+
+    global custom_prefixes
+    custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
+
     await ctx.send("Reset the command prefix to `/` and `!`.")
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
