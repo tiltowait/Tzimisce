@@ -70,12 +70,23 @@ async def __help(ctx):
     embed = tzimisce.Masquerade.help()
     await ctx.message.reply(embed=embed)
 
+
+# Macro-Related. Must be done in a guild.
+
+def is_guild():
+    """Returns true if the context involves a guild (not a DM)."""
+    def predicate(ctx):
+        return ctx.channel.type is not discord.ChannelType.private
+    return commands.check(predicate)
+
 @standard_roll.command(name="$")
+@is_guild()
 async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
     await tzimisce.Masquerade.show_stored_rolls(ctx)
 
 @standard_roll.command(name="$delete-all")
+@is_guild()
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
     await tzimisce.Masquerade.delete_user_rolls(ctx)
@@ -149,6 +160,8 @@ async def on_command_error(ctx, error):
         return
     if isinstance(error, discord.errors.Forbidden):
         await ctx.message.reply("Permissions error. Please make sure I'm allowed to embed links!")
+    if isinstance(error, commands.errors.CheckFailure):
+        await ctx.send("Sorry, you can't store macros in private DMs!")
     raise error
 
 # Misc

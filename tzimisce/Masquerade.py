@@ -52,6 +52,10 @@ async def handle_command(command, ctx, mentioning=False):
 
     # If the command involves the RollDB, we need to modify the syntax first
     if command["syntax"][0].isalpha(): # Only macros start with alpha
+        if ctx.channel.type is discord.ChannelType.private:
+            await ctx.send("Sorry, you can't store macros in private DMs!")
+            return
+
         query_result = database.query_saved_rolls(
             guild=ctx.guild.id,
             userid=ctx.author.id,
@@ -136,7 +140,7 @@ async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     if len(stored_rolls) == 0:
-        await ctx.message.reply(f"You have no stored rolls on {ctx.guild}!")
+        await ctx.message.reply(f"You have no macros on {ctx.guild}!")
     else:
         embed = __build_embed(
             author=ctx.author,
@@ -146,14 +150,14 @@ async def show_stored_rolls(ctx):
         )
         await ctx.message.reply("List sent. Please check your DMs!")
         await ctx.author.send(
-            content=f"Here are your stored rolls on {ctx.guild}:",
+            content=f"Here are your macros on {ctx.guild}:",
             embed=embed
         )
 
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-    await ctx.message.reply(f"Deleted all stored rolls on {ctx.guild}.")
+    await ctx.message.reply(f"Deleted all macros on {ctx.guild}.")
 
 def __pool_roll(author, command):
     """
