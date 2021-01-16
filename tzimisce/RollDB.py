@@ -83,7 +83,7 @@ class RollDB:
                 if alt:
                     return f"`{name}` not found. Did you mean `{alt}`?"
 
-                return f"Sorry, `{name}` doesn't exist!"
+                return f"Sorry, you have no macro named `{name}`!"
 
             syntax = compound[0]
             mods = match.group("mods")
@@ -180,7 +180,7 @@ class RollDB:
 
             return f"Updated comment for `{name}`."
 
-        return "Roll not found!"
+        return f"Unable to update. You don't have a roll named `{name}`!"
 
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
