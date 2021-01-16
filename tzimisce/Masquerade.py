@@ -136,7 +136,7 @@ async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     if len(stored_rolls) == 0:
-        await ctx.message.reply("You have no stored rolls!")
+        await ctx.message.reply(f"You have no stored rolls on {ctx.guild}!")
     else:
         embed = __build_embed(
             author=ctx.author,
@@ -144,7 +144,7 @@ async def show_stored_rolls(ctx):
             color=0x1F3446,
             fields=stored_rolls,
         )
-        await ctx.message.reply("DM sent!")
+        await ctx.message.reply("List sent. Please check your DMs!")
         await ctx.author.send(
             content=f"Here are your stored rolls on {ctx.guild}:",
             embed=embed
@@ -153,7 +153,7 @@ async def show_stored_rolls(ctx):
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-    await ctx.message.reply("Deleted all stored rolls.")
+    await ctx.message.reply(f"Deleted all stored rolls on {ctx.guild}.")
 
 def __pool_roll(author, command):
     """

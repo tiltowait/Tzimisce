@@ -41,7 +41,7 @@ class RollDB:
             self.cursor.execute(query, args)
         except psycopg2.errors.AdminShutdown:
             # Connection got reset for some reason, so fix it
-            print("Database lost connection. Retrying.")
+            print("Lost database connection. Retrying.")
             self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
             self.cursor = self.conn.cursor()
             self.cursor.execute(query, args) # Reconnected, so try again!
