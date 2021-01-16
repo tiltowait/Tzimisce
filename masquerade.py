@@ -8,7 +8,19 @@ from discord.ext import commands
 
 import tzimisce
 
-bot = commands.Bot(command_prefix="/")
+# Setup
+
+async def determine_prefix(_, message):
+    """Determines the correct command prefix for the guild."""
+    default_prefixes = ("/", "!") # Default
+    stored = None
+
+    if message.guild:
+        stored = tzimisce.Masquerade.database.get_prefix(message.guild.id)
+
+    return stored or default_prefixes
+
+bot = commands.Bot(command_prefix=determine_prefix)
 
 # Commands
 
@@ -52,6 +64,31 @@ async def initiative(ctx, arg):
         await ctx.message.reply("Please supply a positive number!")
 
 # Subcommands
+
+@standard_roll.command()
+@commands.guild_only()
+@commands.has_permissions(administrator=True)
+async def set_prefix(ctx, arg=None):
+    """Set a custom prefix for the guild."""
+    tzimisce.Masquerade.database.update_prefix(ctx.guild.id, arg)
+
+    if not arg:
+        await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
+        return
+
+    message = f"Setting the prefix to `{arg}`."
+    if len(arg) > 3:
+        message += " A prefix this long might be annoying to type!"
+
+    await ctx.send(message)
+
+@standard_roll.command()
+@commands.guild_only()
+@commands.has_permissions(administrator=True)
+async def reset_prefix(ctx):
+    """Reset the guild's prefixes to the defaults."""
+    tzimisce.Masquerade.database.update_prefix(ctx.guild.id, None)
+    await ctx.send("Reset the command prefix to `/` and `!`.")
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
@@ -152,11 +189,14 @@ async def on_command_error(ctx, error):
     """Ignore CommandNotFound errors."""
     if isinstance(error, commands.CommandNotFound):
         return
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.message.reply("Sorry, you don't have permission to do this!")
+        return
     if isinstance(error, discord.errors.Forbidden):
         await ctx.message.reply("Permissions error. Please make sure I'm allowed to embed links!")
         return
     if isinstance(error, commands.NoPrivateMessage):
-        await ctx.send("Sorry, you can't store macros in private DMs!")
+        await ctx.send("Sorry, this command isn't available in DMs!")
         return
     raise error
 

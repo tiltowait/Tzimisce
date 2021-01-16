@@ -25,9 +25,10 @@ class RollDB:
         # This table is just used for statistics purposes.
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS Guilds
-                              (ID    bigint PRIMARY KEY,
-                               NAME  Text   NOT NULL,
-                               Rolls int    NOT NULL DEFAULT 0);"""
+                              (ID     bigint PRIMARY KEY,
+                               NAME   Text   NOT NULL,
+                               Rolls  int    NOT NULL DEFAULT 0,
+                               Prefix Text);"""
         )
 
         # Install trigrams
@@ -259,4 +260,18 @@ class RollDB:
         query = "UPDATE Guilds SET Rolls = Rolls + 1 WHERE ID=%s;"
 
         self.execute(query, (guildid,))
+        self.conn.commit()
+
+    def get_prefix(self, guildid):
+        query = "SELECT Prefix FROM Guilds WHERE ID=%s;"
+
+        self.execute(query, (guildid,))
+        result = self.cursor.fetchone()
+        return result[0]
+
+    def update_prefix(self, guildid, prefix):
+        """Update the bot's command prefix for a given guild."""
+        query = "UPDATE Guilds SET Prefix = %s WHERE ID=%s;"
+
+        self.execute(query, (prefix, guildid,))
         self.conn.commit()
