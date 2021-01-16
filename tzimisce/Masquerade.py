@@ -144,7 +144,11 @@ async def show_stored_rolls(ctx):
             color=0x1F3446,
             fields=stored_rolls,
         )
-        await ctx.message.reply(embed=embed)
+        await ctx.message.reply("DM sent!")
+        await ctx.author.send(
+            content=f"Here are your stored rolls on {ctx.guild}:",
+            embed=embed
+        )
 
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
