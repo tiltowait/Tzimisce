@@ -143,7 +143,6 @@ async def show_stored_rolls(ctx):
         await ctx.message.reply(f"You have no macros on {ctx.guild}!")
     else:
         embed = __build_embed(
-            author=ctx.author,
             title="Stored Rolls",
             color=0x1F3446,
             fields=stored_rolls,
