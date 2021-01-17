@@ -282,11 +282,11 @@ def __traditional_roll(author, command):
 
     return embed
 
-def help():
+def help_embed(prefix):
     """Return a handy help embed."""
     embed=discord.Embed(title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/", description="Click above for a complete listing of commands, including macros (roll saving) and more.")
-    embed.add_field(name="Basic Syntax", value="```/m <pool> [difficulty] [specialty] # comment```Difficulty, specialty, and comment are all optional.", inline=False)
-    embed.add_field(name="Example", value="```/m 8 7 Domineering # Command```", inline=False)
+    embed.add_field(name="Basic Syntax", value=f"```{prefix}m <pool> [difficulty] [specialty] # comment```Difficulty, specialty, and comment are all optional.", inline=False)
+    embed.add_field(name="Example", value=f"```{prefix}m 8 7 Domineering # Command```", inline=False)
 
     return embed
 

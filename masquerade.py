@@ -113,7 +113,13 @@ async def coin_flip(ctx):
 @standard_roll.command(name="help")
 async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
-    embed = tzimisce.Masquerade.help()
+
+    # We want to display the correct prefix for the server
+    prefix = "/"
+    if ctx.channel.type is not discord.ChannelType.private:
+        prefix = custom_prefixes.get(ctx.guild.id, "/")
+
+    embed = tzimisce.Masquerade.help_embed(prefix)
     await ctx.message.reply(embed=embed)
 
 
