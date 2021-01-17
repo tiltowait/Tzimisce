@@ -233,7 +233,11 @@ def __pool_roll(author, command):
         color = FAIL_COLOR
 
     # Set up the embed fields
-    fields = [("Dice", results.formatted, True)]
+    fields = []
+    if command["override"]:
+        fields.append(("Macro override", command["override"], False))
+
+    fields.append(("Dice", results.formatted, True))
 
     if specialty:
         fields.append(("Specialty", specialty, True))

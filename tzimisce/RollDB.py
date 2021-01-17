@@ -99,6 +99,12 @@ class RollDB:
                 if pool_mod != 0 and not match.group("sign"):
                     return "Pool modifiers must be zero or have a +/- sign."
 
+                pool_desc = ""
+                if pool_mod < 0:
+                    pool_desc = f"Pool {pool_mod}. "
+                elif pool_mod > 0:
+                    pool_desc = f"Pool +{pool_mod}. "
+
                 # Modify the pool first
                 syntax = syntax.split()
                 if len(syntax) == 1: # Need a default difficulty
@@ -114,15 +120,28 @@ class RollDB:
                     return f"Can't roll a pool of {new_pool}!"
 
                 # Modify or replace the difficulty
+                diff_desc = ""
                 diff_mod = "+0"
                 if len(mods) == 2: # diff mod is optional; unchanged if omitted
                     diff_mod = mods[1]
 
                 if diff_mod.isdigit():
                     syntax[1] = diff_mod
+                    if int(diff_mod) < 2:
+                        diff_mod = 2
+                    diff_desc = f"Diff. to {diff_mod}."
                 else:
+                    diff_mod = int(diff_mod)
                     current_diff = int(syntax[1])
-                    syntax[1] = str(current_diff + int(diff_mod))
+                    syntax[1] = str(current_diff + diff_mod)
+
+                    if diff_mod < 0:
+                        diff_desc = f"Diff. {diff_mod}."
+                    elif diff_mod > 0:
+                        diff_desc = f"Diff. +{diff_mod}."
+
+                override = f"{pool_desc}{diff_desc}" # Remind user what they did
+                command["override"] = override
 
                 syntax = " ".join(syntax)
 
