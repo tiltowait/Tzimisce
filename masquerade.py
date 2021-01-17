@@ -10,11 +10,12 @@ import tzimisce
 
 # Setup
 
+# This is a defaultdict, lambda None
 custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
-    default_prefixes = ("/", "!") # Default
+    default_prefixes = ("/", "!")
     prefix = default_prefixes
 
     if message.channel.type is not discord.ChannelType.private:
@@ -117,7 +118,7 @@ async def __help(ctx):
     # We want to display the correct prefix for the server
     prefix = "/"
     if ctx.channel.type is not discord.ChannelType.private:
-        prefix = custom_prefixes.get(ctx.guild.id, "/")
+        prefix = custom_prefixes[ctx.guild.id] or "/"
 
     embed = tzimisce.Masquerade.help_embed(prefix)
     await ctx.message.reply(embed=embed)

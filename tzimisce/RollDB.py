@@ -2,6 +2,8 @@
 
 import os
 import re
+from collections import defaultdict
+
 import psycopg2
 
 
@@ -274,7 +276,11 @@ class RollDB:
         query = "SELECT ID, Prefix FROM Guilds;"
 
         self.execute(query, ())
-        return dict(self.cursor.fetchall())
+
+        prefixes = defaultdict(lambda: None)
+        prefixes.update(dict(self.cursor.fetchall()))
+
+        return prefixes
 
     def update_prefix(self, guildid, prefix):
         """Update the bot's command prefix for a given guild."""
