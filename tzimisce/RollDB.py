@@ -263,19 +263,18 @@ class RollDB:
         self.conn.commit()
 
     def get_prefix(self, guildid):
+        """Returns the command prefix for the specified guild."""
         query = "SELECT Prefix FROM Guilds WHERE ID=%s;"
 
         self.execute(query, (guildid,))
-        result = self.cursor.fetchone()
-        return result[0]
+        return self.cursor.fetchone()[0]
 
     def get_all_prefixes(self):
         """Returns a dictionary of all guild command prefixes."""
         query = "SELECT ID, Prefix FROM Guilds;"
 
         self.execute(query, ())
-        results = self.cursor.fetchall()
-        return dict(results)
+        return dict(self.cursor.fetchall())
 
     def update_prefix(self, guildid, prefix):
         """Update the bot's command prefix for a given guild."""
