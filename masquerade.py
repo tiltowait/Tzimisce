@@ -17,7 +17,7 @@ async def determine_prefix(_, message):
     default_prefixes = ("/", "!") # Default
     prefix = default_prefixes
 
-    if message.guild:
+    if message.channel.type is not discord.ChannelType.private:
         prefix = custom_prefixes[message.guild.id] or default_prefixes
 
     return prefix
