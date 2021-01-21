@@ -15,13 +15,7 @@ custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
-    default_prefixes = ("/", "!")
-    prefix = default_prefixes
-
-    if message.channel.type is not discord.ChannelType.private:
-        prefix = custom_prefixes[message.guild.id] or default_prefixes
-
-    return prefix
+    return __get_prefix(message.guild)
 
 bot = commands.Bot(command_prefix=determine_prefix)
 
@@ -116,11 +110,9 @@ async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
 
     # We want to display the correct prefix for the server
-    prefix = "/"
-    if ctx.channel.type is not discord.ChannelType.private:
-        prefix = custom_prefixes[ctx.guild.id] or "/"
-
+    prefix = __get_prefix(ctx.guild)[0]
     embed = tzimisce.Masquerade.help_embed(prefix)
+
     await ctx.message.reply(embed=embed)
 
 
@@ -217,6 +209,15 @@ async def on_command_error(ctx, error):
     raise error
 
 # Misc
+
+def __get_prefix(guild) -> list:
+    """Returns the guild's prefix. If the guild is None, returns a default."""
+    default_prefixes = ("/", "!")
+
+    if guild:
+        return custom_prefixes[guild.id] or default_prefixes
+
+    return default_prefixes
 
 def __status_message():
     """Sets the bot's Discord presence message."""
