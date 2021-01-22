@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 import tzimisce
+from tzimisce.Initiative import InitiativeManager
 
 # Setup
 
@@ -48,17 +49,7 @@ async def standard_roll(ctx, *, args=None):
 
     await tzimisce.Masquerade.handle_command(command, ctx)
 
-@bot.command(name="mi")
-async def initiative(ctx, arg):
-    """Roll a 1d10+arg."""
-    try:
-        mod = int(arg)
-        die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
-        init = die + mod
 
-        await ctx.message.reply(f"*{die} + {mod}:*   **{init}**")
-    except ValueError:
-        await ctx.message.reply("Please supply a positive number!")
 
 # Subcommands
 
@@ -129,6 +120,82 @@ async def show_stored_rolls(ctx):
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
     await tzimisce.Masquerade.delete_user_rolls(ctx)
+
+# Initiative Manager
+
+initiative_managers = defaultdict(lambda: None)
+
+@bot.group(invoke_without_command=True, name="minit")
+@commands.guild_only()
+async def initiative_manager(ctx):
+    """Displays the initiative table for the current channel."""
+    manager = initiative_managers[ctx.channel.id]
+    if manager:
+        init_commands = "Commands: remove | reset"
+        embed = tzimisce.Masquerade.build_embed(title="Initiative", footer=init_commands, description=str(manager), fields=[])
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send("Initiative not established in this channel!")
+
+@initiative_manager.command(aliases=["reset", "clear", "empty"])
+@commands.guild_only()
+async def initiative_reset(ctx):
+    """Clears the current channel's initiative table."""
+    del initiative_managers[ctx.channel.id]
+    await ctx.send("Reset initiative in this channel!")
+
+@initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
+@commands.guild_only()
+async def initiative_remove_character(ctx, *, args=None):
+    """Remove a character from initiative manager."""
+    manager = initiative_managers[ctx.channel.id]
+
+    if manager:
+        character = args or ctx.author.display_name
+        removed = manager.remove_init(character)
+        if removed:
+            message = f"Removed {character} from initiative!"
+
+            if manager.count() == 0:
+                del initiative_managers[ctx.channel.id]
+                message += "\nNo characters left in initiative. Clearing table."
+
+            await ctx.send(message)
+        else:
+            await ctx.send(f"Unable to remove {character}; not in initiative!")
+    else:
+        await ctx.send("Initiative isn't set for this channel!")
+
+
+@bot.command(name="mi")
+@commands.guild_only()
+async def initiative(ctx, mod, *, args=None):
+    """Roll a 1d10+arg."""
+    prefix = __get_prefix(ctx.guild)[0]
+
+    try:
+        mod = int(mod)
+        die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
+        init = die + mod
+
+        # Add init to manager
+        manager = initiative_managers[ctx.channel.id] or InitiativeManager()
+        character = args or ctx.author.display_name
+
+        manager.add_init(character, init)
+        initiative_managers[ctx.channel.id] = manager
+
+        title = f"{character}'s Initiative"
+        description = f"*{die} + {mod}:*   **{init}**"
+        footer = f"To see initiative: {prefix}minit"
+        embed = tzimisce.Masquerade.build_embed(
+            title=title, description=description, fields=[], footer=footer
+        )
+
+        await ctx.message.reply(embed=embed)
+    except ValueError:
+        msg = f"Usage: {prefix}mi `mod` `character name`\nOnly `mod` is required!"
+        await ctx.message.reply(msg)
 
 # Events
 
@@ -210,12 +277,15 @@ async def on_command_error(ctx, error):
 
 # Misc
 
-def __get_prefix(guild) -> list:
+def __get_prefix(guild) -> tuple:
     """Returns the guild's prefix. If the guild is None, returns a default."""
     default_prefixes = ("/", "!")
 
     if guild:
-        return custom_prefixes[guild.id] or default_prefixes
+        prefix = custom_prefixes[guild.id]
+        if prefix:
+            return (prefix,)
+        return default_prefixes
 
     return default_prefixes
 

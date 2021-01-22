@@ -142,7 +142,7 @@ async def show_stored_rolls(ctx):
     if len(stored_rolls) == 0:
         await ctx.message.reply(f"You have no macros on {ctx.guild}!")
     else:
-        embed = __build_embed(
+        embed = build_embed(
             title="Stored Rolls",
             color=0x1F3446,
             fields=stored_rolls,
@@ -244,7 +244,7 @@ def __pool_roll(author, command):
 
     fields.append(("Result", results.formatted_count(), False))
 
-    return __build_embed(
+    return build_embed(
         author=author, header=title, color=color, fields=fields,
         footer=comment
     )
@@ -279,7 +279,7 @@ def __traditional_roll(author, command):
     # Not using compact mode!
     fields = [("Result", result, False),]
 
-    embed = __build_embed(
+    embed = build_embed(
         author=author, header=syntax, color=0x000000, fields=fields,
         footer=comment, description=description
     )
@@ -294,7 +294,7 @@ def help_embed(prefix):
 
     return embed
 
-def __build_embed(
+def build_embed(
     fields, author=None, title="", color=0x1F3446, description="", header=None,
     footer=None
 ):
