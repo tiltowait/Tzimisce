@@ -125,24 +125,63 @@ async def delete_all(ctx):
 
 initiative_managers = defaultdict(lambda: None)
 
-@bot.group(invoke_without_command=True, name="minit")
+@bot.group(invoke_without_command=True, aliases=["minit", "mi"])
 @commands.guild_only()
-async def initiative_manager(ctx):
+async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
     manager = initiative_managers[ctx.channel.id]
-    if manager:
-        init_commands = "Commands: remove | reset"
-        embed = tzimisce.Masquerade.build_embed(title="Initiative", footer=init_commands, description=str(manager), fields=[])
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send("Initiative not established in this channel!")
+    prefix = __get_prefix(ctx.guild)[0]
+    usage = "**Initiative Manager Commands**\n"
+    usage += f"`{prefix}mi` — Show initiative table\n"
+    usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
+    usage += f"`{prefix}mi remove <character>` — Remove initiative (character optional)\n"
+    usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
+    usage += f"`{prefix}mi clear` — Clear the table"
+
+    if not mod: # Not rolling
+        if manager:
+            init_commands = "Commands: remove | reset"
+            embed = tzimisce.Masquerade.build_embed(
+                title="Initiative", footer=init_commands, description=str(manager),
+                fields=[]
+            )
+
+            content = None
+            if ctx.invoked_with == "reroll":
+                content = "Rerolling initiative!"
+            await ctx.send(content=content, embed=embed)
+        else:
+            await ctx.message.reply(usage)
+    else: # We are rolling initiative
+        try:
+            mod = int(mod)
+
+            # Add init to manager
+            if not manager:
+                manager = InitiativeManager()
+            character = args or ctx.author.display_name
+
+            die, init = manager.add_init(character, mod)
+            initiative_managers[ctx.channel.id] = manager
+
+            title = f"{character}'s Initiative"
+            description = f"*{die} + {mod}:*   **{init}**"
+            footer = f"To see initiative: {prefix}minit"
+            embed = tzimisce.Masquerade.build_embed(
+                title=title, description=description, fields=[], footer=footer
+            )
+
+            await ctx.message.reply(embed=embed)
+        except ValueError:
+            await ctx.message.reply(usage)
+
 
 @initiative_manager.command(aliases=["reset", "clear", "empty"])
 @commands.guild_only()
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
     del initiative_managers[ctx.channel.id]
-    await ctx.send("Reset initiative in this channel!")
+    await ctx.message.reply("Reset initiative in this channel!")
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
@@ -160,11 +199,11 @@ async def initiative_remove_character(ctx, *, args=None):
                 del initiative_managers[ctx.channel.id]
                 message += "\nNo characters left in initiative. Clearing table."
 
-            await ctx.send(message)
+            await ctx.message.reply(message)
         else:
-            await ctx.send(f"Unable to remove {character}; not in initiative!")
+            await ctx.message.reply(f"Unable to remove {character}; not in initiative!")
     else:
-        await ctx.send("Initiative isn't set for this channel!")
+        await ctx.message.reply("Initiative isn't running in this channel!")
 
 @initiative_manager.command(name="reroll")
 @commands.guild_only()
@@ -177,34 +216,6 @@ async def initiative_reroll(ctx):
         await initiative_manager(ctx)
     else:
         await ctx.send("Initiative isn't set for this channel!")
-
-@bot.command(name="mi")
-@commands.guild_only()
-async def initiative(ctx, mod, *, args=None):
-    """Roll a 1d10+arg."""
-    prefix = __get_prefix(ctx.guild)[0]
-
-    try:
-        mod = int(mod)
-
-        # Add init to manager
-        manager = initiative_managers[ctx.channel.id] or InitiativeManager()
-        character = args or ctx.author.display_name
-
-        die, init = manager.add_init(character, mod)
-        initiative_managers[ctx.channel.id] = manager
-
-        title = f"{character}'s Initiative"
-        description = f"*{die} + {mod}:*   **{init}**"
-        footer = f"To see initiative: {prefix}minit"
-        embed = tzimisce.Masquerade.build_embed(
-            title=title, description=description, fields=[], footer=footer
-        )
-
-        await ctx.message.reply(embed=embed)
-    except ValueError:
-        msg = f"Usage: {prefix}mi `mod` `character name`\nOnly `mod` is required!"
-        await ctx.message.reply(msg)
 
 # Events
 
