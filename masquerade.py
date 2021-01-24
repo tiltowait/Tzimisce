@@ -161,11 +161,11 @@ async def initiative_manager(ctx, mod=None, *, args=None):
                 manager = InitiativeManager()
             character = args or ctx.author.display_name
 
-            die, init = manager.add_init(character, mod)
+            init = manager.add_init(character, mod)
             initiative_managers[ctx.channel.id] = manager
 
             title = f"{character}'s Initiative"
-            description = f"*{die} + {mod}:*   **{init}**"
+            description = str(init)
             footer = f"To see initiative: {prefix}minit"
             embed = tzimisce.Masquerade.build_embed(
                 title=title, description=description, fields=[], footer=footer

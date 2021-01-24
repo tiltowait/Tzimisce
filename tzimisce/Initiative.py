@@ -1,6 +1,28 @@
 """Manages character initiative."""
 from tzimisce import PlainRoll
 
+class Initiative:
+    """An individual initiative roll."""
+
+    def __init__(self, mod: int):
+        self.mod = mod
+        self.die = PlainRoll.roll_dice(1, 10)[0]
+        self.init = self.die + mod
+
+    def __eq__(self, other):
+        return self.init == other.init
+
+    def __lt__(self, other):
+        return self.init < other.init
+
+    def __str__(self):
+        return f"*{self.die} + {self.mod}:*   **{self.init}**"
+
+    def reroll(self):
+        """Reroll initiative."""
+        self.die = PlainRoll.roll_dice(1, 10)[0]
+        self.init = self.die + self.mod
+
 class InitiativeManager:
     """Keeps track of character initiative scores."""
 
@@ -9,12 +31,10 @@ class InitiativeManager:
 
     def add_init(self, character: str, mod: int) -> int:
         """Add initiative to the manager."""
-        die = PlainRoll.roll_dice(1, 10)[0]
-        init = die + mod
+        init = Initiative(mod)
+        self.characters[character] = init
 
-        self.characters[character] = (mod, init)
-
-        return (die, init)
+        return init
 
     def remove_init(self, character) -> bool:
         """Remove a character's initiative entry."""
@@ -29,12 +49,7 @@ class InitiativeManager:
     def reroll(self):
         """Rerolls all initiatives."""
         for key in self.characters:
-            mod, _ = self.characters[key]
-
-            die = PlainRoll.roll_dice(1, 10)[0]
-            new_init = die + mod
-
-            self.characters[key] = (mod, new_init)
+            self.characters[key].reroll()
 
     def count(self) -> int:
         """Returns the number of characters in initiative."""
@@ -46,6 +61,7 @@ class InitiativeManager:
 
         retval = ""
         for key in sinit:
-            retval += f"**{sinit[key][1]}:** {key}\n"
+            init = sinit[key].init
+            retval += f"**{init}:** {key}\n"
 
         return retval
