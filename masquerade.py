@@ -166,6 +166,17 @@ async def initiative_remove_character(ctx, *, args=None):
     else:
         await ctx.send("Initiative isn't set for this channel!")
 
+@initiative_manager.command(name="reroll")
+@commands.guild_only()
+async def initiative_reroll(ctx):
+    """Rerolls all initiative and prints the new table."""
+    manager = initiative_managers[ctx.channel.id]
+
+    if manager:
+        manager.reroll()
+        await initiative_manager(ctx)
+    else:
+        await ctx.send("Initiative isn't set for this channel!")
 
 @bot.command(name="mi")
 @commands.guild_only()
@@ -175,14 +186,12 @@ async def initiative(ctx, mod, *, args=None):
 
     try:
         mod = int(mod)
-        die = tzimisce.PlainRoll.roll_dice(1, 10)[0]
-        init = die + mod
 
         # Add init to manager
         manager = initiative_managers[ctx.channel.id] or InitiativeManager()
         character = args or ctx.author.display_name
 
-        manager.add_init(character, init)
+        die, init = manager.add_init(character, mod)
         initiative_managers[ctx.channel.id] = manager
 
         title = f"{character}'s Initiative"
