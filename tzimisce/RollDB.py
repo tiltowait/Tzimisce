@@ -27,10 +27,13 @@ class RollDB:
         # This table is just used for statistics purposes.
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS Guilds
-                              (ID     bigint PRIMARY KEY,
-                               NAME   Text   NOT NULL,
-                               Rolls  int    NOT NULL DEFAULT 0,
-                               Prefix Text);"""
+                              (ID                bigint PRIMARY KEY,
+                               NAME              Text   NOT NULL,
+                               Rolls             int    NOT NULL DEFAULT 0,
+                               Prefix            Text,
+                               Compact_Rolls     int    NOT NULL DEFAULT 0,
+                               Traditional_Rolls int    NOT NULL DEFAULT 0,
+                               Initiative_Rolls  int    NOT NULL DEFAULT 0);"""
         )
 
         # Install trigrams
@@ -282,6 +285,28 @@ class RollDB:
 
         self.execute(query, (guildid,))
         self.conn.commit()
+
+    def increment_compact_rolls(self, guildid):
+        """Keep track of the number of compact rolls performed on each server."""
+        query = "UPDATE Guilds SET Compact_Rolls = Compact_Rolls + 1 WHERE ID=%s;"
+
+        self.execute(query, (guildid,))
+        self.conn.commit()
+
+    def increment_traditional_rolls(self, guildid):
+        """Keep track of the number of compact rolls performed on each server."""
+        query = "UPDATE Guilds SET Traditional_Rolls = Traditional_Rolls + 1 WHERE ID=%s;"
+
+        self.execute(query, (guildid,))
+        self.conn.commit()
+
+    def increment_initiative_rolls(self, guildid):
+        """Keep track of the number of compact rolls performed on each server."""
+        query = "UPDATE Guilds SET Initiative_Rolls = Initiative_Rolls + 1 WHERE ID=%s;"
+
+        self.execute(query, (guildid,))
+        self.conn.commit()
+
 
     def get_prefix(self, guildid):
         """Returns the command prefix for the specified guild."""

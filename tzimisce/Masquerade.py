@@ -128,7 +128,9 @@ async def handle_command(command, ctx, mentioning=False):
             else:
                 await ctx.message.reply(send)
 
-            database.increment_rolls(ctx.guild.id)
+            if ctx.guild:
+                database.increment_rolls(ctx.guild.id)
+                database.increment_traditional_rolls(ctx.guild.id)
         except ValueError as error:
             await ctx.message.reply(str(error))
 
@@ -156,7 +158,7 @@ async def show_stored_rolls(ctx):
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-    await ctx.message.reply(f"Deleted all macros on {ctx.guild}.")
+    await ctx.message.reply(f"Deleted your macros on {ctx.guild}.")
 
 def __pool_roll(author, command):
     """

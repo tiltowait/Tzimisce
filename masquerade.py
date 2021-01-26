@@ -46,10 +46,10 @@ async def standard_roll(ctx, *, args=None):
         command["will"] = "w"
     if "c" in ctx.invoked_with:
         command["compact"] = "c"
+        if ctx.guild:
+            tzimisce.Masquerade.database.increment_compact_rolls(ctx.guild.id)
 
     await tzimisce.Masquerade.handle_command(command, ctx)
-
-
 
 # Subcommands
 
@@ -172,6 +172,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             )
 
             await ctx.message.reply(embed=embed)
+            tzimisce.Masquerade.database.increment_initiative_rolls(ctx.guild.id)
         except ValueError:
             await ctx.message.reply(usage)
 
