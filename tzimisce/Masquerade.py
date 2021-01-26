@@ -259,8 +259,15 @@ def __traditional_roll(author, command):
     description = None # Used to show individual dice results
 
     # Get the rolls and assemble the fields
-    rolls = PlainRoll.roll_string(syntax)
+    rolls, rolling_initiative = PlainRoll.roll_string(syntax)
     result = str(sum(rolls))
+
+    if rolling_initiative:
+        suggestion = "Rolling initiative? Try the /mi command!"
+        if comment:
+            comment += f"\n{suggestion}"
+        else:
+            comment = suggestion
 
     # Show the individual dice if more than 1 were rolled
     if len(rolls) > 1:
