@@ -4,9 +4,12 @@ from tzimisce import PlainRoll
 class Initiative:
     """An individual initiative roll."""
 
-    def __init__(self, mod: int):
+    def __init__(self, mod: int, die: int = None):
         self.mod = mod
-        self.die = PlainRoll.roll_dice(1, 10)[0]
+        if die:
+            self.die = die
+        else:
+            self.die = PlainRoll.roll_dice(1, 10)[0]
         self.init = self.die + mod
 
     def __eq__(self, other):
@@ -27,11 +30,11 @@ class InitiativeManager:
     """Keeps track of character initiative scores."""
 
     def __init__(self):
-        self.characters = {} # str, (int, int) -> (mod, init)
+        self.characters = {} # str: initiative
 
-    def add_init(self, character: str, mod: int) -> int:
+    def add_init(self, character: str, mod: int, die: int = None) -> int:
         """Add initiative to the manager."""
-        init = Initiative(mod)
+        init = Initiative(mod, die)
         self.characters[character] = init
 
         return init

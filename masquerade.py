@@ -122,8 +122,7 @@ async def delete_all(ctx):
     await tzimisce.Masquerade.delete_user_rolls(ctx)
 
 # Initiative Manager
-
-initiative_managers = defaultdict(lambda: None)
+initiative_managers = tzimisce.Masquerade.database.get_initiative_tables()
 
 @bot.group(invoke_without_command=True, aliases=["minit", "mi"])
 @commands.guild_only()
@@ -132,7 +131,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
     manager = initiative_managers[ctx.channel.id]
     prefix = __get_prefix(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
-    usage += f"`{prefix}mi` — Show initiative table\n"
+    usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
     usage += f"`{prefix}mi remove <character>` — Remove initiative (character optional)\n"
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
@@ -171,6 +170,10 @@ async def initiative_manager(ctx, mod=None, *, args=None):
                 title=title, description=description, fields=[], footer=footer
             )
 
+            tzimisce.Masquerade.database.set_initiative(
+                ctx.channel.id, character, init.mod, init.die
+            )
+
             await ctx.message.reply(embed=embed)
             tzimisce.Masquerade.database.increment_initiative_rolls(ctx.guild.id)
         except ValueError:
@@ -182,6 +185,8 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
     del initiative_managers[ctx.channel.id]
+    tzimisce.Masquerade.database.clear_initiative(ctx.channel.id)
+
     await ctx.message.reply("Reset initiative in this channel!")
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
@@ -194,6 +199,7 @@ async def initiative_remove_character(ctx, *, args=None):
         character = args or ctx.author.display_name
         removed = manager.remove_init(character)
         if removed:
+            tzimisce.Masquerade.database.remove_initiative(ctx.channel.id, character)
             message = f"Removed {character} from initiative!"
 
             if manager.count() == 0:
@@ -215,6 +221,15 @@ async def initiative_reroll(ctx):
     if manager:
         manager.reroll()
         await initiative_manager(ctx)
+
+        # Get the new rolls
+        characters = manager.characters
+        for character in characters:
+            init = characters[character]
+
+            tzimisce.Masquerade.database.set_initiative(
+                ctx.channel.id, character, init.mod, init.die
+            )
     else:
         await ctx.send("Initiative isn't set for this channel!")
 

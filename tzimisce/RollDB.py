@@ -3,6 +3,7 @@
 import os
 import re
 from collections import defaultdict
+from tzimisce.Initiative import InitiativeManager
 
 import psycopg2
 
@@ -22,6 +23,15 @@ class RollDB:
                                Syntax  Text   NOT NULL,
                                Guild   bigint NOT NULL,
                                Comment Text   NULL);"""
+        )
+
+        # The initiative table(s)
+        self.cursor.execute(
+            """CREATE TABLE IF NOT EXISTS Initiative
+                              (Channel   bigint NOT NULL,
+                               Character Text NOT NULL,
+                               Mod       int NOT NULL,
+                               Die       int NOT NULL);"""
         )
 
         # This table is just used for statistics purposes.
@@ -332,3 +342,46 @@ class RollDB:
 
         self.execute(query, (prefix, guildid,))
         self.conn.commit()
+
+
+    # Initiative Stuff
+
+    def set_initiative(self, channel, character, mod, die):
+        """Adds an initiative record."""
+        self.remove_initiative(channel, character)
+
+        query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s);"
+
+        self.execute(query, (channel, character, mod, die,))
+        self.conn.commit()
+
+    def remove_initiative(self, channel, character):
+        """Removes a character from a given channel."""
+        query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
+
+        self.execute(query, (channel, character,))
+        self.conn.commit()
+
+    def clear_initiative(self, channel):
+        """Removes all initiative records from a given channel."""
+        query = "DELETE FROM Initiative WHERE Channel=%s;"
+
+        self.execute(query, (channel,))
+        self.conn.commit()
+
+    def get_initiative_tables(self):
+        """Returns a dictionary of all initiatives."""
+        query = "SELECT Channel, Character, Mod, Die FROM Initiative ORDER BY Channel;"
+
+        self.execute(query, ())
+        managers = defaultdict(lambda: None)
+
+        for channel, character, mod, die in self.cursor.fetchall():
+            manager = managers[channel]
+            if not manager:
+                manager = InitiativeManager()
+                managers[channel] = manager
+
+            manager.add_init(character, mod, die)
+
+        return managers
