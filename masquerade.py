@@ -37,6 +37,9 @@ async def standard_roll(ctx, *, args=None):
 
     syntax, comment = split_comment(raw_split[1], clean_split[1])
 
+    if len(syntax) == 0: # Can happen if user supplies a comment without syntax
+        raise IndexError
+
     command = defaultdict(lambda: None)
     command["syntax"] = syntax.strip()
     command["comment"] = comment.strip() if comment else None
@@ -305,11 +308,27 @@ async def on_command_error(ctx, error):
         return
     if isinstance(error, discord.errors.Forbidden):
         await ctx.message.reply("Permissions error. Please make sure I'm allowed to embed links!")
+        __console_log("PERMISSIONS", ctx.message.content)
         return
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send("Sorry, this command isn't available in DMs!")
         return
+    if isinstance(error, commands.CommandInvokeError):
+        if "IndexError" in str(error):
+            await ctx.message.reply("You forgot your syntax!")
+            return
+
+    # Unknown error; print invoking message and raise
+    __console_log("UNKNOWN", ctx.message.content)
+
     raise error
+
+def __console_log(header, message):
+    """Prints an offending user invocation to the console."""
+    print(header)
+    print("\n\n**********************")
+    print(f"{header} ERROR ON {message}")
+    print("**********************\n\n")
 
 # Misc
 
