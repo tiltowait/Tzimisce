@@ -119,7 +119,7 @@ async def handle_command(command, ctx, mentioning=False):
     if traditional:
         command.update(traditional.groupdict())
         try:
-            send = __traditional_roll(ctx.author, command)
+            init, send = __traditional_roll(ctx.author, command)
             if isinstance(send, discord.Embed):
                 if mentioning:
                     await ctx.send(content=ctx.author.mention, embed=send)
@@ -131,6 +131,9 @@ async def handle_command(command, ctx, mentioning=False):
             if ctx.guild:
                 database.increment_rolls(ctx.guild.id)
                 database.increment_traditional_rolls(ctx.guild.id)
+
+                if init: # Initiative was suggested
+                    database.suggested_initiative(ctx.guild.id)
         except ValueError as error:
             await ctx.message.reply(str(error))
 
@@ -257,6 +260,7 @@ def __traditional_roll(author, command):
     syntax = command["syntax"]
     comment = command["comment"]
     description = None # Used to show individual dice results
+    suggested = False
 
     # Get the rolls and assemble the fields
     rolls, rolling_initiative = PlainRoll.roll_string(syntax)
@@ -264,6 +268,7 @@ def __traditional_roll(author, command):
 
     if rolling_initiative:
         suggestion = "Rolling initiative? Try the /mi command!"
+        suggested = True
         if comment:
             comment += f"\n{suggestion}"
         else:
@@ -293,7 +298,7 @@ def __traditional_roll(author, command):
         footer=comment, description=description
     )
 
-    return embed
+    return (suggested, embed)
 
 def help_embed(prefix):
     """Return a handy help embed."""

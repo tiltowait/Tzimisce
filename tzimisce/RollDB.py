@@ -346,6 +346,13 @@ class RollDB:
 
     # Initiative Stuff
 
+    def suggested_initiative(self, guildid):
+        """Keep track of number of times initiative manager has been suggested."""
+        query = "UPDATE Guilds SET initiative_suggestions=initiative_suggestions+1 WHERE ID=%s;"
+
+        self.execute(query, (guildid,))
+        self.conn.commit()
+
     def set_initiative(self, channel, character, mod, die):
         """Adds an initiative record."""
         self.remove_initiative(channel, character)
