@@ -91,7 +91,7 @@ async def reset_prefix(ctx):
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
-    coin = tzimisce.PlainRoll.roll_dice(1, 2)
+    coin = tzimisce.PlainRoll.roll_dice(1, 2)[0]
     if coin == 1:
         coin = "Heads!"
     else:
