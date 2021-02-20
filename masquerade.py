@@ -167,10 +167,13 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             initiative_managers[ctx.channel.id] = manager
 
             title = f"{character}'s Initiative"
-            description = str(init)
-            footer = f"To see initiative: {prefix}minit"
+
+            count = manager.count()
+            entry = "entries" if count > 1 else "entry"
+            footer = f"{count} {entry} in table. To see initiative: {prefix}mi"
+
             embed = tzimisce.Masquerade.build_embed(
-                title=title, description=description, fields=[], footer=footer
+                title=title, description=str(init), fields=[], footer=footer
             )
 
             tzimisce.Masquerade.database.set_initiative(
@@ -187,10 +190,12 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 @commands.guild_only()
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
-    del initiative_managers[ctx.channel.id]
-    tzimisce.Masquerade.database.clear_initiative(ctx.channel.id)
-
-    await ctx.message.reply("Reset initiative in this channel!")
+    try:
+        del initiative_managers[ctx.channel.id]
+        tzimisce.Masquerade.database.clear_initiative(ctx.channel.id)
+        await ctx.message.reply("Reset initiative in this channel!")
+    except KeyError:
+        await ctx.message.reply("This channel's initiative table is already empty!")
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
