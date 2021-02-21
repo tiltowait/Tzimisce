@@ -21,6 +21,11 @@ class Initiative:
     def __str__(self):
         return f"*{self.die} + {self.mod}:*   **{self.init}**"
 
+    def modify(self, new_mod: int):
+        """Alters the modifier."""
+        self.mod += new_mod
+        self.init = self.die + self.mod
+
     def reroll(self):
         """Reroll initiative."""
         self.die = PlainRoll.roll_dice(1, 10)[0]
@@ -48,6 +53,14 @@ class InitiativeManager:
             contained = True
 
         return contained
+
+    def modify_init(self, character: str, mod: int) -> Initiative:
+        """Change the modifier of an init if dex or celerity changes."""
+        if character in self.characters:
+            self.characters[character].modify(mod)
+            return self.characters[character]
+
+        return None
 
     def reroll(self):
         """Rerolls all initiatives."""

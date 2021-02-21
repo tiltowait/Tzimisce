@@ -156,28 +156,39 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             await ctx.message.reply(usage)
     else: # We are rolling initiative
         try:
+            is_modifier = mod[0] == "-" or mod[0] == "+"
             mod = int(mod)
 
             # Add init to manager
             if not manager:
                 manager = InitiativeManager()
-            character = args or ctx.author.display_name
+            character_name = args or ctx.author.display_name
 
-            init = manager.add_init(character, mod)
-            initiative_managers[ctx.channel.id] = manager
+            init = None
+            if not is_modifier:
+                init = manager.add_init(character_name, mod)
+                initiative_managers[ctx.channel.id] = manager
+            else:
+                init = manager.modify_init(character_name, mod)
+                if not init:
+                    await ctx.message.reply(f"{character_name} has no initiative to modify!")
+                    return
 
-            title = f"{character}'s Initiative"
+            title = f"{character_name}'s Initiative"
 
             count = manager.count()
             entry = "entries" if count > 1 else "entry"
             footer = f"{count} {entry} in table. To see initiative: {prefix}mi"
+
+            if is_modifier:
+                footer = f"Initiative modified by {mod:+}.\n{footer}"
 
             embed = tzimisce.Masquerade.build_embed(
                 title=title, description=str(init), fields=[], footer=footer
             )
 
             tzimisce.Masquerade.database.set_initiative(
-                ctx.channel.id, character, init.mod, init.die
+                ctx.channel.id, character_name, init.mod, init.die
             )
 
             await ctx.message.reply(embed=embed)
