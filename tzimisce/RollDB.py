@@ -112,11 +112,7 @@ class RollDB:
                 if pool_mod != 0 and not match.group("sign"):
                     return "Pool modifiers must be zero or have a +/- sign."
 
-                pool_desc = ""
-                if pool_mod < 0:
-                    pool_desc = f"Pool {pool_mod}. "
-                elif pool_mod > 0:
-                    pool_desc = f"Pool +{pool_mod}. "
+                pool_desc = f"Pool {pool_mod:+}. " if pool_mod != 0 else ""
 
                 # Modify the pool first
                 syntax = syntax.split()
@@ -148,10 +144,8 @@ class RollDB:
                     current_diff = int(syntax[1])
                     syntax[1] = str(current_diff + diff_mod)
 
-                    if diff_mod < 0:
-                        diff_desc = f"Diff. {diff_mod}."
-                    elif diff_mod > 0:
-                        diff_desc = f"Diff. +{diff_mod}."
+                    if diff_mod != 0:
+                        diff_desc = f"Diff. {diff_mod:+}."
 
                 override = f"{pool_desc}{diff_desc}" # Remind user what they did
                 command["override"] = override
