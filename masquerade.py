@@ -19,6 +19,7 @@ async def determine_prefix(_, message):
     return __get_prefix(message.guild)
 
 bot = commands.Bot(command_prefix=determine_prefix)
+bot.remove_command("help")
 
 # Commands
 
