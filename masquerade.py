@@ -23,7 +23,7 @@ bot.remove_command("help")
 
 # Commands
 
-@bot.group(invoke_without_command=True, aliases=["m", "mw", "mc", "mcw", "mwc"])
+@bot.group(invoke_without_command=True, name="m", aliases=["mw", "mc", "mcw", "mwc"])
 async def standard_roll(ctx, *, args=None):
     """Perform a roll without Willpower."""
     if not args:
@@ -128,7 +128,7 @@ async def delete_all(ctx):
 # Initiative Manager
 initiative_managers = tzimisce.Masquerade.database.get_initiative_tables()
 
-@bot.group(invoke_without_command=True, aliases=["minit", "mi"])
+@bot.group(invoke_without_command=True, name="mi", aliases=["minit"])
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
