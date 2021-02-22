@@ -4,13 +4,14 @@ from tzimisce import PlainRoll
 class Initiative:
     """An individual initiative roll."""
 
-    def __init__(self, mod: int, die: int = None):
+    def __init__(self, mod: int, die: int = None, action: str = None):
         self.mod = mod
         if die:
             self.die = die
         else:
             self.die = PlainRoll.roll_dice(1, 10)[0]
         self.init = self.die + mod
+        self.action = action
 
     def __eq__(self, other):
         return self.init == other.init
@@ -30,6 +31,7 @@ class Initiative:
         """Reroll initiative."""
         self.die = PlainRoll.roll_dice(1, 10)[0]
         self.init = self.die + self.mod
+        self.action = None
 
 class InitiativeManager:
     """Keeps track of character initiative scores."""
@@ -37,9 +39,9 @@ class InitiativeManager:
     def __init__(self):
         self.characters = {} # str: initiative
 
-    def add_init(self, character: str, mod: int, die: int = None) -> int:
+    def add_init(self, character: str, mod: int, die: int = None, action: str = None) -> int:
         """Add initiative to the manager."""
-        init = Initiative(mod, die)
+        init = Initiative(mod, die, action)
         self.characters[character] = init
 
         return init
@@ -62,6 +64,14 @@ class InitiativeManager:
 
         return None
 
+    def declare_action(self, character: str, action: str) -> bool:
+        """Adds a declared action to a character."""
+        if character in self.characters:
+            self.characters[character].action = action
+            return True
+
+        return False
+
     def reroll(self):
         """Rerolls all initiatives."""
         for key in self.characters:
@@ -78,6 +88,12 @@ class InitiativeManager:
         retval = ""
         for key in sinit:
             init = sinit[key].init
-            retval += f"**{init}:** {key}\n"
+            retval += f"**{init}:** {key}"
+
+            action = sinit[key].action
+            if action:
+                retval += f" - {action}"
+
+            retval += "\n"
 
         return retval

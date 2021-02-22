@@ -2,6 +2,7 @@
 
 import os
 from collections import defaultdict
+import argparse
 
 import discord
 from discord.ext import commands
@@ -252,6 +253,34 @@ async def initiative_reroll(ctx):
             )
     else:
         await ctx.send("Initiative isn't set for this channel!")
+
+@initiative_manager.command(name="declare", aliases=["dec"])
+@commands.guild_only()
+async def initiative_declare(ctx, *args):
+    """Declare an initiative action."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", nargs="+")
+    parser.add_argument("-n", "-c", "--name", nargs="+", dest="character")
+    parsed = parser.parse_args(args)
+
+    action = " ".join(parsed.action)
+    character = ctx.author.display_name
+    if parsed.character:
+        character = " ".join(parsed.character)
+
+    try:
+        manager = initiative_managers[ctx.channel.id]
+        if not manager.declare_action(character, action):
+            raise NameError(character)
+
+        tzimisce.Masquerade.database.set_initiative_action(
+            ctx.channel.id, character, action
+        )
+        await ctx.message.reply(f"Declared action for {character}: {action}.")
+    except AttributeError:
+        await ctx.message.reply("Initiative isn't set in this channel!")
+    except NameError:
+        await ctx.message.reply(f"{character} isn't in the initiative table!")
 
 # Events
 

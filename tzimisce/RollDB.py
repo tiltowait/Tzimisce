@@ -356,6 +356,13 @@ class RollDB:
         self.execute(query, (channel, character, mod, die,))
         self.conn.commit()
 
+    def set_initiative_action(self, channel, character, action):
+        """Stores the declared action for a character."""
+        query = "UPDATE Initiative SET Action=%s WHERE Channel=%s AND Character=%s;"
+
+        self.execute(query, (action, channel, character))
+        self.conn.commit()
+
     def remove_initiative(self, channel, character):
         """Removes a character from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
@@ -372,17 +379,17 @@ class RollDB:
 
     def get_initiative_tables(self):
         """Returns a dictionary of all initiatives."""
-        query = "SELECT Channel, Character, Mod, Die FROM Initiative ORDER BY Channel;"
+        query = "SELECT Channel, Character, Mod, Die, Action FROM Initiative ORDER BY Channel;"
 
         self.execute(query, ())
         managers = defaultdict(lambda: None)
 
-        for channel, character, mod, die in self.cursor.fetchall():
+        for channel, character, mod, die, action in self.cursor.fetchall():
             manager = managers[channel]
             if not manager:
                 manager = InitiativeManager()
                 managers[channel] = manager
 
-            manager.add_init(character, mod, die)
+            manager.add_init(character, mod, die, action)
 
         return managers
