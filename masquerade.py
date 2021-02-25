@@ -72,7 +72,7 @@ async def set_prefix(ctx, arg=None):
         await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
         return
 
-    message = f"Setting the prefix to `{arg}`."
+    message = f"Setting the prefix to `{arg}m`."
     if len(arg) > 3:
         message += " A prefix this long might be annoying to type!"
 
@@ -88,7 +88,7 @@ async def reset_prefix(ctx):
     global custom_prefixes
     custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
 
-    await ctx.send("Reset the command prefix to `/` and `!`.")
+    await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
