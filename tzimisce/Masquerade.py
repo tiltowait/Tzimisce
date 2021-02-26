@@ -211,7 +211,7 @@ def __pool_roll(author, command):
 
     # Compact formatting
     if compact:
-        results_string = results.formatted_count()
+        results_string = results.formatted_count
 
         compact_string = f"{results.formatted} = **{results_string}**"
         if comment:
@@ -247,7 +247,7 @@ def __pool_roll(author, command):
     if specialty:
         fields.append(("Specialty", specialty, True))
 
-    fields.append(("Result", results.formatted_count(), False))
+    fields.append(("Result", results.formatted_count, False))
 
     return build_embed(
         author=author, header=title, color=color, fields=fields,

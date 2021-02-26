@@ -23,6 +23,7 @@ class Pool:
             self.formatted += f" *+{autos}*"
         self.successes = self.__count_successes(raw, difficulty, will, spec, autos)
 
+    @property
     def formatted_count(self):
         """Format the successes to something nice for people to read."""
         # Determine roll string
