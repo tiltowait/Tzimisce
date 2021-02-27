@@ -8,13 +8,7 @@ class Pool:
     # pylint: disable=too-many-arguments
     # We don't have a choice here.
 
-    def __init__(self):
-        self.formatted = ""
-        self.successes = 0
-        self.will = False
-
-    def roll(self, pool, difficulty, will, spec, autos):
-        """Roll a specific die a number of times and return the results as an array."""
+    def __init__(self, pool, difficulty, will, spec, autos):
         raw = sorted(Traditional.roll(pool, 10), reverse=True)
         self.formatted = ", ".join(self.__format_rolls(raw, difficulty, spec))
         if will:
@@ -66,8 +60,6 @@ class Pool:
           * Failure if ones > successes
           * Success if successes > ones
         """
-        self.will = will
-
         suxx = autos
         fails = 0
 

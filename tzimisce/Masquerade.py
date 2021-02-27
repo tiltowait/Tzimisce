@@ -203,8 +203,7 @@ def __pool_roll(author, command):
     specialty = command["specialty"] # Doubles 10s if set
 
     # Perform rolls, format them, and figure out how many successes we have
-    results = roll.Pool()
-    results.roll(pool, difficulty, will, specialty is not None, autos)
+    results = roll.Pool(pool, difficulty, will, specialty is not None, autos)
 
     comment = command["comment"]
 
