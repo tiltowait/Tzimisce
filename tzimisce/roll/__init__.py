@@ -1,4 +1,4 @@
 """Package roll. Describes different dice roller methods."""
 
-from .Pool import Pool
-from . import Traditional
+from .pool import Pool
+from . import traditional

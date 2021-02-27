@@ -260,7 +260,7 @@ def __traditional_roll(author, command):
     suggested = False
 
     # Get the rolls and assemble the fields
-    rolls, rolling_initiative = roll.Traditional.roll_from_string(syntax)
+    rolls, rolling_initiative = roll.traditional.roll_from_string(syntax)
     result = str(sum(rolls))
 
     if rolling_initiative:

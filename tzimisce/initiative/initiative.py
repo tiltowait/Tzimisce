@@ -6,7 +6,7 @@ class Initiative:
 
     def __init__(self, mod: int, die: int = None, action: str = None):
         self.mod = mod
-        self.die = die if die else roll.Traditional.roll(1, 10)[0]
+        self.die = die if die else roll.traditional.roll(1, 10)[0]
         self.action = action
 
     def __eq__(self, other):
@@ -20,7 +20,7 @@ class Initiative:
 
     def reroll(self):
         """Reroll initiative."""
-        self.die = roll.Traditional.roll(1, 10)[0]
+        self.die = roll.traditional.roll(1, 10)[0]
         self.action = None # Reroll means new action
 
     @property

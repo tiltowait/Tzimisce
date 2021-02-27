@@ -1,6 +1,6 @@
 """A class for performing pool-based rolls and determining number of successes."""
 
-from . import Traditional
+from . import traditional
 
 class Pool:
     """Provides facilities for pool-based rolls."""
@@ -13,7 +13,7 @@ class Pool:
         self.will = will
         self.spec = spec
         self.autos = autos
-        self.dice = sorted(Traditional.roll(pool, 10), reverse=True)
+        self.dice = sorted(traditional.roll(pool, 10), reverse=True)
 
     @property
     def formatted_result(self):
