@@ -138,13 +138,14 @@ async def initiative_manager(ctx, mod=None, *, args=None):
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
-    usage += f"`{prefix}mi remove <character>` — Remove initiative (character optional)\n"
+    usage += f"`{prefix}mi dec <action> [-n character]` — Declare an action for a character\n"
+    usage += f"`{prefix}mi remove [character]` — Remove initiative (character optional)\n"
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
     usage += f"`{prefix}mi clear` — Clear the table"
 
     if not mod: # Not rolling
         if manager:
-            init_commands = "Commands: remove | reset"
+            init_commands = "Commands: remove | reset | clear | declare"
             embed = tzimisce.Masquerade.build_embed(
                 title="Initiative", footer=init_commands, description=str(manager),
                 fields=[]
