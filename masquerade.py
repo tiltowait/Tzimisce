@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 import tzimisce
-from tzimisce.Initiative import InitiativeManager
+from tzimisce.initiative import InitiativeManager
 
 # Setup
 
