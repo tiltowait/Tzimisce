@@ -51,14 +51,16 @@ class InitiativeManager:
 
     def __str__(self):
         """Returns the initiative table, sorted by score."""
-        sinit = {k: v for k, v in sorted(self.characters.items(), key=lambda item: item[1], reverse=True)}
+        sorted_inits = sorted(self.characters.items(), key=lambda x: x[1], reverse=True)
 
         retval = ""
-        for key in sinit:
-            init = sinit[key].init
-            retval += f"**{init}:** {key}"
+        for init in sorted_inits:
+            character = init[0]
+            initiative = init[1].init
+            action = init[1].action
 
-            action = sinit[key].action
+            retval += f"**{initiative}:** {character}"
+
             if action:
                 retval += f" - {action}"
 
