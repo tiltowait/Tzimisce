@@ -9,13 +9,11 @@ class Pool:
     # We don't have a choice here.
 
     def __init__(self, pool, difficulty, will, spec, autos):
-        raw = sorted(Traditional.roll(pool, 10), reverse=True)
-        self.formatted = ", ".join(self.__format_rolls(raw, difficulty, spec))
-        if will:
-            self.formatted += " *+WP*"
-        if autos > 0:
-            self.formatted += f" *+{autos}*"
-        self.successes = self.__count_successes(raw, difficulty, will, spec, autos)
+        self.difficulty = difficulty
+        self.will = will
+        self.spec = spec
+        self.autos = autos
+        self.dice = sorted(Traditional.roll(pool, 10), reverse=True)
 
     @property
     def formatted_count(self):
@@ -33,7 +31,8 @@ class Pool:
 
         return result_str
 
-    def __format_rolls(self, rolls, difficulty, spec):
+    @property
+    def formatted(self):
         """
         Use Markdown formatting on the rolls.
           * Cross out failures.
@@ -41,32 +40,39 @@ class Pool:
           * Bold tens if a specialty is in use.
         """
         formatted = []
-        for roll in rolls:
+        for roll in self.dice:
             if roll == 1:
                 formatted.append(f"~~**{roll}**~~")
-            elif roll < difficulty:
+            elif roll < self.difficulty:
                 formatted.append(f"~~{roll}~~")
-            elif roll == 10 and spec:
+            elif roll == 10 and self.spec:
                 formatted.append(f"**{roll}**")
             else:
                 formatted.append(str(roll))
 
+        formatted = ", ".join(formatted)
+        if self.will:
+            formatted += " *+WP*"
+        if self.autos > 0:
+            formatted += f" *+{self.autos}*"
+
         return formatted
 
-    def __count_successes(self, rolls, difficulty, will, spec, autos):
+    @property
+    def successes(self):
         """
         Sums the number of successes, taking into account Willpower use.
           * Botch if no successes or willpower and failures > 0
           * Failure if ones > successes
           * Success if successes > ones
         """
-        suxx = autos
+        suxx = self.autos
         fails = 0
 
-        for roll in rolls:
-            if roll >= difficulty:
+        for roll in self.dice:
+            if roll >= self.difficulty:
                 suxx += 1
-                if roll == 10 and spec:
+                if roll == 10 and self.spec:
                     suxx += 1
             elif roll == 1:
                 fails += 1
@@ -76,12 +82,12 @@ class Pool:
         #   * Failure
         #   * Success
         # If using Willpower, there's always one guaranteed success.
-        if not will and fails > 0 and suxx == 0:  # Botch
+        if not self.will and fails > 0 and suxx == 0:  # Botch
             return -fails
 
         suxx = suxx - fails
         suxx = 0 if suxx < 0 else suxx
-        if will:
+        if self.will:
             suxx += 1
 
         return suxx
