@@ -16,23 +16,24 @@ class Pool:
         self.dice = sorted(Traditional.roll(pool, 10), reverse=True)
 
     @property
-    def formatted_count(self):
+    def formatted_result(self):
         """Format the successes to something nice for people to read."""
         # Determine roll string
+        successes = self.successes
         result_str = ""
-        if self.successes > 0:
-            result_str = f"{self.successes} success"
-            if self.successes > 1:
+        if successes > 0:
+            result_str = f"{successes} success"
+            if successes > 1:
                 result_str += "es"
-        elif self.successes == 0:
+        elif successes == 0:
             result_str = "Failure"
         else:
-            result_str = f"Botch: {self.successes}"
+            result_str = f"Botch: {successes}"
 
         return result_str
 
     @property
-    def formatted(self):
+    def formatted_dice(self):
         """
         Use Markdown formatting on the rolls.
           * Cross out failures.
@@ -40,15 +41,15 @@ class Pool:
           * Bold tens if a specialty is in use.
         """
         formatted = []
-        for roll in self.dice:
-            if roll == 1:
-                formatted.append(f"~~**{roll}**~~")
-            elif roll < self.difficulty:
-                formatted.append(f"~~{roll}~~")
-            elif roll == 10 and self.spec:
-                formatted.append(f"**{roll}**")
+        for die in self.dice:
+            if die == 1:
+                formatted.append(f"~~**{die}**~~")
+            elif die < self.difficulty:
+                formatted.append(f"~~{die}~~")
+            elif die == 10 and self.spec:
+                formatted.append(f"**{die}**")
             else:
-                formatted.append(str(roll))
+                formatted.append(str(die))
 
         formatted = ", ".join(formatted)
         if self.will:
@@ -69,12 +70,12 @@ class Pool:
         suxx = self.autos
         fails = 0
 
-        for roll in self.dice:
-            if roll >= self.difficulty:
+        for die in self.dice:
+            if die >= self.difficulty:
                 suxx += 1
-                if roll == 10 and self.spec:
+                if die == 10 and self.spec:
                     suxx += 1
-            elif roll == 1:
+            elif die == 1:
                 fails += 1
 
         # Three possible results:

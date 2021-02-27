@@ -209,9 +209,9 @@ def __pool_roll(author, command):
 
     # Compact formatting
     if compact:
-        results_string = results.formatted_count
+        results_string = results.formatted_result
 
-        compact_string = f"{results.formatted} = **{results_string}**"
+        compact_string = f"{results.formatted_dice} = **{results_string}**"
         if comment:
             compact_string += f"\n> {comment}"
 
@@ -240,12 +240,12 @@ def __pool_roll(author, command):
     if command["override"]:
         fields.append(("Macro override", command["override"], False))
 
-    fields.append(("Dice", results.formatted, True))
+    fields.append(("Dice", results.formatted_dice, True))
 
     if specialty:
         fields.append(("Specialty", specialty, True))
 
-    fields.append(("Result", results.formatted_count, False))
+    fields.append(("Result", results.formatted_result, False))
 
     return build_embed(
         author=author, header=title, color=color, fields=fields,
