@@ -4,12 +4,12 @@ import random
 import re
 
 
-def roll_dice(repeat: int, die: int) -> list:
+def roll(repeat: int, die: int) -> list:
     """Return a list of random numbers between 1 and die."""
     return [random.randint(1, die) for _ in range(repeat)]
 
 
-def roll_string(string: str) -> tuple:
+def roll_from_string(string: str) -> tuple:
     """Return a list of random numbers based on an input string."""
     dice = re.compile(r"^(?P<repeat>\d+)d(?P<die>\d+)$")
     mod = re.compile(r"^\d+$")
@@ -32,7 +32,7 @@ def roll_string(string: str) -> tuple:
             if die == 10:
                 rolled_d10 = True
 
-            results.extend(roll_dice(repeat, die))
+            results.extend(roll(repeat, die))
             continue
 
         match = mod.match(item)

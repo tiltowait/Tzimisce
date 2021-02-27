@@ -1,6 +1,6 @@
 """A class for performing pool-based rolls and determining number of successes."""
 
-from tzimisce import PlainRoll
+from . import Traditional
 
 class Pool:
     """Provides facilities for pool-based rolls."""
@@ -15,7 +15,7 @@ class Pool:
 
     def roll(self, pool, difficulty, will, spec, autos):
         """Roll a specific die a number of times and return the results as an array."""
-        raw = sorted(PlainRoll.roll_dice(pool, 10), reverse=True)
+        raw = sorted(Traditional.roll(pool, 10), reverse=True)
         self.formatted = ", ".join(self.__format_rolls(raw, difficulty, spec))
         if will:
             self.formatted += " *+WP*"

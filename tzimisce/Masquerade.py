@@ -6,8 +6,7 @@ from collections import defaultdict
 
 import discord
 from tzimisce.RollDB import RollDB
-from tzimisce.Pool import Pool
-from tzimisce import PlainRoll
+from tzimisce import roll
 
 random.seed()
 
@@ -204,7 +203,7 @@ def __pool_roll(author, command):
     specialty = command["specialty"] # Doubles 10s if set
 
     # Perform rolls, format them, and figure out how many successes we have
-    results = Pool()
+    results = roll.Pool()
     results.roll(pool, difficulty, will, specialty is not None, autos)
 
     comment = command["comment"]
@@ -263,7 +262,7 @@ def __traditional_roll(author, command):
     suggested = False
 
     # Get the rolls and assemble the fields
-    rolls, rolling_initiative = PlainRoll.roll_string(syntax)
+    rolls, rolling_initiative = roll.Traditional.roll_from_string(syntax)
     result = str(sum(rolls))
 
     if rolling_initiative:

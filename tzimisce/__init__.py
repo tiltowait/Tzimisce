@@ -2,3 +2,4 @@
 
 from tzimisce import Masquerade
 from tzimisce import Initiative
+from tzimisce import roll
