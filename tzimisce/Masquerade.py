@@ -2,7 +2,6 @@
 
 import re
 import random
-from collections import defaultdict
 
 import discord
 from tzimisce.RollDB import RollDB

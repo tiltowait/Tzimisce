@@ -13,7 +13,7 @@ from tzimisce.Initiative import InitiativeManager
 # Setup
 
 # This is a defaultdict, lambda None
-custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
+CUSTOM_PREFIXES = tzimisce.Masquerade.database.get_all_prefixes()
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
@@ -65,8 +65,8 @@ async def set_prefix(ctx, arg=None):
     """Set a custom prefix for the guild."""
     tzimisce.Masquerade.database.update_prefix(ctx.guild.id, arg)
 
-    global custom_prefixes
-    custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
+    global CUSTOM_PREFIXES
+    CUSTOM_PREFIXES = tzimisce.Masquerade.database.get_all_prefixes()
 
     if not arg:
         await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
@@ -85,8 +85,8 @@ async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
     tzimisce.Masquerade.database.update_prefix(ctx.guild.id, None)
 
-    global custom_prefixes
-    custom_prefixes = tzimisce.Masquerade.database.get_all_prefixes()
+    global CUSTOM_PREFIXES
+    CUSTOM_PREFIXES = tzimisce.Masquerade.database.get_all_prefixes()
 
     await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
@@ -383,7 +383,7 @@ def __get_prefix(guild) -> tuple:
     default_prefixes = ("/", "!")
 
     if guild:
-        prefix = custom_prefixes[guild.id]
+        prefix = CUSTOM_PREFIXES[guild.id]
         if prefix:
             return (prefix,)
         return default_prefixes

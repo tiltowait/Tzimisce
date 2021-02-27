@@ -3,10 +3,9 @@
 import os
 import re
 from collections import defaultdict
-from tzimisce.Initiative import InitiativeManager
 
 import psycopg2
-
+from tzimisce.Initiative import InitiativeManager
 
 class RollDB:
     """Handles stored rolls, including creation, deletion, listing, and modification."""
@@ -51,7 +50,7 @@ class RollDB:
 
         self.conn.commit()
 
-    def execute(self, query, args):
+    def __execute(self, query, args):
         """Executes the specified query. Tries to reconnect to the database if there's an error."""
         try:
             self.cursor.execute(query, args)
@@ -83,7 +82,7 @@ class RollDB:
         if match:
             name = match.group("name")
             comment = match.group("comment")
-            return self.update_stored_comment(guild, userid, name, comment)
+            return self.__update_stored_comment(guild, userid, name, comment)
 
         # Use a stored roll.
         pattern = re.compile(
@@ -177,7 +176,7 @@ class RollDB:
         if not self.__is_roll_stored(guild, userid, name):
             # Create the roll
             query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
-            self.execute(query, (userid, name, syntax, guild, comment,))
+            self.__execute(query, (userid, name, syntax, guild, comment,))
             self.conn.commit()
 
             return f"Saved new macro: `{name}`."
@@ -185,18 +184,18 @@ class RollDB:
         # Update an old roll
         if comment:
             query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
-            self.execute(query, (syntax, comment, userid, guild, name,))
+            self.__execute(query, (syntax, comment, userid, guild, name,))
             self.conn.commit()
 
             return f"Updated `{name}` syntax and comment."
 
         query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
-        self.execute(query, (syntax, userid, guild, name,))
+        self.__execute(query, (syntax, userid, guild, name,))
         self.conn.commit()
 
         return f"Updated `{name}` syntax."
 
-    def update_stored_comment(self, guild, userid, name, comment):
+    def __update_stored_comment(self, guild, userid, name, comment):
         """Set or delete a stored roll's comment"""
         if self.__is_roll_stored(guild, userid, name):
             comment = comment.strip()
@@ -204,7 +203,7 @@ class RollDB:
                 comment = None
 
             query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
-            self.execute(query, (comment, userid, guild, name,))
+            self.__execute(query, (comment, userid, guild, name,))
             self.conn.commit()
 
             return f"Updated comment for `{name}`."
@@ -214,14 +213,14 @@ class RollDB:
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
         query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
-        self.execute(query, (guild, userid, name,))
+        self.__execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
         return result
 
     def __find_similar_macro(self, guild, userid, name):
         query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s) > 0.2;"
-        self.execute(query, (guild, userid, name,))
+        self.__execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
         if result:
@@ -235,7 +234,7 @@ class RollDB:
             return f"Can't delete. `{name}` not found!"
 
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
-        self.execute(query, (guild, userid, name,))
+        self.__execute(query, (guild, userid, name,))
         self.conn.commit()
 
         return f"`{name}` deleted!"
@@ -243,13 +242,13 @@ class RollDB:
     def delete_user_rolls(self, guild, userid):
         """Deletes all of a user's rolls on a given guild."""
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s;"
-        self.execute(query, (guild, userid,))
+        self.__execute(query, (guild, userid,))
         self.conn.commit()
 
     def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
         query = "SELECT Name, Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s ORDER BY Name;"
-        self.execute(query, (guild, userid,))
+        self.__execute(query, (guild, userid,))
         results = self.cursor.fetchall()
 
         fields = []
@@ -266,64 +265,58 @@ class RollDB:
         """Adds a guild to the Guilds table."""
         query = "INSERT INTO Guilds VALUES (%s, %s);"
 
-        self.execute(query, (guildid, name,))
+        self.__execute(query, (guildid, name,))
         self.conn.commit()
 
     def remove_guild(self, guildid):
         """Removes a guild from the Guilds table."""
         query = "DELETE FROM Guilds WHERE ID=%s;"
 
-        self.execute(query, (guildid,))
+        self.__execute(query, (guildid,))
         self.conn.commit()
 
     def rename_guild(self, guildid, name):
         """Updates the name of a guild in the Guilds table."""
         query = "UPDATE Guilds SET Name=%s WHERE ID=%s;"
 
-        self.execute(query, (name, guildid,))
+        self.__execute(query, (name, guildid,))
         self.conn.commit()
 
     def increment_rolls(self, guildid):
         """Keep track of the number of rolls performed on each server."""
         query = "UPDATE Guilds SET Rolls = Rolls + 1 WHERE ID=%s;"
 
-        self.execute(query, (guildid,))
+        self.__execute(query, (guildid,))
         self.conn.commit()
 
     def increment_compact_rolls(self, guildid):
         """Keep track of the number of compact rolls performed on each server."""
         query = "UPDATE Guilds SET Compact_Rolls = Compact_Rolls + 1 WHERE ID=%s;"
 
-        self.execute(query, (guildid,))
+        self.__execute(query, (guildid,))
         self.conn.commit()
 
     def increment_traditional_rolls(self, guildid):
         """Keep track of the number of compact rolls performed on each server."""
         query = "UPDATE Guilds SET Traditional_Rolls = Traditional_Rolls + 1 WHERE ID=%s;"
 
-        self.execute(query, (guildid,))
+        self.__execute(query, (guildid,))
         self.conn.commit()
 
     def increment_initiative_rolls(self, guildid):
         """Keep track of the number of compact rolls performed on each server."""
         query = "UPDATE Guilds SET Initiative_Rolls = Initiative_Rolls + 1 WHERE ID=%s;"
 
-        self.execute(query, (guildid,))
+        self.__execute(query, (guildid,))
         self.conn.commit()
 
-
-    def get_prefix(self, guildid):
-        """Returns the command prefix for the specified guild."""
-        query = "SELECT Prefix FROM Guilds WHERE ID=%s;"
-
-        self.execute(query, (guildid,))
-        return self.cursor.fetchone()[0]
+    # Prefix stuff
 
     def get_all_prefixes(self):
         """Returns a dictionary of all guild command prefixes."""
         query = "SELECT ID, Prefix FROM Guilds;"
 
-        self.execute(query, ())
+        self.__execute(query, ())
 
         prefixes = defaultdict(lambda: None)
         prefixes.update(dict(self.cursor.fetchall()))
@@ -334,7 +327,7 @@ class RollDB:
         """Update the bot's command prefix for a given guild."""
         query = "UPDATE Guilds SET Prefix = %s WHERE ID=%s;"
 
-        self.execute(query, (prefix, guildid,))
+        self.__execute(query, (prefix, guildid,))
         self.conn.commit()
 
 
@@ -344,7 +337,7 @@ class RollDB:
         """Keep track of number of times initiative manager has been suggested."""
         query = "UPDATE Guilds SET initiative_suggestions=initiative_suggestions+1 WHERE ID=%s;"
 
-        self.execute(query, (guildid,))
+        self.__execute(query, (guildid,))
         self.conn.commit()
 
     def set_initiative(self, channel, character, mod, die):
@@ -353,35 +346,35 @@ class RollDB:
 
         query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s);"
 
-        self.execute(query, (channel, character, mod, die,))
+        self.__execute(query, (channel, character, mod, die,))
         self.conn.commit()
 
     def set_initiative_action(self, channel, character, action):
         """Stores the declared action for a character."""
         query = "UPDATE Initiative SET Action=%s WHERE Channel=%s AND Character=%s;"
 
-        self.execute(query, (action, channel, character))
+        self.__execute(query, (action, channel, character))
         self.conn.commit()
 
     def remove_initiative(self, channel, character):
         """Removes a character from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
 
-        self.execute(query, (channel, character,))
+        self.__execute(query, (channel, character,))
         self.conn.commit()
 
     def clear_initiative(self, channel):
         """Removes all initiative records from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s;"
 
-        self.execute(query, (channel,))
+        self.__execute(query, (channel,))
         self.conn.commit()
 
     def get_initiative_tables(self):
         """Returns a dictionary of all initiatives."""
         query = "SELECT Channel, Character, Mod, Die, Action FROM Initiative ORDER BY Channel;"
 
-        self.execute(query, ())
+        self.__execute(query, ())
         managers = defaultdict(lambda: None)
 
         for channel, character, mod, die, action in self.cursor.fetchall():
