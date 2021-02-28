@@ -5,43 +5,39 @@ import re
 import discord
 import tzimisce
 from tzimisce import roll
+from .response import Response
 
 __tradx = re.compile(
     r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
 )
-FAILURE = 0
-SUCCESS = 1
-SUCCESS_WITH_INIT = 2
 
-async def parse(ctx, command, mentioning) -> int:
+async def parse(ctx, command, mentioning) -> Response:
     """Perform a traditional roll if appropriate."""
     traditional = __tradx.match(command["syntax"])
+    response = None
     if traditional:
         command.update(traditional.groupdict())
         try:
             init, send = __traditional_roll(ctx.author, command)
+            response = Response(Response.TRADITIONAL, suggested=init)
             if isinstance(send, discord.Embed):
+                response.embed = send
                 if mentioning:
-                    await ctx.send(content=ctx.author.mention, embed=send)
-                else:
-                    await ctx.message.reply(embed=send)
+                    response.content = ctx.author.mention
             else:
-                await ctx.message.reply(send)
+                response.content = send
 
-            if init:
-                return SUCCESS_WITH_INIT
-            return SUCCESS
         except ValueError as error:
             await ctx.message.reply(str(error))
 
-        return FAILURE
+    return response
 
-def __traditional_roll(author, command):
+def __traditional_roll(author, command) -> list:
     """A "traditional" roll, such as 5d10+2."""
     compact = command["compact"]
     syntax = command["syntax"]
     comment = command["comment"]
-    description = None # Used to show individual dice results
+    description = None # Used to show individual dice
     suggested = False
 
     # Get the rolls and assemble the fields
@@ -70,7 +66,7 @@ def __traditional_roll(author, command):
         if comment:
             compact_string += f"\n> {comment}"
 
-        return f"{compact_string}"
+        return (suggested, compact_string)
 
     # Not using compact mode!
     fields = [("Result", result, False),]

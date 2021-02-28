@@ -34,8 +34,6 @@ async def handle_command(command, ctx, mentioning=False):
 
     # If the command involves the RollDB, we need to modify the syntax first
     command = await parse.db.parse(ctx, command)
-    if not command:
-        return
 
     # Pooled roll
     response = await parse.pool.parse(ctx, command, mentioning)
@@ -50,14 +48,19 @@ async def handle_command(command, ctx, mentioning=False):
         return
 
     # Traditional roll (e.g. 2d10+4)
-    status = await parse.traditional.parse(ctx, command, mentioning)
-    if status != parse.traditional.FAILURE:
+    response = await parse.traditional.parse(ctx, command, mentioning)
+    if response:
+        if mentioning:
+            await ctx.send(embed=response.embed, content=response.content)
+        else:
+            await ctx.message.reply(embed=response.embed, content=response.content)
+
         if ctx.guild:
             database.increment_rolls(ctx.guild.id)
             database.increment_traditional_rolls(ctx.guild.id)
 
             # Initiative was suggested
-            if status == parse.traditional.SUCCESS_WITH_INIT:
+            if response.init_suggested:
                 database.suggested_initiative(ctx.guild.id)
         return
 
