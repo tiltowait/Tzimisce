@@ -4,6 +4,7 @@ import re
 import discord
 
 from tzimisce import masquerade
+from tzimisce.parse.response import Response
 
 __suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
 
@@ -24,7 +25,7 @@ async def parse(ctx, command):
 
         # Created, updated, or deleted a roll (or error)
         if isinstance(query_result, str):
-            adding_reaction = False
+            response = Response(Response.DATABASE)
 
             # Database offered macro suggestion
             if query_result[-2:] == "`?":
@@ -46,12 +47,10 @@ async def parse(ctx, command):
 
                 # Replace!
                 query_result = query_result.replace(suggestion, new_command)
-                adding_reaction = True
+                response.add_reaction = True
 
-            message = await ctx.message.reply(f"{query_result}")
-            if adding_reaction:
-                await message.add_reaction("👍")
+            response.content = query_result
 
-            return
+            return response
 
     return query_result or command
