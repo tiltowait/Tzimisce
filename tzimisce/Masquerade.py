@@ -6,26 +6,13 @@ import random
 import discord
 from tzimisce.database import RollDB
 from tzimisce import roll
+from tzimisce import parse
 
 random.seed()
-
-poolx = re.compile(
-    r"^(?P<pool>-?\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \D[^#]*)?$"
-)
-tradx = re.compile(
-    r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
-)
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
 invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)? (?P<syntax>.*)")
-
-# Colors help show, at a glance, if a roll was successful
-EXCEPTIONAL_COLOR = 0x00FF00
-SUCCESS_COLOR = 0x0DC06B
-MARGINAL_COLOR = 0x14A1A0
-FAIL_COLOR = 0X777777
-BOTCH_COLOR = 0XfF0000
 
 # Database stuff
 database = RollDB()
@@ -85,60 +72,33 @@ async def handle_command(command, ctx, mentioning=False):
                 adding_reaction = True
 
             message = await ctx.message.reply(f"{query_result}")
-
             if adding_reaction:
                 await message.add_reaction("👍")
+
             return
 
         # Retrieved a roll; replace our command
         command = query_result
 
     # Pooled roll
-    pool = poolx.match(command["syntax"])
-    if pool:
-        command.update(pool.groupdict())
-        send = __pool_roll(ctx.author, command)
-
-        if isinstance(send, discord.Embed):
-            if mentioning:
-                await ctx.send(content=ctx.author.mention, embed=send)
-            else:
-                await ctx.message.reply(embed=send)
-        else: # It's a string
-            if mentioning:
-                await ctx.send(content=f"{ctx.author.mention}: {send}")
-            else:
-                await ctx.message.reply(send)
-
+    if await parse.pool.parse(ctx, command, mentioning):
         if ctx.guild:
             database.increment_rolls(ctx.guild.id)
         return
 
     # Traditional roll (e.g. 2d10+4)
-    traditional = tradx.match(command["syntax"])
-    if traditional:
-        command.update(traditional.groupdict())
-        try:
-            init, send = __traditional_roll(ctx.author, command)
-            if isinstance(send, discord.Embed):
-                if mentioning:
-                    await ctx.send(content=ctx.author.mention, embed=send)
-                else:
-                    await ctx.message.reply(embed=send)
-            else:
-                await ctx.message.reply(send)
+    status = await parse.traditional.parse(ctx, command, mentioning)
+    if status != parse.traditional.FAILURE:
+        if ctx.guild:
+            database.increment_rolls(ctx.guild.id)
+            database.increment_traditional_rolls(ctx.guild.id)
 
-            if ctx.guild:
-                database.increment_rolls(ctx.guild.id)
-                database.increment_traditional_rolls(ctx.guild.id)
-
-                if init: # Initiative was suggested
-                    database.suggested_initiative(ctx.guild.id)
-        except ValueError as error:
-            await ctx.message.reply(str(error))
-
+            # Initiative was suggested
+            if status == parse.traditional.SUCCESS_WITH_INIT:
+                database.suggested_initiative(ctx.guild.id)
         return
 
+    # Unrecognized input
     await ctx.message.reply("Come again?")
 
 async def show_stored_rolls(ctx):
@@ -163,129 +123,10 @@ async def delete_user_rolls(ctx):
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
     await ctx.message.reply(f"Deleted your macros on {ctx.guild}.")
 
-def __pool_roll(author, command):
-    """
-    A pool-based VtM roll. Returns the results in a pretty embed.
-    Does not check that difficulty is 1 or > 10.
-    """
-    will = command["will"]
-    compact = command["compact"]
-    pool = int(command["pool"])
-
-    if pool < 1 or pool > 100:
-        return f"Sorry, pools must be between 1 and 100. *(Input: {pool})*"
-
-    # Difficulty must be between 2 and 10. If it isn't supplied, go with
-    # the default value of 6.
-    difficulty = int(command["difficulty"] or "6")
-    if difficulty > 10 or difficulty < 2:
-        return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
-
-    title = f"Pool {pool}, diff. {difficulty}"
-
-    # Sometimes, a roll may have auto-successes that can be canceled by 1s.
-    autos = int(command["auto"] or "0")
-    if autos > 0:
-        title += f", +{__pluralize_autos(autos)}"
-
-    specialty = command["specialty"] # Doubles 10s if set
-
-    # Perform rolls, format them, and figure out how many successes we have
-    results = roll.Pool(pool, difficulty, will, specialty, autos)
-
-    comment = command["comment"]
-
-    # Compact formatting
-    if compact:
-        results_string = results.formatted_result
-
-        compact_string = f"{results.formatted_dice} = **{results_string}**"
-        if comment:
-            compact_string += f"\n> {comment}"
-
-        if specialty:
-            compact_string += f"\n> ***{specialty}***"
-
-        return f"{compact_string}"
-
-    # If not compact, put the results into an embed
-
-    # The embed's color indicates if the roll succeeded, failed, or botched
-    color = FAIL_COLOR
-    if results.successes >= 5:
-        color = EXCEPTIONAL_COLOR
-    elif results.successes >= 3:
-        color = SUCCESS_COLOR
-    elif results.successes > 0:
-        color = MARGINAL_COLOR
-    elif results.successes < 0:
-        color = BOTCH_COLOR
-
-    # Set up the embed fields
-    fields = []
-    if command["override"]:
-        fields.append(("Macro override", command["override"], False))
-
-    fields.append(("Dice", results.formatted_dice, True))
-
-    if specialty:
-        fields.append(("Specialty", specialty, True))
-
-    fields.append(("Result", results.formatted_result, False))
-
-    return build_embed(
-        author=author, header=title, color=color, fields=fields,
-        footer=comment
-    )
-
-def __traditional_roll(author, command):
-    """A "traditional" roll, such as 5d10+2."""
-    compact = command["compact"]
-    syntax = command["syntax"]
-    comment = command["comment"]
-    description = None # Used to show individual dice results
-    suggested = False
-
-    # Get the rolls and assemble the fields
-    rolls, rolling_initiative = roll.traditional.roll_from_string(syntax)
-    result = str(sum(rolls))
-
-    if rolling_initiative:
-        suggestion = "Rolling initiative? Try the /mi command!"
-        suggested = True
-        if comment:
-            comment += f"\n{suggestion}"
-        else:
-            comment = suggestion
-
-    # Show the individual dice if more than 1 were rolled
-    if len(rolls) > 1:
-        description = "+".join([str(roll) for roll in rolls])
-
-    # Compact mode means no embed
-    if compact:
-        compact_string = ""
-        if description:
-            compact_string = f"{description} ="
-
-        compact_string = f"{compact_string} {result}"
-        if comment:
-            compact_string += f"\n> {comment}"
-
-        return f"{compact_string}"
-
-    # Not using compact mode!
-    fields = [("Result", result, False),]
-
-    embed = build_embed(
-        author=author, header=syntax, color=0x000000, fields=fields,
-        footer=comment, description=description
-    )
-
-    return (suggested, embed)
-
 def help_embed(prefix):
     """Return a handy help embed."""
+
+    # Not using build_embed() because we need a little more than it offers
     embed=discord.Embed(
         title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/",
         description="Click above for a complete listing of commands: Macros, initiative, and more!"
@@ -333,11 +174,3 @@ def build_embed(
         embed.add_field(name=name, value=value, inline=inline)
 
     return embed
-
-def __pluralize_autos(autos):
-    """Pluralize 'N auto(s)' as needed"""
-    string = f"{autos} auto"
-    if autos > 1:
-        string += "s"
-
-    return string
