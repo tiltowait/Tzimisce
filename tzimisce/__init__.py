@@ -3,4 +3,3 @@
 from tzimisce import masquerade
 from tzimisce import initiative
 from tzimisce import roll
-from tzimisce import parse

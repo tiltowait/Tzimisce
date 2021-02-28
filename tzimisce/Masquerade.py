@@ -5,7 +5,6 @@ import random
 
 import discord
 from tzimisce.database import RollDB
-from tzimisce import roll
 from tzimisce import parse
 
 random.seed()
@@ -34,51 +33,9 @@ async def handle_command(command, ctx, mentioning=False):
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
-    if command["syntax"][0].isalpha(): # Only macros start with alpha
-        if ctx.channel.type is discord.ChannelType.private:
-            await ctx.send("Sorry, you can't store macros in private DMs!")
-            return
-
-        query_result = database.query_saved_rolls(
-            guild=ctx.guild.id,
-            userid=ctx.author.id,
-            command=command
-        )
-
-        # Created, updated, or deleted a roll (or error)
-        if isinstance(query_result, str):
-            adding_reaction = False
-
-            # Database offered macro suggestion
-            if query_result[-2:] == "`?":
-                # First, create the invocation
-                will = command["will"] or ""
-                compact = command["compact"] or ""
-                invoke = f"/m{will}{compact}"
-
-                # Next, get the suggestion
-                suggestion = suggestx.match(query_result).group("suggestion")
-
-                # Next, substitute it from the original syntax
-                split = command["syntax"].split()
-                split[0] = suggestion
-                new_syntax = " ".join(split)
-
-                # Build the new command
-                new_command = f"{invoke} {new_syntax}"
-
-                # Replace!
-                query_result = query_result.replace(suggestion, new_command)
-                adding_reaction = True
-
-            message = await ctx.message.reply(f"{query_result}")
-            if adding_reaction:
-                await message.add_reaction("👍")
-
-            return
-
-        # Retrieved a roll; replace our command
-        command = query_result
+    command = await parse.db.parse(ctx, command)
+    if not command:
+        return
 
     # Pooled roll
     if await parse.pool.parse(ctx, command, mentioning):
