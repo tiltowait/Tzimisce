@@ -5,6 +5,7 @@ import re
 import discord
 import tzimisce
 from tzimisce import roll
+from .response import Response
 
 __poolx = re.compile(
     r"^(?P<pool>-?\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \D[^#]*)?$"
@@ -21,24 +22,21 @@ BOTCH_COLOR = 0XfF0000
 async def parse(ctx, command, mentioning) -> bool:
     """Determine if a roll is appropriate, and roll it."""
     pool = __poolx.match(command["syntax"])
+    response = None
     if pool:
         command.update(pool.groupdict())
         send = __pool_roll(ctx.author, command)
 
         if isinstance(send, discord.Embed):
+            response = Response(Response.POOL, embed=send)
             if mentioning:
-                await ctx.send(content=ctx.author.mention, embed=send)
-            else:
-                await ctx.message.reply(embed=send)
+                response.content = ctx.author.mention
         else: # It's a string
             if mentioning:
-                await ctx.send(content=f"{ctx.author.mention}: {send}")
-            else:
-                await ctx.message.reply(send)
+                send = f"{ctx.author.mention}: {send}"
+            response = Response(Response.POOL, content=send)
 
-        return True
-
-    return False
+    return response
 
 def __pool_roll(author, command):
     """

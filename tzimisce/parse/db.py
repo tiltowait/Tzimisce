@@ -9,6 +9,8 @@ __suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
 
 async def parse(ctx, command):
     """Inspects command for database queries and acts on them as necessary."""
+    query_result = None
+
     if command["syntax"][0].isalpha(): # Only macros start with alpha
         if ctx.channel.type is discord.ChannelType.private:
             await ctx.send("Sorry, you can't store macros in private DMs!")
@@ -52,4 +54,4 @@ async def parse(ctx, command):
 
             return
 
-        return query_result
+    return query_result or command

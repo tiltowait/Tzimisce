@@ -38,7 +38,13 @@ async def handle_command(command, ctx, mentioning=False):
         return
 
     # Pooled roll
-    if await parse.pool.parse(ctx, command, mentioning):
+    response = await parse.pool.parse(ctx, command, mentioning)
+    if response:
+        if mentioning:
+            await ctx.send(embed=response.embed, content=response.content)
+        else:
+            await ctx.message.reply(embed=response.embed, content=response.content)
+
         if ctx.guild:
             database.increment_rolls(ctx.guild.id)
         return
