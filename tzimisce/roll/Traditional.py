@@ -39,9 +39,6 @@ def roll_from_string(string: str) -> tuple:
         if match:
             results.append(int(item))
             has_mod = True
-            continue
-
-        raise ValueError(f"Invalid item in roll: {item}")
 
     rolling_initiative = num_rolls == 1 and rolled_d10 and has_mod # We will suggest /mi
 

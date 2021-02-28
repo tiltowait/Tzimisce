@@ -17,18 +17,15 @@ async def parse(ctx, command, mentioning) -> Response:
     response = None
     if traditional:
         command.update(traditional.groupdict())
-        try:
-            init, send = __traditional_roll(ctx.author, command)
-            response = Response(Response.TRADITIONAL, suggested=init)
-            if isinstance(send, discord.Embed):
-                response.embed = send
-                if mentioning:
-                    response.content = ctx.author.mention
-            else:
-                response.content = send
 
-        except ValueError as error:
-            await ctx.message.reply(str(error))
+        init, send = __traditional_roll(ctx.author, command)
+        response = Response(Response.TRADITIONAL, suggested=init)
+        if isinstance(send, discord.Embed):
+            response.embed = send
+            if mentioning:
+                response.content = ctx.author.mention
+        else:
+            response.content = send
 
     return response
 
