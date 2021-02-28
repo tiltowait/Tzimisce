@@ -13,7 +13,7 @@ from tzimisce.initiative import InitiativeManager
 # Setup
 
 # This is a defaultdict, lambda None
-CUSTOM_PREFIXES = tzimisce.Masquerade.database.get_all_prefixes()
+CUSTOM_PREFIXES = tzimisce.masquerade.database.get_all_prefixes()
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
@@ -52,9 +52,9 @@ async def standard_roll(ctx, *, args=None):
     if "c" in ctx.invoked_with:
         command["compact"] = "c"
         if ctx.guild:
-            tzimisce.Masquerade.database.increment_compact_rolls(ctx.guild.id)
+            tzimisce.masquerade.database.increment_compact_rolls(ctx.guild.id)
 
-    await tzimisce.Masquerade.handle_command(command, ctx)
+    await tzimisce.masquerade.handle_command(command, ctx)
 
 # Subcommands
 
@@ -63,14 +63,12 @@ async def standard_roll(ctx, *, args=None):
 @commands.has_permissions(administrator=True)
 async def set_prefix(ctx, arg=None):
     """Set a custom prefix for the guild."""
-    tzimisce.Masquerade.database.update_prefix(ctx.guild.id, arg)
-
-    global CUSTOM_PREFIXES
-    CUSTOM_PREFIXES = tzimisce.Masquerade.database.get_all_prefixes()
-
     if not arg:
         await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
         return
+
+    tzimisce.masquerade.database.update_prefix(ctx.guild.id, arg)
+    CUSTOM_PREFIXES[ctx.guild.id] = arg
 
     message = f"Setting the prefix to `{arg}m`."
     if len(arg) > 3:
@@ -83,10 +81,8 @@ async def set_prefix(ctx, arg=None):
 @commands.has_permissions(administrator=True)
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
-    tzimisce.Masquerade.database.update_prefix(ctx.guild.id, None)
-
-    global CUSTOM_PREFIXES
-    CUSTOM_PREFIXES = tzimisce.Masquerade.database.get_all_prefixes()
+    tzimisce.masquerade.database.update_prefix(ctx.guild.id, None)
+    CUSTOM_PREFIXES[ctx.guild.id] = None
 
     await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
@@ -107,7 +103,7 @@ async def __help(ctx):
 
     # We want to display the correct prefix for the server
     prefix = __get_prefix(ctx.guild)[0]
-    embed = tzimisce.Masquerade.help_embed(prefix)
+    embed = tzimisce.masquerade.help_embed(prefix)
 
     await ctx.message.reply(embed=embed)
 
@@ -118,22 +114,21 @@ async def __help(ctx):
 @commands.guild_only()
 async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
-    await tzimisce.Masquerade.show_stored_rolls(ctx)
+    await tzimisce.masquerade.show_stored_rolls(ctx)
 
 @standard_roll.command(name="$delete-all")
 @commands.guild_only()
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
-    await tzimisce.Masquerade.delete_user_rolls(ctx)
+    await tzimisce.masquerade.delete_user_rolls(ctx)
 
 # Initiative Manager
-initiative_managers = tzimisce.Masquerade.database.get_initiative_tables()
+initiative_managers = tzimisce.masquerade.database.get_initiative_tables()
 
 @bot.group(invoke_without_command=True, name="mi", aliases=["minit"])
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
-    manager = initiative_managers[ctx.channel.id]
     prefix = __get_prefix(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
@@ -143,10 +138,12 @@ async def initiative_manager(ctx, mod=None, *, args=None):
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
     usage += f"`{prefix}mi clear` — Clear the table"
 
+    manager = initiative_managers[ctx.channel.id]
+
     if not mod: # Not rolling
         if manager:
             init_commands = "Commands: remove | reset | clear | declare"
-            embed = tzimisce.Masquerade.build_embed(
+            embed = tzimisce.masquerade.build_embed(
                 title="Initiative", footer=init_commands, description=str(manager),
                 fields=[]
             )
@@ -179,23 +176,22 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 
             title = f"{character_name}'s Initiative"
 
-            count = manager.count()
-            entry = "entries" if count > 1 else "entry"
-            footer = f"{count} {entry} in table. To see initiative: {prefix}mi"
+            entry = "entries" if manager.count > 1 else "entry"
+            footer = f"{manager.count} {entry} in table. To see initiative: {prefix}mi"
 
             if is_modifier:
                 footer = f"Initiative modified by {mod:+}.\n{footer}"
 
-            embed = tzimisce.Masquerade.build_embed(
+            embed = tzimisce.masquerade.build_embed(
                 title=title, description=str(init), fields=[], footer=footer
             )
 
-            tzimisce.Masquerade.database.set_initiative(
+            tzimisce.masquerade.database.set_initiative(
                 ctx.channel.id, character_name, init.mod, init.die
             )
 
             await ctx.message.reply(embed=embed)
-            tzimisce.Masquerade.database.increment_initiative_rolls(ctx.guild.id)
+            tzimisce.masquerade.database.increment_initiative_rolls(ctx.guild.id)
         except ValueError:
             await ctx.message.reply(usage)
 
@@ -206,7 +202,7 @@ async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
     try:
         del initiative_managers[ctx.channel.id]
-        tzimisce.Masquerade.database.clear_initiative(ctx.channel.id)
+        tzimisce.masquerade.database.clear_initiative(ctx.channel.id)
         await ctx.message.reply("Reset initiative in this channel!")
     except KeyError:
         await ctx.message.reply("This channel's initiative table is already empty!")
@@ -221,7 +217,7 @@ async def initiative_remove_character(ctx, *, args=None):
         character = args or ctx.author.display_name
         removed = manager.remove_init(character)
         if removed:
-            tzimisce.Masquerade.database.remove_initiative(ctx.channel.id, character)
+            tzimisce.masquerade.database.remove_initiative(ctx.channel.id, character)
             message = f"Removed {character} from initiative!"
 
             if manager.count() == 0:
@@ -249,7 +245,7 @@ async def initiative_reroll(ctx):
         for character in characters:
             init = characters[character]
 
-            tzimisce.Masquerade.database.set_initiative(
+            tzimisce.masquerade.database.set_initiative(
                 ctx.channel.id, character, init.mod, init.die
             )
     else:
@@ -274,7 +270,7 @@ async def initiative_declare(ctx, *args):
         if not manager.declare_action(character, action):
             raise NameError(character)
 
-        tzimisce.Masquerade.database.set_initiative_action(
+        tzimisce.masquerade.database.set_initiative_action(
             ctx.channel.id, character, action
         )
         await ctx.message.reply(f"Declared action for {character}: {action}.")
@@ -295,7 +291,7 @@ def suggestion_to_roll(reaction, user):
                 return None
 
         if not message.embeds and user in message.mentions:
-            match = tzimisce.Masquerade.suggestx.search(message.content)
+            match = tzimisce.masquerade.suggestx.search(message.content)
             if match:
                 return match.group("suggestion")
 
@@ -307,12 +303,12 @@ async def on_reaction_add(reaction, user):
     suggestion = suggestion_to_roll(reaction, user)
     if suggestion:
         command = defaultdict(lambda: None)
-        match = tzimisce.Masquerade.invokex.match(suggestion)
+        match = tzimisce.masquerade.invokex.match(suggestion)
         command.update(match.groupdict())
 
         ctx = await bot.get_context(reaction.message)
         ctx.author = user # Otherwise, the user is the bot
-        await tzimisce.Masquerade.handle_command(command, ctx, True)
+        await tzimisce.masquerade.handle_command(command, ctx, True)
 
         # Remove the old reactions
         await reaction.message.add_reaction("✅")
@@ -330,20 +326,20 @@ async def on_ready():
 async def on_guild_join(guild):
     """When joining a guild, log it for statistics purposes."""
     print(f"Joining {guild}!")
-    tzimisce.Masquerade.database.add_guild(guild.id, guild.name)
+    tzimisce.masquerade.database.add_guild(guild.id, guild.name)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
     print(f"Removing {guild}.")
-    tzimisce.Masquerade.database.remove_guild(guild.id)
+    tzimisce.masquerade.database.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_update(_, after):
     """Sometimes guilds are renamed. Fix that."""
-    tzimisce.Masquerade.database.rename_guild(after.id, after.name)
+    tzimisce.masquerade.database.rename_guild(after.id, after.name)
 
 @bot.event
 async def on_command_error(ctx, error):

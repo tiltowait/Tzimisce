@@ -4,13 +4,13 @@ import re
 import random
 
 import discord
-from tzimisce.RollDB import RollDB
+from tzimisce.database import RollDB
 from tzimisce import roll
 
 random.seed()
 
 poolx = re.compile(
-    r"^(?P<pool>\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \D[^#]*)?$"
+    r"^(?P<pool>-?\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \D[^#]*)?$"
 )
 tradx = re.compile(
     r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
@@ -41,9 +41,7 @@ async def handle_command(command, ctx, mentioning=False):
     # Discord will reject messages that are too long
     if command["comment"] and len(command["comment"]) > 500:
         reduction = len(command["comment"]) - 500
-        characters = "character"
-        if reduction > 1: # Because I can't risk improper pluralization
-            characters += "s"
+        characters = "character" if reduction == 1 else "characters"
 
         await ctx.message.reply(f"Comment too long by {reduction} {characters}.")
         return
@@ -64,6 +62,7 @@ async def handle_command(command, ctx, mentioning=False):
         if isinstance(query_result, str):
             adding_reaction = False
 
+            # Database offered macro suggestion
             if query_result[-2:] == "`?":
                 # First, create the invocation
                 will = command["will"] or ""
@@ -91,7 +90,7 @@ async def handle_command(command, ctx, mentioning=False):
                 await message.add_reaction("👍")
             return
 
-        # Retrieved a roll
+        # Retrieved a roll; replace our command
         command = query_result
 
     # Pooled roll
@@ -106,7 +105,10 @@ async def handle_command(command, ctx, mentioning=False):
             else:
                 await ctx.message.reply(embed=send)
         else: # It's a string
-            await ctx.message.reply(send)
+            if mentioning:
+                await ctx.send(content=f"{ctx.author.mention}: {send}")
+            else:
+                await ctx.message.reply(send)
 
         if ctx.guild:
             database.increment_rolls(ctx.guild.id)
@@ -170,39 +172,26 @@ def __pool_roll(author, command):
     compact = command["compact"]
     pool = int(command["pool"])
 
-    if pool < 1:
-        return "Pool cannot be lower than 1."
-
-    if pool > 100:
-        return "Error! Pools cannot be larger than 100."
+    if pool < 1 or pool > 100:
+        return f"Sorry, pools must be between 1 and 100. *(Input: {pool})*"
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
-    difficulty = command["difficulty"]
-    if not difficulty:
-        difficulty = 6
-    else:
-        difficulty = int(difficulty)
-        if difficulty > 10:
-            difficulty = 10
-        elif difficulty < 2:
-            difficulty = 2
+    difficulty = int(command["difficulty"] or "6")
+    if difficulty > 10 or difficulty < 2:
+        return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
 
-    # Title format: 'Pool X, difficulty Y'
     title = f"Pool {pool}, diff. {difficulty}"
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
-    autos = command["auto"]
-    if autos:
-        autos = int(autos)
-        title += f", +{pluralize_autos(autos)}"
-    else:
-        autos = 0
+    autos = int(command["auto"] or "0")
+    if autos > 0:
+        title += f", +{__pluralize_autos(autos)}"
 
     specialty = command["specialty"] # Doubles 10s if set
 
     # Perform rolls, format them, and figure out how many successes we have
-    results = roll.Pool(pool, difficulty, will, specialty is not None, autos)
+    results = roll.Pool(pool, difficulty, will, specialty, autos)
 
     comment = command["comment"]
 
@@ -222,7 +211,7 @@ def __pool_roll(author, command):
     # If not compact, put the results into an embed
 
     # The embed's color indicates if the roll succeeded, failed, or botched
-    color = 0
+    color = FAIL_COLOR
     if results.successes >= 5:
         color = EXCEPTIONAL_COLOR
     elif results.successes >= 3:
@@ -231,8 +220,6 @@ def __pool_roll(author, command):
         color = MARGINAL_COLOR
     elif results.successes < 0:
         color = BOTCH_COLOR
-    else:
-        color = FAIL_COLOR
 
     # Set up the embed fields
     fields = []
@@ -299,9 +286,16 @@ def __traditional_roll(author, command):
 
 def help_embed(prefix):
     """Return a handy help embed."""
-    embed=discord.Embed(title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/", description="Click above for a complete listing of commands, including macros (roll saving) and more.")
-    embed.add_field(name="Basic Syntax", value=f"```{prefix}m <pool> [difficulty] [specialty] # comment```Difficulty, specialty, and comment are all optional.", inline=False)
-    embed.add_field(name="Example", value=f"```{prefix}m 8 7 Domineering # Command```", inline=False)
+    embed=discord.Embed(
+        title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/",
+        description="Click above for a complete listing of commands: Macros, initiative, and more!"
+    )
+    embed.add_field(
+        name="Basic Syntax",
+        value=f"```{prefix}m <pool> [difficulty] [specialty] # comment```Only `pool` is required.",
+        inline=False
+    )
+    embed.add_field(name="Example", value=f"```{prefix}m 8 5 Mesmerizing # Summon```", inline=False)
 
     return embed
 
@@ -310,6 +304,8 @@ def build_embed(
     footer=None
 ):
     """Return a discord embed with a variable number of fields."""
+    # pylint: disable=too-many-arguments
+
     embed = discord.Embed(
         title=title, colour=discord.Colour(color), description=description
     )
@@ -338,7 +334,7 @@ def build_embed(
 
     return embed
 
-def pluralize_autos(autos):
+def __pluralize_autos(autos):
     """Pluralize 'N auto(s)' as needed"""
     string = f"{autos} auto"
     if autos > 1:

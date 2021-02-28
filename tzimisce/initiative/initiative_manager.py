@@ -45,6 +45,7 @@ class InitiativeManager:
         for key in self.characters:
             self.characters[key].reroll()
 
+    @property
     def count(self) -> int:
         """Returns the number of characters in initiative."""
         return len(self.characters)

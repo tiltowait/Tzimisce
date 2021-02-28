@@ -50,11 +50,20 @@ class RollDB:
 
         self.conn.commit()
 
+        # Macro patterns
+        self.storex = re.compile(
+            r"^(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*\d*\s*.*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
+        )
+        self.commentx = re.compile(r"^(?P<name>[\w-]+)\s+c=(?P<comment>.*)$")
+        self.usex = re.compile(r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$")
+        self.deletex = re.compile(r"^(?P<name>[\w-]+)\s*=$")
+        self.multiwordx = re.compile(r"[\w-]+ [\w-]+")
+
     def __execute(self, query, args):
         """Executes the specified query. Tries to reconnect to the database if there's an error."""
         try:
             self.cursor.execute(query, args)
-        except psycopg2.errors.AdminShutdown:
+        except psycopg2.errors.AdminShutdown: # pylint: disable=no-member
             # Connection got reset for some reason, so fix it
             print("Lost database connection. Retrying.")
             self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
@@ -67,28 +76,21 @@ class RollDB:
         comment = command["comment"]
 
         # Store a new roll or change an old one.
-        pattern = re.compile(
-            r"^(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*\d*\s*.*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
-        )
-        match = pattern.match(syntax)
+        match = self.storex.match(syntax)
         if match:
             name = match.group("name")
             syntax = match.group("syn")
-            return self.store_roll(guild, userid, name, syntax, comment)
+            return self.__store_roll(guild, userid, name, syntax, comment)
 
         # Change the comment of a stored roll
-        pattern = re.compile(r"^(?P<name>[\w-]+)\s+c=(?P<comment>.*)$")
-        match = pattern.match(syntax)
+        match = self.commentx.match(syntax)
         if match:
             name = match.group("name")
             comment = match.group("comment")
             return self.__update_stored_comment(guild, userid, name, comment)
 
         # Use a stored roll.
-        pattern = re.compile(
-            r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$"
-        )
-        match = pattern.match(syntax)
+        match = self.usex.match(syntax)
         if match:
             name = match.group("name")
             compound = self.retrieve_stored_roll(guild, userid, name)
@@ -103,7 +105,7 @@ class RollDB:
             syntax = compound[0]
             mods = match.group("mods")
 
-            # Mods can modify a stored roll by changing the pool, diff, or both
+            # The user may modify a stored roll by changing the pool, diff, or both
             if mods:
                 mods = mods.split()
                 pool_mod = int(mods[0])
@@ -115,28 +117,18 @@ class RollDB:
 
                 # Modify the pool first
                 syntax = syntax.split()
-                if len(syntax) == 1: # Need a default difficulty
-                    syntax.append(6)
-                elif len(syntax) == 2:
-                    if not syntax[1][0].isdigit(): # it's a specialty; add diff
-                        syntax.insert(1, 6)
+                if len(syntax) == 1 or not syntax[1][0].isdigit(): # Need a default difficulty
+                    syntax.insert(1, 6)
 
                 new_pool = int(syntax[0]) + pool_mod
                 syntax[0] = str(new_pool)
 
-                if new_pool < 1:
-                    return f"Can't roll a pool of {new_pool}!"
-
                 # Modify or replace the difficulty
                 diff_desc = ""
-                diff_mod = "+0"
-                if len(mods) == 2: # diff mod is optional; unchanged if omitted
-                    diff_mod = mods[1]
+                diff_mod = "+0" if len(mods) < 2 else mods[1]
 
-                if diff_mod.isdigit():
+                if diff_mod.isdigit(): # No +/- sign
                     syntax[1] = diff_mod
-                    if int(diff_mod) < 2:
-                        diff_mod = 2
                     diff_desc = f"Diff. to {diff_mod}."
                 else:
                     diff_mod = int(diff_mod)
@@ -146,12 +138,11 @@ class RollDB:
                     if diff_mod != 0:
                         diff_desc = f"Diff. {diff_mod:+}."
 
-                override = f"{pool_desc}{diff_desc}" # Remind user what they did
-                command["override"] = override
+                command["override"] = f"{pool_desc}{diff_desc}" # Notice of override
 
                 syntax = " ".join(syntax)
 
-            # Write the new command
+            # Only use the stored command if a new one isn't given
             command["syntax"] = syntax
             if compound[1] and not command["comment"]:
                 command["comment"] = compound[1]
@@ -159,20 +150,23 @@ class RollDB:
             return command
 
         # Delete a stored roll.
-        match = re.match(r"^(?P<name>[\w-]+)\s*=$", syntax)
+        match = self.deletex.match(syntax)
         if match:
             name = match.group("name")
             return self.delete_stored_roll(guild, userid, name)
 
         # See if the user tried to do a multi-word macro
-        if re.match(r"[\w-]+ [\w-]+", syntax):
+        if self.multiwordx.match(syntax):
             return "Sorry, macro names can't contain spaces!"
 
         # We have no idea what the user wanted to do.
         return "Come again?"
 
-    def store_roll(self, guild, userid, name, syntax, comment):
+    def __store_roll(self, guild, userid, name, syntax, comment):
         """Store a new roll, or update an old one."""
+        # pylint: disable=too-many-arguments
+
+        # Inserting a new macro
         if not self.__is_roll_stored(guild, userid, name):
             # Create the roll
             query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
@@ -181,14 +175,21 @@ class RollDB:
 
             return f"Saved new macro: `{name}`."
 
-        # Update an old roll
+        # Updating an old macro
+
+        # Updating both syntax and comment
         if comment:
-            query = "UPDATE SavedRolls SET Syntax=%s, Comment=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
+            query = """
+                UPDATE SavedRolls
+                SET Syntax=%s, Comment=%s
+                WHERE ID=%s AND Guild=%s AND Name ILIKE %s;
+            """
             self.__execute(query, (syntax, comment, userid, guild, name,))
             self.conn.commit()
 
             return f"Updated `{name}` syntax and comment."
 
+        # Update only syntax
         query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
         self.__execute(query, (syntax, userid, guild, name,))
         self.conn.commit()
@@ -219,7 +220,7 @@ class RollDB:
         return result
 
     def __find_similar_macro(self, guild, userid, name):
-        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s) > 0.2;"
+        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s)>0.2;"
         self.__execute(query, (guild, userid, name,))
         result = self.cursor.fetchone()
 
@@ -309,6 +310,7 @@ class RollDB:
 
         self.__execute(query, (guildid,))
         self.conn.commit()
+
 
     # Prefix stuff
 
