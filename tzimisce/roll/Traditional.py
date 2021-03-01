@@ -1,19 +1,17 @@
 """Module for performing simple, traditional dice rolls."""
 
-import random
+from secrets import randbelow
 import re
 
+__dicex = re.compile(r"^(?P<repeat>\d+)d(?P<die>\d+)$")
+__modx = re.compile(r"^\d+$")
 
 def roll(repeat: int, die: int) -> list:
     """Return a list of random numbers between 1 and die."""
-    return [random.randint(1, die) for _ in range(repeat)]
-
+    return [randbelow(die) + 1 for _ in range(repeat)]
 
 def roll_from_string(string: str) -> tuple:
     """Return a list of random numbers based on an input string."""
-    dice = re.compile(r"^(?P<repeat>\d+)d(?P<die>\d+)$")
-    mod = re.compile(r"^\d+$")
-
     string = re.sub(r"\s+", "", string, flags=re.UNICODE)
     items = string.split("+")
 
@@ -23,7 +21,7 @@ def roll_from_string(string: str) -> tuple:
     num_rolls = 0
 
     for item in items:
-        match = dice.match(item)
+        match = __dicex.match(item)
         if match:
             repeat = int(match.group("repeat"))
             die = int(match.group("die"))
@@ -35,7 +33,7 @@ def roll_from_string(string: str) -> tuple:
             results.extend(roll(repeat, die))
             continue
 
-        match = mod.match(item)
+        match = __modx.match(item)
         if match:
             results.append(int(item))
             has_mod = True

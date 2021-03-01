@@ -1,13 +1,10 @@
 """The main Tzimisce dicebot class."""
 
 import re
-import random
 
 import discord
 from tzimisce.database import RollDB
 from tzimisce import parse
-
-random.seed()
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
