@@ -273,7 +273,8 @@ async def initiative_declare(ctx, *args):
         tzimisce.masquerade.database.set_initiative_action(
             ctx.channel.id, character, action
         )
-        await ctx.message.reply(f"Declared action for {character}: {action}.")
+        await ctx.message.add_reaction("👍")
+        await ctx.message.add_reaction("⚔️")
     except AttributeError:
         await ctx.message.reply("Initiative isn't set in this channel!")
     except NameError:
