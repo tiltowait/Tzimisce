@@ -1,6 +1,7 @@
 """response.py - Describes Responses to user input."""
 
 class Response:
+    """Simple container class for parser response types."""
     # Response types
     POOL = 1
     TRADITIONAL = 2

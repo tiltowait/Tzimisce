@@ -3,8 +3,7 @@
 import re
 
 import discord
-import tzimisce
-from tzimisce import roll
+from tzimisce import roll, masquerade
 from .response import Response
 
 __poolx = re.compile(
@@ -108,7 +107,7 @@ def __pool_roll(author, command):
 
     fields.append(("Result", results.formatted_result, False))
 
-    return tzimisce.masquerade.build_embed(
+    return masquerade.build_embed(
         author=author, header=title, color=color, fields=fields,
         footer=comment
     )

@@ -16,7 +16,7 @@ class Initiative:
         return self.init < other.init
 
     def __str__(self):
-        return f"*{self.die} + {self.mod}:*   **{self.init}**"
+        return f"*{self.die} + {self.mod}:* **{self.init}**"
 
     def reroll(self):
         """Reroll initiative."""
