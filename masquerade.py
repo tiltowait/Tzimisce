@@ -142,7 +142,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 
     if not mod: # Not rolling
         if manager:
-            init_commands = "Commands: remove | reset | clear | declare"
+            init_commands = "Commands: remove | clear | reroll | declare"
             embed = tzimisce.masquerade.build_embed(
                 title="Initiative", footer=init_commands, description=str(manager),
                 fields=[]
