@@ -14,8 +14,9 @@ async def parse(ctx, command):
 
     if command["syntax"][0].isalpha(): # Only macros start with alpha
         if ctx.channel.type is discord.ChannelType.private:
-            await ctx.send("Sorry, you can't store macros in private DMs!")
-            return
+            response = Response(Response.DATABASE)
+            response.content = "Sorry, you can't store macros in private DMs!"
+            return response
 
         query_result = masquerade.database.query_saved_rolls(
             guild=ctx.guild.id,
