@@ -3,7 +3,7 @@
 import re
 
 import discord
-from tzimisce import roll, masquerade
+from tzimisce import roll, masquerade # pylint: disable=cyclic-import
 from .response import Response
 
 __poolx = re.compile(

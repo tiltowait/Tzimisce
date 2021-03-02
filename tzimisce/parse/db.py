@@ -3,7 +3,7 @@
 import re
 import discord
 
-from tzimisce import masquerade
+from tzimisce import masquerade # pylint: disable=cyclic-import
 from tzimisce.parse.response import Response
 
 __suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
