@@ -12,12 +12,9 @@ from tzimisce.initiative import InitiativeManager
 
 # Setup
 
-# This is a defaultdict, lambda None
-CUSTOM_PREFIXES = tzimisce.masquerade.database.get_all_prefixes()
-
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
-    return __get_prefix(message.guild)
+    return tzimisce.get_prefix(message.guild)
 
 bot = commands.Bot(command_prefix=determine_prefix)
 bot.remove_command("help")
@@ -68,7 +65,7 @@ async def set_prefix(ctx, arg=None):
         return
 
     tzimisce.masquerade.database.update_prefix(ctx.guild.id, arg)
-    CUSTOM_PREFIXES[ctx.guild.id] = arg
+    tzimisce.CUSTOM_PREFIXES[ctx.guild.id] = arg
 
     message = f"Setting the prefix to `{arg}m`."
     if len(arg) > 3:
@@ -82,7 +79,7 @@ async def set_prefix(ctx, arg=None):
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
     tzimisce.masquerade.database.update_prefix(ctx.guild.id, None)
-    CUSTOM_PREFIXES[ctx.guild.id] = None
+    tzimisce.CUSTOM_PREFIXES[ctx.guild.id] = None
 
     await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
@@ -102,7 +99,7 @@ async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
 
     # We want to display the correct prefix for the server
-    prefix = __get_prefix(ctx.guild)[0]
+    prefix = tzimisce.get_prefix(ctx.guild)[0]
     embed = tzimisce.masquerade.help_embed(prefix)
 
     await ctx.message.reply(embed=embed)
@@ -129,7 +126,7 @@ initiative_managers = tzimisce.masquerade.database.get_initiative_tables()
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
-    prefix = __get_prefix(ctx.guild)[0]
+    prefix = tzimisce.get_prefix(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
@@ -374,19 +371,8 @@ def __console_log(header, message):
     print(f"{header} ERROR ON {message}")
     print("**********************\n\n")
 
+
 # Misc
-
-def __get_prefix(guild) -> tuple:
-    """Returns the guild's prefix. If the guild is None, returns a default."""
-    default_prefixes = ("/", "!")
-
-    if guild:
-        prefix = CUSTOM_PREFIXES[guild.id]
-        if prefix:
-            return (prefix,)
-        return default_prefixes
-
-    return default_prefixes
 
 def __status_message():
     """Sets the bot's Discord presence message."""
