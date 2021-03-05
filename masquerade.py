@@ -252,6 +252,10 @@ async def initiative_reroll(ctx):
 @commands.guild_only()
 async def initiative_declare(ctx, *args):
     """Declare an initiative action."""
+    if len(args) == 0:
+        await ctx.message.reply("You must declare an action!")
+        return
+
     parser = argparse.ArgumentParser()
     parser.add_argument("action", nargs="+")
     parser.add_argument("-n", "-c", "--name", nargs="+", dest="character")
