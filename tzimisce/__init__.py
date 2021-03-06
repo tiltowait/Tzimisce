@@ -6,6 +6,7 @@ from tzimisce import roll
 
 # This is a defaultdict, lambda None
 CUSTOM_PREFIXES = masquerade.database.get_all_prefixes()
+INITIATIVE_MANAGERS = masquerade.database.get_initiative_tables()
 
 def get_prefix(guild) -> tuple:
     """Returns the guild's prefix. If the guild is None, returns a default."""

@@ -117,8 +117,7 @@ async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
     await tzimisce.masquerade.delete_user_rolls(ctx)
 
-# Initiative Manager
-initiative_managers = tzimisce.masquerade.database.get_initiative_tables()
+# Initiative Management
 
 @bot.group(invoke_without_command=True, name="mi", aliases=["minit"])
 @commands.guild_only()
@@ -133,7 +132,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
     usage += f"`{prefix}mi clear` — Clear the table"
 
-    manager = initiative_managers[ctx.channel.id]
+    manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
 
     if not mod: # Not rolling
         if manager:
@@ -162,7 +161,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             init = None
             if not is_modifier:
                 init = manager.add_init(character_name, mod)
-                initiative_managers[ctx.channel.id] = manager
+                tzimisce.INITIATIVE_MANAGERS[ctx.channel.id] = manager
             else:
                 init = manager.modify_init(character_name, mod)
                 if not init:
@@ -196,7 +195,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
     try:
-        del initiative_managers[ctx.channel.id]
+        del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
         tzimisce.masquerade.database.clear_initiative(ctx.channel.id)
         await ctx.message.reply("Reset initiative in this channel!")
     except KeyError:
@@ -206,7 +205,7 @@ async def initiative_reset(ctx):
 @commands.guild_only()
 async def initiative_remove_character(ctx, *, args=None):
     """Remove a character from initiative manager."""
-    manager = initiative_managers[ctx.channel.id]
+    manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
 
     if manager:
         character = args or ctx.author.display_name
@@ -216,7 +215,7 @@ async def initiative_remove_character(ctx, *, args=None):
             message = f"Removed {character} from initiative!"
 
             if manager.count() == 0:
-                del initiative_managers[ctx.channel.id]
+                del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
                 message += "\nNo characters left in initiative. Clearing table."
 
             await ctx.message.reply(message)
@@ -229,7 +228,7 @@ async def initiative_remove_character(ctx, *, args=None):
 @commands.guild_only()
 async def initiative_reroll(ctx):
     """Rerolls all initiative and prints the new table."""
-    manager = initiative_managers[ctx.channel.id]
+    manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
 
     if manager:
         manager.reroll()
@@ -262,7 +261,7 @@ async def initiative_declare(ctx, *args):
         if parsed.character:
             character = " ".join(parsed.character)
 
-        manager = initiative_managers[ctx.channel.id]
+        manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
         if not manager.declare_action(character, action):
             raise NameError(character)
 
