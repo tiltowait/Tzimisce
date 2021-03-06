@@ -23,18 +23,16 @@ bot.remove_command("help")
 
 @bot.group(invoke_without_command=True, name="m", aliases=["mw", "mc", "mcw", "mwc"])
 async def standard_roll(ctx, *, args=None):
-    """Perform a roll without Willpower."""
+    """Primary function. Perform a pool or traditional roll."""
     if not args:
         await __help(ctx)
         return
 
-    raw_split = ctx.message.content.split(' ', 1)
-    clean_split = ctx.message.clean_content.split(' ', 1)
-
-    if len(raw_split) == 1:
-        return
-
-    syntax, comment = split_comment(raw_split[1], clean_split[1])
+    # Split the comment from the syntax
+    content = ctx.message.clean_content.split(" ", 1)[1] # Just the command arguments
+    content = content.split("#", 1) # Split out the comment from the syntax
+    syntax = content[0]
+    comment = content[1] if len(content) > 1 else None
 
     if len(syntax) == 0: # Can happen if user supplies a comment without syntax
         raise IndexError
@@ -382,27 +380,6 @@ def __status_message():
     servers = len(bot.guilds)
     return f"/m help | {servers} chronicles"
 
-def split_comment(raw: str, clean: str) -> list:
-    """Tries to use the clean user input for a command."""
-    try:
-        raw_comment = raw.index('#')
-        clean_comment = clean.index('#')
 
-        split_candidate = ''
-
-        # A comment, user, or channel tag looks something like <!@2234255345> in
-        # the background, which is the input the bot receives. If the user did
-        # not use such a tag before their comment, we can trivially sub in the
-        # clean text and make things prettier.
-
-        if raw_comment == clean_comment:
-            split_candidate = clean
-        else:
-            split_candidate = raw
-
-        return split_candidate.split('#', 1)
-    except ValueError:
-        return (raw, None)
-
-
+# End definitions
 bot.run(os.environ["TZIMISCE_TOKEN"])
