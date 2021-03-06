@@ -252,21 +252,18 @@ async def initiative_reroll(ctx):
 @commands.guild_only()
 async def initiative_declare(ctx, *args):
     """Declare an initiative action."""
-    if len(args) == 0:
-        await ctx.message.reply("You must declare an action!")
-        return
-
     parser = argparse.ArgumentParser()
     parser.add_argument("action", nargs="+")
     parser.add_argument("-n", "-c", "--name", nargs="+", dest="character")
-    parsed = parser.parse_args(args)
-
-    action = " ".join(parsed.action)
-    character = ctx.author.display_name
-    if parsed.character:
-        character = " ".join(parsed.character)
 
     try:
+        parsed = parser.parse_args(args)
+
+        action = " ".join(parsed.action)
+        character = ctx.author.display_name
+        if parsed.character:
+            character = " ".join(parsed.character)
+
         manager = initiative_managers[ctx.channel.id]
         if not manager.declare_action(character, action):
             raise NameError(character)
@@ -280,6 +277,8 @@ async def initiative_declare(ctx, *args):
         await ctx.message.reply("Initiative isn't set in this channel!")
     except NameError:
         await ctx.message.reply(f"{character} isn't in the initiative table!")
+    except SystemExit:
+        await ctx.message.reply("Usage: `/mi dec <action> [-n character]`")
 
 # Events
 
