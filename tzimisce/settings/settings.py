@@ -9,7 +9,7 @@ class SettingsDB:
 
     # Keys
     COMPACT = "use_compact"
-    EXPLODING = "exploding_ones"
+    EXPLODING = "exploding_tens"
     NULLIFY_ONES = "nullify_ones"
     PREFIX = "prefix"
 
@@ -49,7 +49,7 @@ class SettingsDB:
 
             params = {
                 "use_compact": compact,
-                "exploding_ones": exploding,
+                "exploding_tens": exploding,
                 "nullify_ones": nullify_ones,
                 "prefix": prefix
             }

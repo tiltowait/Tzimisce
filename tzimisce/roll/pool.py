@@ -6,7 +6,9 @@ from . import traditional
 class Pool:
     """Provides facilities for pool-based rolls."""
 
-    Options = namedtuple("Options", ["pool", "diff", "autos", "wp", "spec", "no_botch"])
+    Options = namedtuple("Options",
+        ["pool", "diff", "autos", "wp", "spec", "no_botch", "exploding", "nullify_ones"]
+    )
 
     # pylint: disable=too-many-arguments
     # We don't have a choice here.
@@ -17,6 +19,8 @@ class Pool:
         self.spec = options.spec
         self.autos = options.autos
         self.no_botch = options.no_botch
+        self.exploding = options.exploding
+        self.nullify_ones = options.nullify_ones
         self.dice = sorted(traditional.roll(options.pool, 10), reverse=True)
 
     @property
@@ -46,7 +50,7 @@ class Pool:
         """
         formatted = []
         for die in self.dice:
-            if die == 1:
+            if die == 1 and not self.nullify_ones:
                 formatted.append(f"~~**{die}**~~")
             elif die < self.difficulty:
                 formatted.append(f"~~{die}~~")
@@ -64,7 +68,7 @@ class Pool:
         return formatted
 
     @property
-    def successes(self):
+    def successes(self) -> int:
         """
         Sums the number of successes, taking into account Willpower use.
           * Botch if no successes or willpower and failures > 0
@@ -79,7 +83,7 @@ class Pool:
                 suxx += 1
                 if die == 10 and self.spec:
                     suxx += 1
-            elif die == 1:
+            elif die == 1 and not self.nullify_ones:
                 fails += 1
 
         # Three possible results:

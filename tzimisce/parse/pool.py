@@ -70,8 +70,12 @@ def __pool_roll(author, command):
     specialty = command["specialty"] # Doubles 10s if set
 
     # Perform rolls, format them, and figure out how many successes we have
-    options = roll.Pool.Options(pool, difficulty, autos, will, specialty, no_botch)
-    results = roll.Pool(options)
+    results = roll.Pool(
+        roll.Pool.Options(
+            pool, difficulty, autos, will, specialty,
+            no_botch, command["exploding"], command["nullify_ones"]
+        )
+    )
 
     comment = command["comment"]
 
