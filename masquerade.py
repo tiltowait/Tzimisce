@@ -14,7 +14,7 @@ from tzimisce.initiative import InitiativeManager
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
-    return tzimisce.get_prefix(message.guild)
+    return tzimisce.settings.get_prefix(message.guild)
 
 bot = commands.Bot(command_prefix=determine_prefix)
 bot.remove_command("help")
@@ -62,8 +62,7 @@ async def set_prefix(ctx, arg=None):
         await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
         return
 
-    tzimisce.masquerade.database.update_prefix(ctx.guild.id, arg)
-    tzimisce.CUSTOM_PREFIXES[ctx.guild.id] = arg
+    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, arg)
 
     message = f"Setting the prefix to `{arg}m`."
     if len(arg) > 3:
@@ -76,8 +75,7 @@ async def set_prefix(ctx, arg=None):
 @commands.has_permissions(administrator=True)
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
-    tzimisce.masquerade.database.update_prefix(ctx.guild.id, None)
-    tzimisce.CUSTOM_PREFIXES[ctx.guild.id] = None
+    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, None)
 
     await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
