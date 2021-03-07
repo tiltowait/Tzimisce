@@ -50,11 +50,11 @@ class Pool:
         """
         formatted = []
         for die in self.dice:
-            if die == 1 and not self.nullify_ones:
-                formatted.append(f"~~**{die}**~~")
+            if die == 1 and not (self.nullify_ones and self.no_botch):
+                formatted.append(f"~~***{die}***~~")
             elif die < self.difficulty:
                 formatted.append(f"~~{die}~~")
-            elif die == 10 and self.spec and not self.exploding:
+            elif die == 10 and (self.spec and not self.exploding):
                 formatted.append(f"**{die}**")
             else:
                 formatted.append(str(die))
@@ -83,7 +83,7 @@ class Pool:
                 suxx += 1
                 if die == 10 and self.spec and not self.exploding:
                     suxx += 1
-            elif die == 1 and not self.nullify_ones:
+            elif die == 1 and not (self.nullify_ones and self.no_botch):
                 fails += 1
 
         # Three possible results:

@@ -69,7 +69,7 @@ async def standard_roll(ctx, *, args=None):
 
 # Subcommands
 
-@standard_roll.command(aliases=["set"])
+@standard_roll.command(aliases=["set", "setting"])
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
 async def settings(ctx, *args):
@@ -86,7 +86,7 @@ async def settings(ctx, *args):
         msg = "\n".join(msg)
         details = f"For more info or to set: `{prefix}m settings <parameter> [value]`"
 
-        await ctx.message.reply(f"Current settings:\n{msg}\n{details}")
+        await ctx.message.reply(f"This server's settings:\n{msg}\n{details}")
         return
 
     if len(args) > 2:
