@@ -69,7 +69,7 @@ async def standard_roll(ctx, *, args=None):
 
 # Subcommands
 
-@standard_roll.command()
+@standard_roll.command(aliases=["set"])
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
 async def settings(ctx, *args):
@@ -114,39 +114,45 @@ async def settings(ctx, *args):
 
                 await ctx.message.reply(f"Setting `{key}` to `{new_value}`!")
             else:
-                # TODO: Deprecate old subcommands
                 if new_value == "reset":
-                    await reset_prefix(ctx)
+                    await __reset_prefix(ctx)
                 else:
-                    await set_prefix(ctx, new_value)
+                    await __set_prefix(ctx, new_value)
     else:
         await ctx.message.reply(f"Unknown setting `{key}`!")
+
+async def __set_prefix(ctx, new_value):
+    """Set a custom prefix for the guild."""
+    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, new_value)
+
+    message = f"Setting the prefix to `{new_value}m`."
+    if len(new_value) > 3:
+        message += " A prefix this long might be annoying to type!"
+
+    await ctx.send(message)
+
+async def __reset_prefix(ctx):
+    """Reset the current guild's prefix."""
+    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, None)
+
+    await ctx.send("Reset the command prefix to `/m` and `!m`.")
+
 
 @standard_roll.command()
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
-async def set_prefix(ctx, arg=None):
-    """Set a custom prefix for the guild."""
-    if not arg:
-        await ctx.send("You must supply a new prefix! To reset to default, use `reset_prefix`.")
-        return
-
-    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, arg)
-
-    message = f"Setting the prefix to `{arg}m`."
-    if len(arg) > 3:
-        message += " A prefix this long might be annoying to type!"
-
-    await ctx.send(message)
+async def set_prefix(ctx):
+    """DEPRECATED: User should use /m settings prefix."""
+    prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
+    await ctx.message.reply(f"This function has moved! Use `{prefix}m settings prefix`.")
 
 @standard_roll.command()
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
-    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, None)
-
-    await ctx.send("Reset the command prefix to `/m` and `!m`.")
+    prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
+    await ctx.message.reply(f"This function has moved! Use `{prefix}m settings prefix reset`.")
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
