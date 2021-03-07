@@ -2,6 +2,7 @@
 
 import os
 from collections import defaultdict
+from distutils.util import strtobool
 import argparse
 
 import discord
@@ -41,10 +42,13 @@ async def standard_roll(ctx, *, args=None):
     command["syntax"] = syntax.strip()
     command["comment"] = comment.strip() if comment else None
 
+    guild_settings = tzimisce.settings.settings_for_guild(ctx.guild.id)
+    command.update(guild_settings)
+
     # See what options the user has selected, if any
     if "w" in ctx.invoked_with:
         command["will"] = "w"
-    if "c" in ctx.invoked_with:
+    if "c" in ctx.invoked_with or guild_settings["use_compact"]:
         command["compact"] = "c"
         if ctx.guild:
             tzimisce.masquerade.database.increment_compact_rolls(ctx.guild.id)
@@ -52,6 +56,56 @@ async def standard_roll(ctx, *, args=None):
     await tzimisce.masquerade.handle_command(command, ctx)
 
 # Subcommands
+
+@standard_roll.command()
+@commands.guild_only()
+@commands.has_permissions(administrator=True)
+async def settings(ctx, *args):
+    """Fetch or update server settings."""
+    params = tzimisce.settings.available_parameters()
+
+    # Display settings
+    if len(args) < 1:
+        prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
+        msg = []
+        for param in params:
+            value = tzimisce.settings.value(ctx.guild.id, param)
+            msg.append(f"`{param}`: `{value}`")
+        msg = "\n".join(msg)
+        details = f"For more info or to set: `{prefix}m settings <parameter> [value]`"
+
+        await ctx.message.reply(f"Current settings:\n{msg}\n{details}")
+        return
+
+    if len(args) > 2:
+        await ctx.message.reply("Error! Too many arguments.")
+        return
+
+    # Display or update indivitual settings
+    key = args[0]
+    if key in params:
+        if len(args) < 2:
+            value = tzimisce.settings.value(ctx.guild.id, key)
+            info = tzimisce.settings.parameter_information(key)
+            await ctx.message.reply(f"{info} (Current: `{value}`)")
+        else:
+            new_value = args[1]
+            if key != tzimisce.settings.PREFIX:
+                try:
+                    new_value = bool(strtobool(new_value))
+                    tzimisce.settings.update(ctx.guild.id, key, new_value)
+                except ValueError:
+                    await ctx.message.reply(f"Error! `{key}` must be `true` or `false`!")
+                    return
+
+                await ctx.message.reply(f"Setting `{key}` to `{new_value}`!")
+            else:
+                if new_value == "reset":
+                    await reset_prefix(ctx)
+                else:
+                    await set_prefix(ctx, new_value)
+    else:
+        await ctx.message.reply(f"Unknown setting `{key}`!")
 
 @standard_roll.command()
 @commands.guild_only()
@@ -95,7 +149,7 @@ async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
 
     # We want to display the correct prefix for the server
-    prefix = tzimisce.get_prefix(ctx.guild)[0]
+    prefix = tzimisce.settings.get_prefix(ctx.guild)[0]
     embed = tzimisce.masquerade.help_embed(prefix)
 
     await ctx.message.reply(embed=embed)
@@ -121,7 +175,7 @@ async def delete_all(ctx):
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
-    prefix = tzimisce.get_prefix(ctx.guild)[0]
+    prefix = tzimisce.settings.get_prefix(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"

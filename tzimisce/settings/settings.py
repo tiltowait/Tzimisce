@@ -8,8 +8,8 @@ class SettingsDB:
     """Interface for setting and retriving server parameters."""
 
     # Keys
-    COMPACT = "compact"
-    EXPLODING = "exploding"
+    COMPACT = "use_compact"
+    EXPLODING = "exploding_ones"
     NULLIFY_ONES = "nullify_ones"
     PREFIX = "prefix"
 
@@ -48,8 +48,8 @@ class SettingsDB:
             prefix = row[4]
 
             params = {
-                "compact": compact,
-                "exploding": exploding,
+                "use_compact": compact,
+                "exploding_ones": exploding,
                 "nullify_ones": nullify_ones,
                 "prefix": prefix
             }
@@ -66,17 +66,49 @@ class SettingsDB:
         """Returns the guild's prefix. If the guild is None, returns a default."""
         default_prefixes = ("/", "!")
 
-        if guild:
-            prefix = self.settings_for_guild(guild.id)["prefix"]
-            if prefix:
-                return (prefix,)
+        if not guild:
             return default_prefixes
 
+        if not isinstance(guild, int):
+            guild = guild.id
+
+        prefix = self.settings_for_guild(guild)[SettingsDB.PREFIX]
+        if prefix:
+            return (prefix,)
         return default_prefixes
 
     def update(self, guild, key, value):
         """Sets a server parameter."""
 
-        query = "UPDATE Guilds SET %s=%s WHERE ID=%s;"
-        self.__execute(query, (key, value, guild,))
+        # Normally unsafe, but we do input validation before we get here
+        query = f"UPDATE Guilds SET {key}=%s WHERE ID=%s;"
+        self.__execute(query, (value, guild,))
         self.conn.commit()
+
+        self.__all_settings[guild][key] = value
+
+    def value(self, guild, key):
+        """Retrieves a value for a specific key for a given guild."""
+        if key == SettingsDB.PREFIX:
+            return ", ".join(self.get_prefix(guild))
+
+        return self.__all_settings[guild][key]
+
+    def available_parameters(self):
+        """Returns a list of available configuration options."""
+
+        return [self.COMPACT, self.EXPLODING, self.NULLIFY_ONES, self.PREFIX]
+
+    def parameter_information(self, param) -> str:
+        """Returns a description of what a given parameter does."""
+
+        if param == self.COMPACT:
+            return "Set the server to always use compact rolls."
+        if param == self.EXPLODING:
+            return "If `true`, specialty tens explode. If `false`, specialty tens are doubled."
+        if param == self.NULLIFY_ONES:
+            return "If `true`, the `z` roll option causes ones to not subtract successes."
+        if param == self.PREFIX:
+            return "Defines the bot invokation prefix."
+
+        return "Unknown parameter!"
