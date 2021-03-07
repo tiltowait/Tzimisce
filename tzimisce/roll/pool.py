@@ -1,19 +1,23 @@
 """A class for performing pool-based rolls and determining number of successes."""
 
+from collections import namedtuple
 from . import traditional
 
 class Pool:
     """Provides facilities for pool-based rolls."""
 
+    Options = namedtuple("Options", ["pool", "diff", "autos", "wp", "spec", "no_botch"])
+
     # pylint: disable=too-many-arguments
     # We don't have a choice here.
 
-    def __init__(self, pool, difficulty, will, spec, autos):
-        self.difficulty = difficulty
-        self.will = will
-        self.spec = spec
-        self.autos = autos
-        self.dice = sorted(traditional.roll(pool, 10), reverse=True)
+    def __init__(self, options):
+        self.difficulty = options.diff
+        self.will = options.wp
+        self.spec = options.spec
+        self.autos = options.autos
+        self.no_botch = options.no_botch
+        self.dice = sorted(traditional.roll(options.pool, 10), reverse=True)
 
     @property
     def formatted_result(self):
@@ -25,7 +29,7 @@ class Pool:
             result_str = f"{successes} success"
             if successes > 1:
                 result_str += "es"
-        elif successes == 0:
+        elif successes == 0 or self.no_botch:
             result_str = "Failure"
         else:
             result_str = f"Botch: {successes}"
@@ -83,12 +87,15 @@ class Pool:
         #   * Failure
         #   * Success
         # If using Willpower, there's always one guaranteed success.
-        if not self.will and fails > 0 and suxx == 0:  # Botch
+        if not self.will and fails > 0 and suxx == 0 and not self.no_botch:  # Botch
             return -fails
 
         suxx = suxx - fails
         suxx = 0 if suxx < 0 else suxx
         if self.will:
             suxx += 1
+
+        if self.no_botch and suxx < 0:
+            suxx = 0
 
         return suxx

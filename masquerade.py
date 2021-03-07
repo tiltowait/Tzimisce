@@ -22,7 +22,17 @@ bot.remove_command("help")
 
 # Commands
 
-@bot.group(invoke_without_command=True, name="m", aliases=["mw", "mc", "mcw", "mwc"])
+# m - Invoke a roll
+# w - Use Willpower
+# c - Use compact mode
+# z - Disable botches
+standard_aliases = [
+    "mw", "mc", "mz",
+    "mwz", "mzw", "mcz", "mzc", "mwc", "mcw",
+    "mzcw", "mzwc", "mwzc", "mczw", "mcwz", "mwcz"
+]
+
+@bot.group(invoke_without_command=True, name="m", aliases=standard_aliases)
 async def standard_roll(ctx, *, args=None):
     """Primary function. Perform a pool or traditional roll."""
     if not args:
@@ -52,6 +62,8 @@ async def standard_roll(ctx, *, args=None):
         command["compact"] = "c"
         if ctx.guild:
             tzimisce.masquerade.database.increment_compact_rolls(ctx.guild.id)
+    if "z" in ctx.invoked_with:
+        command["no_botch"] = "z"
 
     await tzimisce.masquerade.handle_command(command, ctx)
 
@@ -90,6 +102,8 @@ async def settings(ctx, *args):
             await ctx.message.reply(f"{info} (Current: `{value}`)")
         else:
             new_value = args[1]
+
+            # Prefixes aren't true/false
             if key != tzimisce.settings.PREFIX:
                 try:
                     new_value = bool(strtobool(new_value))
@@ -100,6 +114,7 @@ async def settings(ctx, *args):
 
                 await ctx.message.reply(f"Setting `{key}` to `{new_value}`!")
             else:
+                # TODO: Deprecate old subcommands
                 if new_value == "reset":
                     await reset_prefix(ctx)
                 else:

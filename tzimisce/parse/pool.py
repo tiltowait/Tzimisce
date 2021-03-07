@@ -44,6 +44,7 @@ def __pool_roll(author, command):
     """
     will = command["will"]
     compact = command["compact"]
+    no_botch = command["no_botch"]
     pool = int(command["pool"])
 
     if pool < 1 or pool > 100:
@@ -62,10 +63,15 @@ def __pool_roll(author, command):
     if autos > 0:
         title += f", +{__pluralize_autos(autos)}"
 
+    # Let the user know if we aren't allowing botches
+    if no_botch:
+        title += ", no botch"
+
     specialty = command["specialty"] # Doubles 10s if set
 
     # Perform rolls, format them, and figure out how many successes we have
-    results = roll.Pool(pool, difficulty, will, specialty, autos)
+    options = roll.Pool.Options(pool, difficulty, autos, will, specialty, no_botch)
+    results = roll.Pool(options)
 
     comment = command["comment"]
 

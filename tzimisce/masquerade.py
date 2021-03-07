@@ -8,7 +8,7 @@ from tzimisce import parse
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
-invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)? (?P<syntax>.*)")
+invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)?(?P<no_botch>z)? (?P<syntax>.*)")
 
 # Database stuff
 database = RollDB()

@@ -33,7 +33,8 @@ async def parse(ctx, command):
                 # First, create the invocation
                 will = command["will"] or ""
                 compact = command["compact"] or ""
-                invoke = f"/m{will}{compact}"
+                no_botch = command["no_botch"] or ""
+                invoke = f"/m{will}{compact}{no_botch}"
 
                 # Next, get the suggestion
                 suggestion = __suggestx.match(query_result).group("suggestion")
