@@ -21,7 +21,7 @@ class Pool:
         self.no_botch = options.no_botch
         self.exploding = options.exploding
         self.nullify_ones = options.nullify_ones
-        self.dice = sorted(traditional.roll(options.pool, 10), reverse=True)
+        self.dice = self.__roll(options.pool)
 
     @property
     def formatted_result(self):
@@ -54,7 +54,7 @@ class Pool:
                 formatted.append(f"~~**{die}**~~")
             elif die < self.difficulty:
                 formatted.append(f"~~{die}~~")
-            elif die == 10 and self.spec:
+            elif die == 10 and self.spec and not self.exploding:
                 formatted.append(f"**{die}**")
             else:
                 formatted.append(str(die))
@@ -81,7 +81,7 @@ class Pool:
         for die in self.dice:
             if die >= self.difficulty:
                 suxx += 1
-                if die == 10 and self.spec:
+                if die == 10 and self.spec and not self.exploding:
                     suxx += 1
             elif die == 1 and not self.nullify_ones:
                 fails += 1
@@ -103,3 +103,21 @@ class Pool:
             suxx = 0
 
         return suxx
+
+    def __roll(self, pool) -> list:
+        """Roll the dice!"""
+
+        # Exploding dice: on a ten, roll an additional die. This is recursive
+        if self.exploding and self.spec:
+            dice = []
+            for _ in range(pool):
+                die = traditional.roll(1, 10)[0]
+                while die == 10:
+                    dice.append(die)
+                    die = traditional.roll(1, 10)[0]
+                dice.append(die)
+
+            return sorted(dice, reverse=True)
+
+        # Normal, non-exploding rolling
+        return sorted(traditional.roll(pool, 10), reverse=True)

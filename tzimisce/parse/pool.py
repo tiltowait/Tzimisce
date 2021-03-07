@@ -73,7 +73,7 @@ def __pool_roll(author, command):
     results = roll.Pool(
         roll.Pool.Options(
             pool, difficulty, autos, will, specialty,
-            no_botch, command["exploding"], command["nullify_ones"]
+            no_botch, command["exploding_tens"], command["nullify_ones"]
         )
     )
 
