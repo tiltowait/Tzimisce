@@ -287,7 +287,7 @@ async def initiative_remove_character(ctx, *, args=None):
             tzimisce.masquerade.database.remove_initiative(ctx.channel.id, character)
             message = f"Removed {character} from initiative!"
 
-            if manager.count() == 0:
+            if manager.count == 0:
                 del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
                 message += "\nNo characters left in initiative. Clearing table."
 
