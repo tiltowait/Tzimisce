@@ -48,7 +48,7 @@ async def parse(ctx, command):
                 new_command = f"{invoke} {new_syntax}"
 
                 # Replace!
-                query_result = query_result.replace(suggestion, new_command)
+                query_result = new_command.join(query_result.rsplit(suggestion, 1))
                 response.add_reaction = True
 
             response.content = query_result
