@@ -39,6 +39,8 @@
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             <a class="dropdown-item" href="#storyteller-basic">Basic Syntax</a>
             <a class="dropdown-item" href="#storyteller-wp">Using Willpower</a>
+            <a class="dropdown-item" href="#storyteller-zero">Disable Botches</a>
+            <a class="dropdown-item" href="#storyteller-compact">Compact Mode</a>
             <a class="dropdown-item" href="#storyteller-autos">Automatic Successes</a>
           </div>
         </li>
@@ -57,6 +59,10 @@
             <a class="dropdown-item" href="#macros-comment">Modifying Comment</a>
             <a class="dropdown-item" href="#macros-modifying">Modifying Macros</a>
           </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#initiative">Initiative</a>
         </li>
 
         <li class="nav-item">
@@ -120,10 +126,30 @@
 
     <div class="row">
       <div class="col">
+        <h4 id="storyteller-zero">Disable Botches</h4>
+        <h6><code>/mz &lt;syntax&gt;</code></h6>
+        <p>
+          With this option set, botches are converted to simple failures.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
         <h4 id="storyteller-autos">Automatic Successes</h4>
         <h6><code>/m &lt;pool&gt; &lt;difficulty&gt; &lt;autos&gt; [specialty] # comment</code></h6>
         <p>
           In order to add Potence-style automatic successes, both the <code>pool</code> and the <code>difficulty</code> must be supplied. Unlike Willpower, automatic successes may be canceled by botches. Willpower (above) and specialties may be used on this type of roll.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 id="storyteller-compact">Compact Mode</h4>
+        <h6><code>/mw &lt;syntax&gt;</code></h6>
+        <p>
+          With this option set, the bot outputs using plain text instead of an embed.
         </p>
       </div>
     </div>
@@ -206,16 +232,45 @@
       </div>
     </div>
 
+
+    <div class="row">
+      <div class="col">
+        <h2 id="initiative">Initiative</h2>
+        <h4>Rolling Initiative</h4>
+        <h6><code>/mi &lt;mod&gt;</code></h6>
+        <p>
+          Roll 1d10+<code>mod</code> under your display name and add it to the channel's initiative table. To roll under another character's name (NPCs, minions, etc.) write in the name after the mod.
+        </p>
+        <h4>Declaring Actions</h4>
+        <h6><code>/mi dec &lt;action&gt;</code></h6>
+        <p>
+          Declare an action for your character (your display name). This requires you to have already rolled initiative. To declare for a different character, add <code>-n [character]</code> to the end.
+        </p>
+        <h4>Other Commands</h4>
+        <ul>
+          <li><code>/mi remove [character]</code> &mdash; Remove yourself (or <code>[character]</code>, if provided) from the initiative table</li>
+          <li><code>/mi reroll</code> &mdash; Reroll all initiative. This clears declared actions</li>
+          <li><code>/mi clear</code> &mdash; Empty the initiative table</li>
+        </ul>
+      </div>
+    </div>
+
     <div class="row">
       <div class="col">
         <h2 id="custom">Customization</h2>
-        <h4>Changing the Command Prefix</h4>
-        <h6><code>/m set_prefix &lt;prefix&gt;</code></h6>
+        <h4>Changing Server Settings</h4>
+        <h6><code>/m set</code></h6>
         <p>
-          Change the bot's command prefix to the <code>prefix</code>. You may reset it with <code>reset_prefix</code>.
+          By itself, displays the available parameters and their current values. Unless marked otherwise, each setting defaults to <code>false</code>.
         </p>
+        <ul>
+          <li><code>use_compact</code> &mdash; Always use compact mode for rolls</li>
+          <li><code>exploding_tens</code> &mdash; When rolling a specialty, tens explode (roll an extra die, recursively) instead of counting as two successes</li>
+          <li><code>nullify_ones</code> &mdash; When using the <code>z</code> roll option, ones do not subtract from successes</li>
+          <li><code>prefix</code> &mdash; Change the bot's invocation prefix. Defaults to <code>/</code> and <code>!</code></li>
+        </ul>
         <p>
-          <em><strong>Note:</strong> You must have the Administrator roll to use these commands!</em>
+          To change one of these settings: <code>/m set &lt;parameter&gt; &lt;new_value&gt;</code>.
         </p>
       </div>
     </div>
