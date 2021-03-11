@@ -361,11 +361,6 @@ def suggestion_to_roll(reaction, user):
     """Returns a suggested macro if the correct user replies with a thumbsup."""
     message = reaction.message
     if reaction.emoji == "👍" and message.author == bot.user:
-        # Don't allow rolling it more than once
-        for react in message.reactions:
-            if react.emoji == "✅":
-                return None
-
         if not message.embeds and user in message.mentions:
             match = tzimisce.masquerade.suggestx.search(message.content)
             if match:
@@ -382,12 +377,21 @@ async def on_reaction_add(reaction, user):
         match = tzimisce.masquerade.invokex.match(suggestion)
         command.update(match.groupdict())
 
-        ctx = await bot.get_context(reaction.message)
-        ctx.author = user # Otherwise, the user is the bot
-        await tzimisce.masquerade.handle_command(command, ctx, True)
+        await reaction.message.delete()
 
-        # Remove the old reactions
-        await reaction.message.add_reaction("✅")
+        # We are going to try to reply to the original invocation message. If
+        # that fails, then we will simply @ the user.
+        ctx = await bot.get_context(reaction.message)
+        reference = reaction.message.reference
+
+        try:
+            msg = await ctx.fetch_message(reference.message_id)
+            ctx = await bot.get_context(msg)
+            ctx.author = user # Otherwise, the user is the bot
+            await tzimisce.masquerade.handle_command(command, ctx, False)
+        except discord.errors.NotFound:
+            ctx.author = user
+            await tzimisce.masquerade.handle_command(command, ctx, True)
 
 @bot.event
 async def on_ready():
