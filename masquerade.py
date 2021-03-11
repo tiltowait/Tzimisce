@@ -62,6 +62,11 @@ async def standard_roll(ctx, *, args=None):
         command["compact"] = "c"
         if ctx.guild:
             tzimisce.masquerade.database.increment_compact_rolls(ctx.guild.id)
+
+    # If the bot doesn't have embed permissions, then we don't want to count that in the stats
+    if not ctx.channel.permissions_for(ctx.me).embed_links:
+        command["compact"] = "c"
+
     if "z" in ctx.invoked_with:
         command["no_botch"] = "z"
 
