@@ -81,16 +81,18 @@ def __pool_roll(author, command):
 
     # Compact formatting
     if compact:
-        results_string = results.formatted_result
+        compact_string = ""
 
-        compact_string = f"{results.formatted_dice} = **{results_string}**"
         if comment:
-            compact_string += f"\n> {comment}"
+            compact_string += f"> {comment}\n\n"
 
+        compact_string += f"{results.formatted_dice}"
         if specialty:
-            compact_string += f"\n> ***{specialty}***"
+            compact_string += f"   ({specialty.strip()})"
 
-        return f"{compact_string}"
+        compact_string += f"\n**{results.formatted_result}**"
+
+        return compact_string
 
     # If not compact, put the results into an embed
 
