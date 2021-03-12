@@ -91,11 +91,11 @@ async def settings(ctx, *args):
         msg = "\n".join(msg)
         details = f"For more info or to set: `{prefix}m settings <parameter> [value]`"
 
-        await ctx.message.reply(f"This server's settings:\n{msg}\n{details}")
+        await ctx.reply(f"This server's settings:\n{msg}\n{details}")
         return
 
     if len(args) > 2:
-        await ctx.message.reply("Error! Too many arguments.")
+        await ctx.reply("Error! Too many arguments.")
         return
 
     # Display or update indivitual settings
@@ -104,7 +104,7 @@ async def settings(ctx, *args):
         if len(args) < 2:
             value = tzimisce.settings.value(ctx.guild.id, key)
             info = tzimisce.settings.parameter_information(key)
-            await ctx.message.reply(f"{info} (Current: `{value}`)")
+            await ctx.reply(f"{info} (Current: `{value}`)")
         else:
             new_value = args[1]
 
@@ -114,17 +114,17 @@ async def settings(ctx, *args):
                     new_value = bool(strtobool(new_value))
                     tzimisce.settings.update(ctx.guild.id, key, new_value)
                 except ValueError:
-                    await ctx.message.reply(f"Error! `{key}` must be `true` or `false`!")
+                    await ctx.reply(f"Error! `{key}` must be `true` or `false`!")
                     return
 
-                await ctx.message.reply(f"Setting `{key}` to `{new_value}`!")
+                await ctx.reply(f"Setting `{key}` to `{new_value}`!")
             else:
                 if new_value == "reset":
                     await __reset_prefix(ctx)
                 else:
                     await __set_prefix(ctx, new_value)
     else:
-        await ctx.message.reply(f"Unknown setting `{key}`!")
+        await ctx.reply(f"Unknown setting `{key}`!")
 
 async def __set_prefix(ctx, new_value):
     """Set a custom prefix for the guild."""
@@ -149,7 +149,7 @@ async def __reset_prefix(ctx):
 async def set_prefix(ctx):
     """DEPRECATED: User should use /m settings prefix."""
     prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
-    await ctx.message.reply(f"This function has moved! Use `{prefix}m settings prefix`.")
+    await ctx.reply(f"This function has moved! Use `{prefix}m settings prefix`.")
 
 @standard_roll.command()
 @commands.guild_only()
@@ -157,7 +157,7 @@ async def set_prefix(ctx):
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
     prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
-    await ctx.message.reply(f"This function has moved! Use `{prefix}m settings prefix reset`.")
+    await ctx.reply(f"This function has moved! Use `{prefix}m settings prefix reset`.")
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
@@ -168,7 +168,7 @@ async def coin_flip(ctx):
     else:
         coin = "Tails!"
 
-    await ctx.message.reply(f"{coin}")
+    await ctx.reply(f"{coin}")
 
 @standard_roll.command(name="help")
 async def __help(ctx):
@@ -178,7 +178,7 @@ async def __help(ctx):
     prefix = tzimisce.settings.get_prefix(ctx.guild)[0]
     embed = tzimisce.masquerade.help_embed(prefix)
 
-    await ctx.message.reply(embed=embed)
+    await ctx.reply(embed=embed)
 
 
 # Macro-Related. Must be done in a guild.
@@ -225,7 +225,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
                 content = "Rerolling initiative!"
             await ctx.send(content=content, embed=embed)
         else:
-            await ctx.message.reply(usage)
+            await ctx.reply(usage)
     else: # We are rolling initiative
         try:
             is_modifier = mod[0] == "-" or mod[0] == "+"
@@ -243,7 +243,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             else:
                 init = manager.modify_init(character_name, mod)
                 if not init:
-                    await ctx.message.reply(f"{character_name} has no initiative to modify!")
+                    await ctx.reply(f"{character_name} has no initiative to modify!")
                     return
 
             title = f"{character_name}'s Initiative"
@@ -262,10 +262,10 @@ async def initiative_manager(ctx, mod=None, *, args=None):
                 ctx.channel.id, character_name, init.mod, init.die
             )
 
-            await ctx.message.reply(embed=embed)
+            await ctx.reply(embed=embed)
             tzimisce.masquerade.database.increment_initiative_rolls(ctx.guild.id)
         except ValueError:
-            await ctx.message.reply(usage)
+            await ctx.reply(usage)
 
 
 @initiative_manager.command(aliases=["reset", "clear", "empty"])
@@ -275,9 +275,9 @@ async def initiative_reset(ctx):
     try:
         del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
         tzimisce.masquerade.database.clear_initiative(ctx.channel.id)
-        await ctx.message.reply("Reset initiative in this channel!")
+        await ctx.reply("Reset initiative in this channel!")
     except KeyError:
-        await ctx.message.reply("This channel's initiative table is already empty!")
+        await ctx.reply("This channel's initiative table is already empty!")
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
@@ -296,11 +296,11 @@ async def initiative_remove_character(ctx, *, args=None):
                 del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
                 message += "\nNo characters left in initiative. Clearing table."
 
-            await ctx.message.reply(message)
+            await ctx.reply(message)
         else:
-            await ctx.message.reply(f"Unable to remove {character}; not in initiative!")
+            await ctx.reply(f"Unable to remove {character}; not in initiative!")
     else:
-        await ctx.message.reply("Initiative isn't running in this channel!")
+        await ctx.reply("Initiative isn't running in this channel!")
 
 @initiative_manager.command(name="reroll")
 @commands.guild_only()
@@ -349,11 +349,11 @@ async def initiative_declare(ctx, *args):
         await ctx.message.add_reaction("👍")
         await ctx.message.add_reaction("⚔️")
     except AttributeError:
-        await ctx.message.reply("Initiative isn't set in this channel!")
+        await ctx.reply("Initiative isn't set in this channel!")
     except NameError:
-        await ctx.message.reply(f"{character} isn't in the initiative table!")
+        await ctx.reply(f"{character} isn't in the initiative table!")
     except SystemExit:
-        await ctx.message.reply("Usage: `/mi dec <action> [-n character]`")
+        await ctx.reply("Usage: `/mi dec <action> [-n character]`")
 
 # Events
 
@@ -427,10 +427,10 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingPermissions):
-        await ctx.message.reply("Sorry, you don't have permission to do this!")
+        await ctx.reply("Sorry, you don't have permission to do this!")
         return
     if isinstance(error, discord.errors.Forbidden):
-        await ctx.message.reply("Permissions error. Please make sure I'm allowed to embed links!")
+        await ctx.reply("Permissions error. Please make sure I'm allowed to embed links!")
         __console_log("PERMISSIONS", ctx.message.content)
         return
     if isinstance(error, commands.NoPrivateMessage):
@@ -438,7 +438,7 @@ async def on_command_error(ctx, error):
         return
     if isinstance(error, commands.CommandInvokeError):
         if "IndexError" in str(error):
-            await ctx.message.reply("You forgot your syntax!")
+            await ctx.reply("You forgot your syntax!")
             return
 
     # Unknown error; print invoking message and raise

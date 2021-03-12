@@ -26,7 +26,7 @@ async def handle_command(command, ctx, mentioning=False):
         reduction = len(command["comment"]) - 500
         characters = "character" if reduction == 1 else "characters"
 
-        await ctx.message.reply(f"Comment too long by {reduction} {characters}.")
+        await ctx.reply(f"Comment too long by {reduction} {characters}.")
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
@@ -48,7 +48,7 @@ async def handle_command(command, ctx, mentioning=False):
         if mentioning:
             message = await ctx.send(embed=response.embed, content=response.content)
         else:
-            message = await ctx.message.reply(embed=response.embed, content=response.content)
+            message = await ctx.reply(embed=response.embed, content=response.content)
 
         if response.add_reaction:
             await message.add_reaction("👍")
@@ -64,20 +64,20 @@ async def handle_command(command, ctx, mentioning=False):
         return
 
     # Unrecognized input
-    await ctx.message.reply("Come again?")
+    await ctx.reply("Come again?")
 
 async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     if len(stored_rolls) == 0:
-        await ctx.message.reply(f"You have no macros on {ctx.guild}!")
+        await ctx.reply(f"You have no macros on {ctx.guild}!")
     else:
         embed = build_embed(
             title="Stored Rolls",
             color=0x1F3446,
             fields=stored_rolls,
         )
-        await ctx.message.reply("List sent. Please check your DMs!")
+        await ctx.reply("List sent. Please check your DMs!")
         await ctx.author.send(
             content=f"Here are your macros on {ctx.guild}:",
             embed=embed
@@ -86,7 +86,7 @@ async def show_stored_rolls(ctx):
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-    await ctx.message.reply(f"Deleted your macros on {ctx.guild}.")
+    await ctx.reply(f"Deleted your macros on {ctx.guild}.")
 
 def help_embed(prefix):
     """Return a handy help embed."""
