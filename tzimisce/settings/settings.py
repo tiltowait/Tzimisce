@@ -9,7 +9,9 @@ class SettingsDB:
 
     # Keys
     COMPACT = "use_compact"
-    EXPLODING = "exploding_tens"
+    EXPLODE_ALWAYS = "xpl_always"
+    EXPLODE_SPEC = "xpl_spec"
+    NO_DOUBLE = "no_double"
     NULLIFY_ONES = "nullify_ones"
     PREFIX = "prefix"
 
@@ -32,7 +34,7 @@ class SettingsDB:
     def __fetch_all_settings(self) -> dict:
         """Fetch settings for each server."""
 
-        query = """SELECT ID, use_compact, exploding_tens, nullify_ones, prefix
+        query = """SELECT ID, use_compact, nullify_ones, prefix, xpl_always, xpl_spec, no_double
                    FROM Guilds;"""
         self.__execute(query, ())
         results = self.cursor.fetchall()
@@ -41,15 +43,21 @@ class SettingsDB:
         settings = defaultdict(lambda: default_params)
 
         for row in results:
-            guild = row[0]
-            compact = row[1]
-            exploding = row[2]
-            nullify_ones = row[3]
-            prefix = row[4]
+            row = list(row)
+
+            guild = row.pop(0)
+            compact = row.pop(0)
+            nullify_ones = row.pop(0)
+            prefix = row.pop(0)
+            explode_always = row.pop(0)
+            explode_spec = row.pop(0)
+            no_double = row.pop(0)
 
             params = {
                 "use_compact": compact,
-                "exploding_tens": exploding,
+                "xpl_always": explode_always,
+                "xpl_spec": explode_spec,
+                "no_double": no_double,
                 "nullify_ones": nullify_ones,
                 "prefix": prefix
             }
@@ -97,15 +105,23 @@ class SettingsDB:
     def available_parameters(self):
         """Returns a list of available configuration options."""
 
-        return [self.COMPACT, self.EXPLODING, self.NULLIFY_ONES, self.PREFIX]
+        return [
+            self.COMPACT, self.EXPLODE_ALWAYS, self.EXPLODE_SPEC, self.NO_DOUBLE, self.NULLIFY_ONES,
+            self.PREFIX
+        ]
 
     def parameter_information(self, param) -> str:
         """Returns a description of what a given parameter does."""
+        # pylint: disable=too-many-return-statements
 
         if param == self.COMPACT:
             return "Set the server to always use compact rolls."
-        if param == self.EXPLODING:
-            return "If `true`, specialty tens explode. If `false`, specialty tens are doubled."
+        if param == self.EXPLODE_ALWAYS:
+            return "If `true`, tens always explode."
+        if param == self.EXPLODE_SPEC:
+            return "If `true`, specialty tens explode."
+        if param == self.NO_DOUBLE:
+            return "If `true`, specialty tens do not count as double successes."
         if param == self.NULLIFY_ONES:
             return "If `true`, the `z` roll option causes ones to not subtract successes."
         if param == self.PREFIX:

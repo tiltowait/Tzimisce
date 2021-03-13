@@ -73,10 +73,10 @@ def __pool_roll(author, command):
     results = roll.Pool(
         roll.Pool.Options(
             pool, difficulty, autos, will, specialty,
-            no_botch, command["exploding_tens"], command["nullify_ones"]
+            no_botch, command["no_double"], command["nullify_ones"], command["xpl_always"],
+            command["xpl_spec"]
         )
     )
-
     comment = command["comment"]
 
     # Compact formatting

@@ -44,8 +44,10 @@ class RollDB:
                                Traditional_Rolls int     NOT NULL DEFAULT 0,
                                Initiative_Rolls  int     NOT NULL DEFAULT 0,
                                use_compact       boolean DEFAULT FALSE,
-                               exploding_tens    boolean DEFAULT FALSE,
-                               nullify_ones      boolean DEFAULT FALSE
+                               xpl_spec          boolean DEFAULT FALSE,
+                               nullify_ones      boolean DEFAULT FALSE,
+                               xpl_always        boolean DEFAULT FALSE,
+                               no_double     boolean DEFAULT FALSE
                                );"""
         )
 
