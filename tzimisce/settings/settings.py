@@ -72,7 +72,7 @@ class SettingsDB:
 
     def get_prefix(self, guild) -> tuple:
         """Returns the guild's prefix. If the guild is None, returns a default."""
-        default_prefixes = ("/", "!")
+        default_prefixes = ("!", "/")
 
         if not guild:
             return default_prefixes
