@@ -430,18 +430,14 @@ async def on_command_error(ctx, error):
         await ctx.reply("Sorry, you don't have permission to do this!")
         return
     if isinstance(error, discord.errors.Forbidden):
-        msg = "Permissions error. Please make sure I can embed links,"
-        msg += " read message history, send messages, and add reactions!"
-        await ctx.send(msg)
+        await __alert_permissions(ctx)
         return
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send("Sorry, this command isn't available in DMs!")
         return
     if isinstance(error, commands.CommandInvokeError):
         if "Forbidden" in str(error):
-            msg = "Permissions error. Please make sure I can embed links,"
-            msg += " read message history, send messages, and add reactions!"
-            await ctx.send(msg)
+            await __alert_permissions(ctx)
             return
         if "reply" in str(error):
             await ctx.send("Error! Please ensure I have permission to read message history.")
@@ -451,15 +447,17 @@ async def on_command_error(ctx, error):
             return
 
     # Unknown error; print invoking message and raise
-    __console_log("UNKNOWN", ctx.message.content, ctx.guild.name)
+    print("\n\n**********************")
+    print(f"{ctx.guild.name}: UNKNOWN ERROR ON {ctx.message.clean_content}")
+    print("**********************\n\n")
 
     raise error
 
-def __console_log(header, message, guild):
-    """Prints an offending user invocation to the console."""
-    print("\n\n**********************")
-    print(f"{guild}: {header} ERROR ON {message}")
-    print("**********************\n\n")
+async def __alert_permissions(ctx):
+    """Alerts the user to the required permissions."""
+    msg = "Permissions error. Please make sure I can embed links,"
+    msg += " read message history, send messages, and add reactions!"
+    await ctx.send(msg)
 
 
 # Misc
