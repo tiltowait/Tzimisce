@@ -431,7 +431,7 @@ async def on_command_error(ctx, error):
         return
     if isinstance(error, discord.errors.Forbidden):
         await ctx.reply("Permissions error. Please make sure I'm allowed to embed links!")
-        __console_log("PERMISSIONS", ctx.message.content)
+        __console_log("PERMISSIONS", ctx.message.content, ctx.guild.name)
         return
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send("Sorry, this command isn't available in DMs!")
@@ -442,15 +442,14 @@ async def on_command_error(ctx, error):
             return
 
     # Unknown error; print invoking message and raise
-    __console_log("UNKNOWN", ctx.message.content)
+    __console_log("UNKNOWN", ctx.message.content, ctx.guild.name)
 
     raise error
 
-def __console_log(header, message):
+def __console_log(header, message, guild):
     """Prints an offending user invocation to the console."""
-    print(header)
     print("\n\n**********************")
-    print(f"{header} ERROR ON {message}")
+    print(f"{guild}: {header} ERROR ON {message}")
     print("**********************\n\n")
 
 
