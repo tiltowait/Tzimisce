@@ -49,8 +49,8 @@ async def standard_roll(ctx, *, args=None):
         raise IndexError
 
     command = defaultdict(lambda: None)
-    command["syntax"] = syntax.strip()
-    command["comment"] = comment.strip() if comment else None
+    command["syntax"] = " ".join(syntax.split())
+    command["comment"] = " ".join(comment.split()) if comment else None
 
     guild_settings = tzimisce.settings.settings_for_guild(ctx.guild.id)
     command.update(guild_settings)

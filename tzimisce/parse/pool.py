@@ -7,7 +7,7 @@ from tzimisce import roll, masquerade # pylint: disable=cyclic-import
 from .response import Response
 
 __poolx = re.compile(
-    r"^(?P<pool>-?\d+)\s*(?P<difficulty>\d+)?\s*(?P<auto>\d+)?(?P<specialty> \D[^#]*)?$"
+    r"^(?P<pool>-?\d+)[\s@]?(?P<difficulty>\d+)?[\s\+]?(?P<auto>\d+)?(?: (?P<specialty>\D[^#]*))?$"
 )
 
 # Colors help show, at a glance, if a roll was successful
