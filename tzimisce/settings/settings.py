@@ -17,6 +17,7 @@ class SettingsDB:
 
     def __init__(self):
         self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
+        self.conn.autocommit = True
         self.cursor = self.conn.cursor()
         self.__all_settings = self.__fetch_all_settings()
 
@@ -28,6 +29,7 @@ class SettingsDB:
             # Connection got reset for some reason, so fix it
             print("Lost database connection. Retrying.")
             self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
+            self.conn.autocommit = True
             self.cursor = self.conn.cursor()
             self.cursor.execute(query, args) # Reconnected, so try again!
 
