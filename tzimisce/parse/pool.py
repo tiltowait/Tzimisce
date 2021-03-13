@@ -88,7 +88,7 @@ def __pool_roll(author, command):
 
         compact_string += f"{results.formatted_dice}"
         if specialty:
-            compact_string += f"   ({specialty.strip()})"
+            compact_string += f"   ({specialty})"
 
         compact_string += f"\n**{results.formatted_result}**"
 

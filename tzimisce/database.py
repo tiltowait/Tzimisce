@@ -199,7 +199,6 @@ class RollDB:
     def __update_stored_comment(self, guild, userid, name, comment):
         """Set or delete a stored roll's comment"""
         if self.__is_roll_stored(guild, userid, name):
-            comment = comment.strip()
             if len(comment) == 0:
                 comment = None
 
