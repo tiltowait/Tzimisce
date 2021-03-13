@@ -3,13 +3,13 @@ A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary* and other
 
 ## Installation
 ### The Easy Way
-Simply [click this link](https://discordapp.com/api/oauth2/authorize?client_id=642775025770037279&permissions=0&scope=bot) to add the bot to your server. Not ready to add it yet? [Try out the demo server!](https://discord.gg/rK3RFqV)
+Simply [click this link](https://top.gg/bot/642775025770037279) to add the bot to your server. Not ready to add it yet? [Try out the demo server!](https://discord.gg/rK3RFqV)
 
 ### The Hard Way
 Should you wish to locally run the bot (perhaps to make your own, local changes), you will need to acquire a Discord developer key.
 
 #### Setup
-You will need version 3.7 or greater of [Python](https://www.python.org), as well as [PostgreSQL](https://www.postgresql.org) with SSL support enabled (which may require creating your own certificate key).
+You will need version >=3.9 of [Python](https://www.python.org), as well as [PostgreSQL](https://www.postgresql.org) with SSL support enabled (which may require creating your own certificate key).
 
 Additionally, you will need to use PIP to install `psycopg2` and `discord.py`.
 
@@ -19,5 +19,11 @@ Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store y
 ## Usage
 For a full command listing, check [the help file](https://tiltowait.github.io/Tzimisce/).
 
+## Requried Permissions
+* **Send Messages:** Should be obvious, no?
+* **Embed Links:** Used for roll display (outside of compact mode), initiative, help display, etc.
+* **Read Message History:** Used for the reply feature
+* **Add Reactions:** Used when suggesting macro names and alerting the user that an action declaration was registered
+
 ## Troubleshooting
-Unable to see the results? You probably have website previews disabled. Go into *User Settings -> Text & Images* and enable *Show website preview info from links pasted into chat*.
+Unable to see the results? Make sure the bot has the permissions above. If you still have problems, you might have website previews disabled. Go into *User Settings -> Text & Images* and enable *Show website preview info from links pasted into chat*. If you *still* have issues, you may have antivirus software that prevents embeds from showing (certain versions of McAfee are known to cause problems).
