@@ -91,7 +91,6 @@ class SettingsDB:
         # Normally unsafe, but we do input validation before we get here
         query = f"UPDATE Guilds SET {key}=%s WHERE ID=%s;"
         self.__execute(query, (value, guild,))
-        self.conn.commit()
 
         self.__all_settings[guild][key] = value
 
