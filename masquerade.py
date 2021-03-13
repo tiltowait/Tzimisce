@@ -389,7 +389,7 @@ async def on_reaction_add(reaction, user):
             ctx = await bot.get_context(msg)
             ctx.author = user # Otherwise, the user is the bot
             await tzimisce.masquerade.handle_command(command, ctx, False)
-        except discord.errors.NotFound:
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
             ctx.author = user
             await tzimisce.masquerade.handle_command(command, ctx, True)
 
