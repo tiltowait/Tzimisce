@@ -121,7 +121,7 @@ class SettingsDB:
         if param == self.EXPLODE_SPEC:
             return "If `true`, specialty tens explode."
         if param == self.NO_DOUBLE:
-            return "If `true`, specialty tens do not count as double successes."
+            return "If `true`, tens never count as double successes."
         if param == self.NULLIFY_ONES:
             return "If `true`, the `z` roll option causes ones to not subtract successes."
         if param == self.PREFIX:
