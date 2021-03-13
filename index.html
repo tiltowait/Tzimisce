@@ -147,7 +147,7 @@
     <div class="row">
       <div class="col">
         <h4 id="storyteller-compact">Compact Mode</h4>
-        <h6><code>/mw &lt;syntax&gt;</code></h6>
+        <h6><code>/mc &lt;syntax&gt;</code></h6>
         <p>
           With this option set, the bot outputs using plain text instead of an embed.
         </p>
@@ -265,7 +265,9 @@
         </p>
         <ul>
           <li><code>use_compact</code> &mdash; Always use compact mode for rolls</li>
-          <li><code>exploding_tens</code> &mdash; When rolling a specialty, tens explode (roll an extra die, recursively) instead of counting as two successes</li>
+          <li><code>xpl_always</code> &mdash; On pool-based rolls, tens explode (roll an additional die, recursively)</li>
+          <li><code>xpl_spec</code> &mdash; When rolling a specialty, tens explode</li>
+          <li><code>no_double</code> &mdash; Tens never count as double successes</li>
           <li><code>nullify_ones</code> &mdash; When using the <code>z</code> roll option, ones do not subtract from successes</li>
           <li><code>prefix</code> &mdash; Change the bot's invocation prefix. Defaults to <code>/</code> and <code>!</code></li>
         </ul>
