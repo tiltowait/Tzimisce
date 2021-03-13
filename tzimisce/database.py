@@ -245,13 +245,20 @@ class RollDB:
 
     def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
-        query = "SELECT Name, Syntax FROM SavedRolls WHERE Guild=%s AND ID=%s ORDER BY Name;"
+        query = "SELECT Name, Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s ORDER BY Name;"
         self.__execute(query, (guild, userid,))
         results = self.cursor.fetchall()
 
         fields = []
         for row in results:
-            fields.append((row[0], row[1]))
+            name = row[0]
+            syntax = row[1]
+            comment = row[2]
+
+            if comment:
+                syntax += f"\n{comment}"
+
+            fields.append((name, syntax))
 
         return fields
 
