@@ -36,13 +36,17 @@ class RollDB:
         # This table is just used for statistics purposes.
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS Guilds
-                              (ID                bigint PRIMARY KEY,
-                               NAME              Text   NOT NULL,
-                               Rolls             int    NOT NULL DEFAULT 0,
+                              (ID                bigint  PRIMARY KEY,
+                               NAME              Text    NOT NULL,
+                               Rolls             int     NOT NULL DEFAULT 0,
                                Prefix            Text,
-                               Compact_Rolls     int    NOT NULL DEFAULT 0,
-                               Traditional_Rolls int    NOT NULL DEFAULT 0,
-                               Initiative_Rolls  int    NOT NULL DEFAULT 0);"""
+                               Compact_Rolls     int     NOT NULL DEFAULT 0,
+                               Traditional_Rolls int     NOT NULL DEFAULT 0,
+                               Initiative_Rolls  int     NOT NULL DEFAULT 0,
+                               use_compact       boolean DEFAULT FALSE,
+                               exploding_tens    boolean DEFAULT FALSE,
+                               nullify_ones      boolean DEFAULT FALSE
+                               );"""
         )
 
         # Install trigrams
