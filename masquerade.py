@@ -430,13 +430,22 @@ async def on_command_error(ctx, error):
         await ctx.reply("Sorry, you don't have permission to do this!")
         return
     if isinstance(error, discord.errors.Forbidden):
-        await ctx.reply("Permissions error. Please make sure I'm allowed to embed links!")
-        __console_log("PERMISSIONS", ctx.message.content, ctx.guild.name)
+        msg = "Permissions error. Please make sure I can embed links,"
+        msg += " read message history, send messages, and add reactions!"
+        await ctx.send(msg)
         return
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send("Sorry, this command isn't available in DMs!")
         return
     if isinstance(error, commands.CommandInvokeError):
+        if "Forbidden" in str(error):
+            msg = "Permissions error. Please make sure I can embed links,"
+            msg += " read message history, send messages, and add reactions!"
+            await ctx.send(msg)
+            return
+        if "reply" in str(error):
+            await ctx.send("Error! Please ensure I have permission to read message history.")
+            return
         if "IndexError" in str(error):
             await ctx.reply("You forgot your syntax!")
             return
