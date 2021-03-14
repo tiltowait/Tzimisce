@@ -3,6 +3,7 @@
 * [Invite \[Tzimisce\] to your server](https://top.gg/bot/642775025770037279)
 * [Join the support server](https://discord.gg/rK3RFqV)
 * [View the source code](https://github.com/tiltowait/Tzimisce)
+* [Become a patron](https://www.patreon.com/tzimisce)
 
 ---
 
