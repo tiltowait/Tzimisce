@@ -14,11 +14,16 @@
 
 #### ** Basics **
 
-```!m <pool> [difficulty] [specialty] # comment```
-* `pool` (mandatory): Number of dice to roll
-* `difficulty` (optional): Default 6. Must be between 2-10
-* `specialty` (optional): By default, causes 10s to count as double successes
-* `# comment` (optional): Label to be applied to the roll. The `#` is required!
+```
+!m <pool> [difficulty] [specialty] # comment
+```
+
+* `pool`: Number of dice to roll
+* `difficulty`: Default 6. Must be between 2-10
+* `specialty`: By default, causes 10s to count as double successes
+* `# comment`: Label to be applied to the roll. The `#` is required!
+
+?> `difficulty`, `specialty`, and `# comment` are all optional.
 
 #### Examples <!-- {docsify-ignore} -->
 
@@ -28,31 +33,38 @@
 
 #### ** Willpower **
 
-```!mw <syntax>```
+```
+!mw <syntax>
+```
 
 Adding Willpower to a roll adds an extra success which cannot be canceled by botches. The rest of the roll syntax is the same. May be combined with other options.
 
 #### ** Auto-Successes **
 
-```!m <pool> <difficulty> <autos> [specialty] # comment```
+```
+!m <pool> <difficulty> <autos> [specialty] # comment
+```
 
-In order to add Potence-style automatic successes, both the `pool` and the `difficulty` must be supplied. Unlike Willpower, automatic successes may be canceled by botches. May be combined with other options.
+In order to add Potence-style automatic successes, both the `pool` and the `difficulty` must be supplied. May be combined with other options.
+
+?> Unlike Willpower, these auto-successes may be canceled by ones.
 
 #### ** Options **
 
-**Upgrade botches:** `!mz <syntax>`
+|                 |       |                                                   |
+|-----------------|-------|---------------------------------------------------|
+| Upgrade botches | `!mz` | Promotes botches to regular failures              |
+| Compact mode    | `!mc` | Outputs results in plain text instead of an embed |
 
-Botches become simple failures. May be combined with other options.
-
-**Compact mode:** `!mc <syntax>`
-
-With this option set, the bot outputs using plain text instead of an embed.
+?> These options, as well as Willpower, may be combined. Thus, `!mwcz` becomes a compact Willpower roll that cannot botch (though by definition, a Willpower roll can't botch).
 
 <!-- tabs:end -->
 
 ## Traditional Rolls
 
-```!m XdY+...+n # comment```
+```
+!m XdY+...+n # comment
+```
 
 \[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, etc. Currently, only addition is allowed. This may be combined with **compact mode** (`!mc`).
 
@@ -64,7 +76,9 @@ With this option set, the bot outputs using plain text instead of an embed.
 
 #### ** Create **
 
-```!m <macro-name> = <syntax> # comment```
+```
+!m <macro-name> = <syntax> # comment
+```
 
 The `macro-name` must not contain spaces but can contain both `-` and `_` characters. The roll syntax can be any valid roll. If supplied, the `# comment` will be used every time you use the macro unless overridden.
 
@@ -88,19 +102,19 @@ You may update *just the comment* with `!m <macro_name> c= <new_comment>`.
 
 #### ** Delete **
 
-```!m <macro_name> =```
+|                     |                                       |
+|---------------------|---------------------------------------|
+| `!m <macro-name> =` | Delete `macro-name`                   |
+| `!m $delete-all`    | Delete all your macros on this server |
 
-This will delete the given macro.
-
-```!m $delete-all```
-
-This will delete all of your macros on the server. **This cannot be undone!**
+!> These actions cannot be undone!
 
 #### ** List **
 
-```!m $```
+|                  |                                         |
+|------------------|-----------------------------------------|
+| `!m $`           | DMs a list of your macros on the server |
 
-DMs a list of your macros on the server.
 
 <!-- tabs:end -->
 
@@ -109,43 +123,63 @@ DMs a list of your macros on the server.
 <!-- tabs:start -->
 
 #### ** Rolling **
-```!mi <mod> [character]```
+```
+!mi <mod> [character]
+```
 
 * `mod`: The Dex + Wits modifier
 * `character`: The character name
 
-If `character` is not supplied, it will default to your display name. By supplying `character`, you may roll for an arbitrary number of characters, NPCs, etc.
+?> If `character` is not supplied, it will default to your display name. By supplying `character`, you may roll for an arbitrary number of characters, NPCs, etc.
 
 #### ** Declarations **
-```!mi dec <action> [-n character]```
+```
+!mi dec <action> [-n character]
+```
 
 * `action`: The action to be declared
 
 If the `-n character` option is set, the action will be declared under the name of `character`. For instance: `!mi dec Ends the world -n Caine` will declare that Caine intends to end the world.
 
+!> If `character` is not already in the initiative table, the command will fail.
+
 #### ** Other **
-* **Remove a character:** `!mi remove [character]`
-* **Reroll all initiative:** `!mi reroll` (removes declared actions)
-* **Clear initiative table:** `!mi clear`
+
+| Command                    | Syntax                                   |
+|----------------------------|------------------------------------------|
+| **Remove a character**     | `!mi remove [character]`                 |
+| **Reroll all initiative**  | `!mi reroll`  (removes declared actions) |
+| **Clear initiative table** | `!mi clear`                              |
 
 <!-- tabs:end -->
 
 # Customization
-\[Tzimisce\] has a number of settings that can be changed on a per-server basis.
+**\[Tzimisce\]** has a number of settings that can be changed on a per-server basis.
 
-* `use_compact`: Always use compact mode for rolls
-* `xpl_always`: On pool-based rolls, tens explode (roll an additional die, recursively)
-* `xpl_spec`: When rolling a specialty, tens explode
-* `no_double`: Tens never count as double successes
-* `nullify_ones`: When using the `z` (upgrade botches) roll option, ones do not subtract from successes
-* `prefix`: Change the bot's invocation prefix. Defaults to `!` and `/`
+<!-- tabs:start -->
+
+#### ** Parameters **
+
+| Parameter      | Description                                                                           |
+|----------------|---------------------------------------------------------------------------------------|
+| `use_compact`  | Always use compact mode for rolls                                                     |
+| `xpl_always`   | On pool-based rolls, tens explode (roll an additional die, recursively)               |
+| `xpl_spec`     | When rolling a specialty, tens explode                                                |
+| `no_double`    | Tens never count as double successes                                                  |
+| `nullify_ones` | When using the `z` (upgrade botches) roll option, ones do not subtract from successes |
+| `prefix`       | Change the bot's invocation prefix. Defaults to `!` and `/`                           |
 
 ?> Unless specified otherwise, these parameters default to `false`.
 
-### Options <!-- {docsify-ignore} -->
-* **View server settings:** `!m set`
-* **View parameter info:** `!m set <parameter>`
-* **Update parameter:** `!m set <parameter> <new_value>`
+#### ** Commands **
+
+| Command                        | Syntax                       |
+|--------------------------------|------------------------------|
+| **View server settings**       | `!m set`                     |
+| **View parameter description** | `!m set <parameter>`         |
+| **Set parameter**              | `!m set <parameter> <value>` |
+
+<!-- tabs:end -->
 
 # Troubleshooting
 If you cannot see rolls, check that the bot has the permissions below. If it still doesn't work ensure you have the Discord setting, "Show website preview info from links pasted into chat", enabled under Text & Images. If you *still* cannot see rolls, you may have antivirus that's blocking them (McAfee and possibly some others do this).
