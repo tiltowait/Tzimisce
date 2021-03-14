@@ -18,10 +18,10 @@
 !m <pool> [difficulty] [specialty] # comment
 ```
 
-* `pool`: Number of dice to roll
-* `difficulty`: Default 6. Must be between 2-10
-* `specialty`: By default, causes 10s to count as double successes
-* `# comment`: Label to be applied to the roll. The `#` is required!
+* `pool` — Number of dice to roll
+* `difficulty` — Default 6. Must be between 2-10
+* `specialty` — By default, causes 10s to count as double successes
+* `# comment` — Label to be applied to the roll. The `#` is required!
 
 ?> `difficulty`, `specialty`, and `# comment` are all optional.
 
@@ -66,7 +66,7 @@ In order to add Potence-style automatic successes, both the `pool` and the `diff
 !m XdY+...+n # comment
 ```
 
-\[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, etc. Currently, only addition is allowed. This may be combined with **compact mode** (`!mc`).
+\[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, etc. Currently, only addition is allowed. This may be combined with **compact mode** (`!mc`). Other options are ignored.
 
 ## Macros
 
@@ -94,18 +94,41 @@ To use a macro, simply type `!m <macro-name>`. Macros support all the standard r
 * `!m attack` — Rolls the `attack` macro
 * `!m attack # Using claws` — Rolls the `attack` macro, supplying a different comment
 
-#### ** Update **
+#### ** Modify **
+
+#### Permanent {docsify-ignore}
 
 Updating a macro is as simple as using the creation command again. Note that if the current macro has a comment and you do not supply a new one, the old comment will be retained.
 
 You may update *just the comment* with `!m <macro_name> c= <new_comment>`.
 
+#### One-Time {docsify-ignore}
+
+It is also possible to modify a macro for a single roll (for instance, if your character suffers from wound penalties). The syntax for this is:
+
+```
+!m <macro-name> <pool-mod> [diff-mod] # comment
+```
+
+* `pool-mod` — A positive or negative integer that adds or subtracts from the dice pool
+* `diff-mod` — *(Optional)* A positive or negative integer that adds or subtracts from the difficulty. If no sign is given, then the difficulty will be *set* to `diff-mod`
+
+#### Examples {docsify-ignore}
+
+* `!m attack +2` — Rolls the `attack` macro with two extra dice
+* `!m attack 0 +1` — Rolls the `attack` macro with zero extra dice, at one higher difficulty than normal
+* `!m attack -1 5` — Rolls the `attack` macro with one fewer die, at difficulty 5
+
+!> `pool-mod` requires a +/- sign!
+
+!> If the modification reduces the pool to 0 or brings the difficulty outside of the range of 2-10, then the command will fail.
+
 #### ** Delete **
 
-|                     |                                       |
-|---------------------|---------------------------------------|
-| `!m <macro-name> =` | Delete `macro-name`                   |
-| `!m $delete-all`    | Delete all your macros on this server |
+| Command                                   | Syntax              |
+|-------------------------------------------|---------------------|
+| **Delete `macro-name`**                   | `!m <macro-name> =` |
+| **Delete all your macros on this server** | `!m $delete-all`    |
 
 !> These actions cannot be undone!
 
@@ -122,22 +145,22 @@ You may update *just the comment* with `!m <macro_name> c= <new_comment>`.
 
 <!-- tabs:start -->
 
-#### ** Rolling **
+#### ** Roll **
 ```
 !mi <mod> [character]
 ```
 
-* `mod`: The Dex + Wits modifier
-* `character`: The character name
+* `mod` — The Dex + Wits modifier
+* `character` — The character name
 
 ?> If `character` is not supplied, it will default to your display name. By supplying `character`, you may roll for an arbitrary number of characters, NPCs, etc.
 
-#### ** Declarations **
+#### ** Declare **
 ```
 !mi dec <action> [-n character]
 ```
 
-* `action`: The action to be declared
+* `action` — The action to be declared
 
 If the `-n character` option is set, the action will be declared under the name of `character`. For instance: `!mi dec Ends the world -n Caine` will declare that Caine intends to end the world.
 
@@ -178,6 +201,8 @@ If the `-n character` option is set, the action will be declared under the name 
 | **View server settings**       | `!m set`                     |
 | **View parameter description** | `!m set <parameter>`         |
 | **Set parameter**              | `!m set <parameter> <value>` |
+
+!> Setting the `prefix` ***does not*** change the command names. For instance, entering `/m set prefix ?` will make the standard roll command `?m`, initiative actions `?mi`, etc.
 
 <!-- tabs:end -->
 
