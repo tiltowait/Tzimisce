@@ -1,5 +1,5 @@
 # \[Tzimisce\]
-A handy Discord dicebot for *Vampire: The Masquerade 20th Anniversary* and other "20th Anniversary" White Wolf Storyteller games. At its most basic, it allows for rapid entry of rolls, requiring as few as five keystrokes (including return!) or four taps on a mobile screen. It also possesses some more advanced features, such as roll saving, Willpower-based rolls, and automatic successes.
+A handy Discord dicebot for classic World of Darkness tabletop RPGs, such as *Vampire: The Masquerade*, *Werewolf: The Apocalyspe*, and *Mage: The Ascension*. At its most basic, it allows for rapid entry of rolls, requiring as few as five keystrokes (including return!) or four taps on a mobile screen. It also possesses some more advanced features, such as roll saving, Willpower-based rolls, and automatic successes.
 
 ## Installation
 ### The Easy Way
