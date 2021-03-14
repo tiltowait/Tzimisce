@@ -455,9 +455,10 @@ async def on_command_error(ctx, error):
 
 async def __alert_permissions(ctx):
     """Alerts the user to the required permissions."""
-    msg = "Permissions error. Please make sure I can embed links,"
-    msg += " read message history, send messages, and add reactions!"
-    await ctx.send(msg)
+    if ctx.channel.permissions_for(ctx.me).send_messages:
+        msg = "Permissions error. Please make sure I can embed links,"
+        msg += " read message history, and add reactions!"
+        await ctx.send(msg)
 
 
 # Misc
