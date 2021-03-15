@@ -191,6 +191,7 @@ If the `-n character` option is set, the action will be declared under the name 
 | `xpl_spec`     | When rolling a specialty, tens explode                                                |
 | `no_double`    | Tens never count as double successes                                                  |
 | `nullify_ones` | When using the `z` (upgrade botches) roll option, ones do not subtract from successes |
+| `default_diff` | The default difficulty for pool-based rolls. Default `6`.                             |
 | `prefix`       | Change the bot's invocation prefix. Defaults to `!` and `/`                           |
 
 ?> Unless specified otherwise, these parameters default to `false`.
