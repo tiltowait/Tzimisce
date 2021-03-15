@@ -13,6 +13,7 @@ class SettingsDB:
     EXPLODE_SPEC = "xpl_spec"
     NO_DOUBLE = "no_double"
     NULLIFY_ONES = "nullify_ones"
+    DEFAULT_DIFF = "default_diff"
     PREFIX = "prefix"
 
     def __init__(self):
@@ -36,8 +37,8 @@ class SettingsDB:
     def __fetch_all_settings(self) -> dict:
         """Fetch settings for each server."""
 
-        query = """SELECT ID, use_compact, nullify_ones, prefix, xpl_always, xpl_spec, no_double
-                   FROM Guilds;"""
+        query = """SELECT ID, use_compact, nullify_ones, prefix, xpl_always, xpl_spec, no_double,
+                   default_diff FROM Guilds;"""
         self.__execute(query, ())
         results = self.cursor.fetchall()
 
@@ -54,6 +55,7 @@ class SettingsDB:
             explode_always = row.pop(0)
             explode_spec = row.pop(0)
             no_double = row.pop(0)
+            default_diff = row.pop(0)
 
             params = {
                 "use_compact": compact,
@@ -61,6 +63,7 @@ class SettingsDB:
                 "xpl_spec": explode_spec,
                 "no_double": no_double,
                 "nullify_ones": nullify_ones,
+                "default_diff": default_diff,
                 "prefix": prefix
             }
             settings[guild] = params
@@ -108,7 +111,7 @@ class SettingsDB:
 
         return [
             self.COMPACT, self.EXPLODE_ALWAYS, self.EXPLODE_SPEC, self.NO_DOUBLE, self.NULLIFY_ONES,
-            self.PREFIX
+            self.DEFAULT_DIFF, self.PREFIX
         ]
 
     def parameter_information(self, param) -> str:
@@ -125,6 +128,8 @@ class SettingsDB:
             return "If `true`, tens never count as double successes."
         if param == self.NULLIFY_ONES:
             return "If `true`, the `z` roll option causes ones to not subtract successes."
+        if param == self.DEFAULT_DIFF:
+            return "The default difficulty for a pool-based roll."
         if param == self.PREFIX:
             return "Defines the bot invokation prefix."
 

@@ -52,7 +52,7 @@ def __pool_roll(author, command):
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
-    difficulty = int(command["difficulty"] or "6")
+    difficulty = int(command["difficulty"] or command["default_diff"])
     if difficulty > 10 or difficulty < 2:
         return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
 

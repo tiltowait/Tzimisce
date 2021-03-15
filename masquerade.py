@@ -109,7 +109,24 @@ async def settings(ctx, *args):
             new_value = args[1]
 
             # Prefixes aren't true/false
-            if key != tzimisce.settings.PREFIX:
+            if key == tzimisce.settings.DEFAULT_DIFF:
+                try:
+                    new_value = int(new_value)
+                    if new_value > 10 or new_value < 2:
+                        raise ValueError
+
+                    tzimisce.settings.update(ctx.guild.id, key, new_value)
+                except ValueError:
+                    await ctx.reply(f"Error! `{key}` must be an integer between 2-10.")
+                    return
+
+                await ctx.reply(f"Setting `{key}` to `{new_value}`!")
+            elif key == tzimisce.settings.PREFIX:
+                if new_value == "reset":
+                    await __reset_prefix(ctx)
+                else:
+                    await __set_prefix(ctx, new_value)
+            else:
                 try:
                     new_value = bool(strtobool(new_value))
                     tzimisce.settings.update(ctx.guild.id, key, new_value)
@@ -118,11 +135,6 @@ async def settings(ctx, *args):
                     return
 
                 await ctx.reply(f"Setting `{key}` to `{new_value}`!")
-            else:
-                if new_value == "reset":
-                    await __reset_prefix(ctx)
-                else:
-                    await __set_prefix(ctx, new_value)
     else:
         await ctx.reply(f"Unknown setting `{key}`!")
 
