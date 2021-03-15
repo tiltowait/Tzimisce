@@ -49,6 +49,7 @@ class RollDB:
                                nullify_ones      boolean DEFAULT FALSE,
                                xpl_always        boolean DEFAULT FALSE,
                                no_double         boolean DEFAULT FALSE,
+                               always_double     boolean DEFAULT FALSE,
                                default_diff      int     DEFAULT 6
                                );"""
         )

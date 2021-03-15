@@ -19,7 +19,7 @@ class Pool:
     def __init__(self, options):
         self.difficulty = options.diff
         self.will = options.wp
-        self.spec = options.spec is not None
+        self.spec = options.spec
         self.autos = options.autos
         self.no_botch = options.no_botch
         self.no_double = options.no_double

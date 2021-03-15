@@ -72,7 +72,7 @@ def __pool_roll(author, command):
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
         roll.Pool.Options(
-            pool, difficulty, autos, will, specialty,
+            pool, difficulty, autos, will, specialty is not None or command["always_double"],
             no_botch, command["no_double"], command["nullify_ones"], command["xpl_always"],
             command["xpl_spec"]
         )
