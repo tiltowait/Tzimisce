@@ -1,5 +1,5 @@
 """Manages character initiative."""
-from tzimisce import roll
+from storyteller import roll
 
 class Initiative:
     """An individual initiative roll."""

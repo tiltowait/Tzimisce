@@ -3,8 +3,8 @@
 import re
 
 import discord
-from tzimisce.database import RollDB
-from tzimisce import parse
+from storyteller.database import RollDB
+from storyteller import parse
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")

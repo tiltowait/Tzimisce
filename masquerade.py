@@ -8,14 +8,14 @@ import argparse
 import discord
 from discord.ext import commands
 
-import tzimisce
-from tzimisce.initiative import InitiativeManager
+import storyteller
+from storyteller.initiative import InitiativeManager
 
 # Setup
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
-    return tzimisce.settings.get_prefix(message.guild)
+    return storyteller.settings.get_prefix(message.guild)
 
 bot = commands.Bot(command_prefix=determine_prefix)
 bot.remove_command("help")
@@ -52,7 +52,7 @@ async def standard_roll(ctx, *, args=None):
     command["syntax"] = " ".join(syntax.split())
     command["comment"] = " ".join(comment.split()) if comment else None
 
-    guild_settings = tzimisce.settings.settings_for_guild(ctx.guild.id)
+    guild_settings = storyteller.settings.settings_for_guild(ctx.guild.id)
     command.update(guild_settings)
 
     # See what options the user has selected, if any
@@ -61,7 +61,7 @@ async def standard_roll(ctx, *, args=None):
     if "c" in ctx.invoked_with or guild_settings["use_compact"]:
         command["compact"] = "c"
         if ctx.guild:
-            tzimisce.masquerade.database.increment_compact_rolls(ctx.guild.id)
+            storyteller.engine.database.increment_compact_rolls(ctx.guild.id)
 
     # If the bot doesn't have embed permissions, then we don't want to count that in the stats
     if not ctx.channel.permissions_for(ctx.me).embed_links:
@@ -70,7 +70,7 @@ async def standard_roll(ctx, *, args=None):
     if "z" in ctx.invoked_with:
         command["no_botch"] = "z"
 
-    await tzimisce.masquerade.handle_command(command, ctx)
+    await storyteller.engine.handle_command(command, ctx)
 
 # Subcommands
 
@@ -79,14 +79,14 @@ async def standard_roll(ctx, *, args=None):
 @commands.has_permissions(administrator=True)
 async def settings(ctx, *args):
     """Fetch or update server settings."""
-    params = tzimisce.settings.available_parameters()
+    params = storyteller.settings.available_parameters()
 
     # Display settings
     if len(args) < 1:
-        prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
+        prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
         msg = []
         for param in params:
-            value = tzimisce.settings.value(ctx.guild.id, param)
+            value = storyteller.settings.value(ctx.guild.id, param)
             msg.append(f"`{param}`: `{value}`")
         msg = "\n".join(msg)
         details = f"For more info or to set: `{prefix}m settings <parameter> [value]`"
@@ -102,26 +102,26 @@ async def settings(ctx, *args):
     key = args[0]
     if key in params:
         if len(args) < 2:
-            value = tzimisce.settings.value(ctx.guild.id, key)
-            info = tzimisce.settings.parameter_information(key)
+            value = storyteller.settings.value(ctx.guild.id, key)
+            info = storyteller.settings.parameter_information(key)
             await ctx.reply(f"{info} (Current: `{value}`)")
         else:
             new_value = args[1]
 
             # Prefixes aren't true/false
-            if key == tzimisce.settings.DEFAULT_DIFF:
+            if key == storyteller.settings.DEFAULT_DIFF:
                 try:
                     new_value = int(new_value)
                     if new_value > 10 or new_value < 2:
                         raise ValueError
 
-                    tzimisce.settings.update(ctx.guild.id, key, new_value)
+                    storyteller.settings.update(ctx.guild.id, key, new_value)
                 except ValueError:
                     await ctx.reply(f"Error! `{key}` must be an integer between 2-10.")
                     return
 
                 await ctx.reply(f"Setting `{key}` to `{new_value}`!")
-            elif key == tzimisce.settings.PREFIX:
+            elif key == storyteller.settings.PREFIX:
                 if new_value == "reset":
                     await __reset_prefix(ctx)
                 else:
@@ -129,7 +129,7 @@ async def settings(ctx, *args):
             else:
                 try:
                     new_value = bool(strtobool(new_value))
-                    tzimisce.settings.update(ctx.guild.id, key, new_value)
+                    storyteller.settings.update(ctx.guild.id, key, new_value)
                 except ValueError:
                     await ctx.reply(f"Error! `{key}` must be `true` or `false`!")
                     return
@@ -140,7 +140,7 @@ async def settings(ctx, *args):
 
 async def __set_prefix(ctx, new_value):
     """Set a custom prefix for the guild."""
-    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, new_value)
+    storyteller.settings.update(ctx.guild.id, storyteller.settings.PREFIX, new_value)
 
     message = f"Setting the prefix to `{new_value}m`."
     if len(new_value) > 3:
@@ -150,7 +150,7 @@ async def __set_prefix(ctx, new_value):
 
 async def __reset_prefix(ctx):
     """Reset the current guild's prefix."""
-    tzimisce.settings.update(ctx.guild.id, tzimisce.settings.PREFIX, None)
+    storyteller.settings.update(ctx.guild.id, storyteller.settings.PREFIX, None)
 
     await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
@@ -160,7 +160,7 @@ async def __reset_prefix(ctx):
 @commands.has_permissions(administrator=True)
 async def set_prefix(ctx):
     """DEPRECATED: User should use /m settings prefix."""
-    prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
+    prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
     await ctx.reply(f"This function has moved! Use `{prefix}m settings prefix`.")
 
 @standard_roll.command()
@@ -168,13 +168,13 @@ async def set_prefix(ctx):
 @commands.has_permissions(administrator=True)
 async def reset_prefix(ctx):
     """Reset the guild's prefixes to the defaults."""
-    prefix = tzimisce.settings.get_prefix(ctx.guild.id)[0]
+    prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
     await ctx.reply(f"This function has moved! Use `{prefix}m settings prefix reset`.")
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
-    coin = tzimisce.roll.traditional.roll(1, 2)[0]
+    coin = storyteller.roll.traditional.roll(1, 2)[0]
     if coin == 1:
         coin = "Heads!"
     else:
@@ -187,8 +187,8 @@ async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
 
     # We want to display the correct prefix for the server
-    prefix = tzimisce.settings.get_prefix(ctx.guild)[0]
-    embed = tzimisce.masquerade.help_embed(prefix)
+    prefix = storyteller.settings.get_prefix(ctx.guild)[0]
+    embed = storyteller.engine.help_embed(prefix)
 
     await ctx.reply(embed=embed)
 
@@ -199,13 +199,13 @@ async def __help(ctx):
 @commands.guild_only()
 async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
-    await tzimisce.masquerade.show_stored_rolls(ctx)
+    await storyteller.engine.show_stored_rolls(ctx)
 
 @standard_roll.command(name="$delete-all")
 @commands.guild_only()
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
-    await tzimisce.masquerade.delete_user_rolls(ctx)
+    await storyteller.engine.delete_user_rolls(ctx)
 
 # Initiative Management
 
@@ -213,7 +213,7 @@ async def delete_all(ctx):
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
-    prefix = tzimisce.settings.get_prefix(ctx.guild)[0]
+    prefix = storyteller.settings.get_prefix(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
@@ -222,12 +222,12 @@ async def initiative_manager(ctx, mod=None, *, args=None):
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
     usage += f"`{prefix}mi clear` — Clear the table"
 
-    manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
+    manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
 
     if not mod: # Not rolling
         if manager:
             init_commands = "Commands: remove | clear | reroll | declare"
-            embed = tzimisce.masquerade.build_embed(
+            embed = storyteller.engine.build_embed(
                 title="Initiative", footer=init_commands, description=str(manager),
                 fields=[]
             )
@@ -251,7 +251,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             init = None
             if not is_modifier:
                 init = manager.add_init(character_name, mod)
-                tzimisce.INITIATIVE_MANAGERS[ctx.channel.id] = manager
+                storyteller.INITIATIVE_MANAGERS[ctx.channel.id] = manager
             else:
                 init = manager.modify_init(character_name, mod)
                 if not init:
@@ -266,16 +266,16 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             if is_modifier:
                 footer = f"Initiative modified by {mod:+}.\n{footer}"
 
-            embed = tzimisce.masquerade.build_embed(
+            embed = storyteller.engine.build_embed(
                 title=title, description=str(init), fields=[], footer=footer
             )
 
-            tzimisce.masquerade.database.set_initiative(
+            storyteller.engine.database.set_initiative(
                 ctx.channel.id, character_name, init.mod, init.die
             )
 
             await ctx.reply(embed=embed)
-            tzimisce.masquerade.database.increment_initiative_rolls(ctx.guild.id)
+            storyteller.engine.database.increment_initiative_rolls(ctx.guild.id)
         except ValueError:
             await ctx.reply(usage)
 
@@ -285,8 +285,8 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
     try:
-        del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
-        tzimisce.masquerade.database.clear_initiative(ctx.channel.id)
+        del storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
+        storyteller.engine.database.clear_initiative(ctx.channel.id)
         await ctx.reply("Reset initiative in this channel!")
     except KeyError:
         await ctx.reply("This channel's initiative table is already empty!")
@@ -295,17 +295,17 @@ async def initiative_reset(ctx):
 @commands.guild_only()
 async def initiative_remove_character(ctx, *, args=None):
     """Remove a character from initiative manager."""
-    manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
+    manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
 
     if manager:
         character = args or ctx.author.display_name
         removed = manager.remove_init(character)
         if removed:
-            tzimisce.masquerade.database.remove_initiative(ctx.channel.id, character)
+            storyteller.engine.database.remove_initiative(ctx.channel.id, character)
             message = f"Removed {character} from initiative!"
 
             if manager.count == 0:
-                del tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
+                del storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
                 message += "\nNo characters left in initiative. Clearing table."
 
             await ctx.reply(message)
@@ -318,7 +318,7 @@ async def initiative_remove_character(ctx, *, args=None):
 @commands.guild_only()
 async def initiative_reroll(ctx):
     """Rerolls all initiative and prints the new table."""
-    manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
+    manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
 
     if manager:
         manager.reroll()
@@ -329,7 +329,7 @@ async def initiative_reroll(ctx):
         for character in characters:
             init = characters[character]
 
-            tzimisce.masquerade.database.set_initiative(
+            storyteller.engine.database.set_initiative(
                 ctx.channel.id, character, init.mod, init.die
             )
     else:
@@ -351,11 +351,11 @@ async def initiative_declare(ctx, *args):
         if parsed.character:
             character = " ".join(parsed.character)
 
-        manager = tzimisce.INITIATIVE_MANAGERS[ctx.channel.id]
+        manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
         if not manager.declare_action(character, action):
             raise NameError(character)
 
-        tzimisce.masquerade.database.set_initiative_action(
+        storyteller.engine.database.set_initiative_action(
             ctx.channel.id, character, action
         )
         await ctx.message.add_reaction("👍")
@@ -374,7 +374,7 @@ def suggestion_to_roll(reaction, user):
     message = reaction.message
     if reaction.emoji == "👍" and message.author == bot.user:
         if not message.embeds and user in message.mentions:
-            match = tzimisce.masquerade.suggestx.search(message.content)
+            match = storyteller.engine.suggestx.search(message.content)
             if match:
                 return match.group("suggestion")
 
@@ -386,7 +386,7 @@ async def on_reaction_add(reaction, user):
     suggestion = suggestion_to_roll(reaction, user)
     if suggestion:
         command = defaultdict(lambda: None)
-        match = tzimisce.masquerade.invokex.match(suggestion)
+        match = storyteller.engine.invokex.match(suggestion)
         command.update(match.groupdict())
 
         await reaction.message.delete()
@@ -400,10 +400,10 @@ async def on_reaction_add(reaction, user):
             msg = await ctx.fetch_message(reference.message_id)
             ctx = await bot.get_context(msg)
             ctx.author = user # Otherwise, the user is the bot
-            await tzimisce.masquerade.handle_command(command, ctx, False)
+            await storyteller.engine.handle_command(command, ctx, False)
         except (discord.NotFound, discord.Forbidden, discord.HTTPException):
             ctx.author = user
-            await tzimisce.masquerade.handle_command(command, ctx, True)
+            await storyteller.engine.handle_command(command, ctx, True)
 
 @bot.event
 async def on_ready():
@@ -418,20 +418,20 @@ async def on_ready():
 async def on_guild_join(guild):
     """When joining a guild, log it for statistics purposes."""
     print(f"Joining {guild}!")
-    tzimisce.masquerade.database.add_guild(guild.id, guild.name)
+    storyteller.engine.database.add_guild(guild.id, guild.name)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
     print(f"Removing {guild}.")
-    tzimisce.masquerade.database.remove_guild(guild.id)
+    storyteller.engine.database.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_update(_, after):
     """Sometimes guilds are renamed. Fix that."""
-    tzimisce.masquerade.database.rename_guild(after.id, after.name)
+    storyteller.engine.database.rename_guild(after.id, after.name)
 
 @bot.event
 async def on_command_error(ctx, error):

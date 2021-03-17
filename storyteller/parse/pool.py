@@ -3,7 +3,7 @@
 import re
 
 import discord
-from tzimisce import roll, masquerade # pylint: disable=cyclic-import
+from storyteller import roll, engine # pylint: disable=cyclic-import
 from .response import Response
 
 __poolx = re.compile(
@@ -119,7 +119,7 @@ def __pool_roll(author, command):
 
     fields.append(("Result", results.formatted_result, False))
 
-    return masquerade.build_embed(
+    return engine.build_embed(
         author=author, header=title, color=color, fields=fields,
         footer=comment
     )

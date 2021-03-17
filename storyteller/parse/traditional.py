@@ -3,8 +3,8 @@
 import re
 
 import discord
-from tzimisce import masquerade # pylint: disable=cyclic-import
-from tzimisce import roll # pylint: disable=cyclic-import
+from storyteller import engine # pylint: disable=cyclic-import
+from storyteller import roll # pylint: disable=cyclic-import
 from .response import Response
 
 __tradx = re.compile(
@@ -68,7 +68,7 @@ def __traditional_roll(author, command) -> list:
     # Not using compact mode!
     fields = [("Result", result, False),]
 
-    embed = masquerade.build_embed(
+    embed = engine.build_embed(
         author=author, header=syntax, color=0x000000, fields=fields,
         footer=comment, description=description
     )

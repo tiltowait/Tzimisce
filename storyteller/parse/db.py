@@ -3,8 +3,8 @@
 import re
 import discord
 
-from tzimisce import masquerade # pylint: disable=cyclic-import
-from tzimisce.parse.response import Response
+from storyteller import engine # pylint: disable=cyclic-import
+from storyteller.parse.response import Response
 
 __suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
 
@@ -18,7 +18,7 @@ async def parse(ctx, command):
             response.content = "Sorry, you can't store macros in private DMs!"
             return response
 
-        query_result = masquerade.database.query_saved_rolls(
+        query_result = engine.database.query_saved_rolls(
             guild=ctx.guild.id,
             userid=ctx.author.id,
             command=command

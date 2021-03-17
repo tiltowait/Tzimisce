@@ -5,7 +5,7 @@ import re
 from collections import defaultdict
 
 import psycopg2
-from tzimisce.initiative import InitiativeManager
+from storyteller.initiative import InitiativeManager
 
 class RollDB:
     """Handles stored rolls, including creation, deletion, listing, and modification."""
