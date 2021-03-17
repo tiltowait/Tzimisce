@@ -1,9 +1,10 @@
-**\[Tzimisce\]** is a Discord dicebot for **Vampire: The Masquerade** and other White Wolf Storyteller RPGs. It features simple syntax and a number of advanced features.
+**\[Tzimisce\]** is a Discord dicebot for White Wolf's World of Darkness RPGs, including **Vampire: The Masquerade**, **Mage: The Ascension**, **Werewolf: The Apocalypse**, and **Wraith: The Oblivion**. It features simple syntax; easy-to-read, color-coded output; and a number of advanced features.
 
-* [Invite \[Tzimisce\] to your server](https://top.gg/bot/642775025770037279)
-* [Join the support server](https://discord.gg/rK3RFqV)
-* [View the source code](https://github.com/tiltowait/Tzimisce)
-* [Become a patron](https://www.patreon.com/tzimisce)
+> ### Quick Links
+> * **[Invite \[Tzimisce\] to your server](https://top.gg/bot/642775025770037279)**
+> * **[Join the support server](https://discord.gg/rK3RFqV)**
+> * **[View the source code](https://github.com/tiltowait/Tzimisce)**
+> * **[Become a patron](https://www.patreon.com/tzimisce)**
 
 ---
 
@@ -26,7 +27,7 @@
 
 ?> `difficulty`, `specialty`, and `# comment` are all optional.
 
-#### Examples <!-- {docsify-ignore} -->
+#### Examples
 
 * `!m 5` — Roll 5 dice at difficulty 6
 * `!m 5 7 # Mask of 1000 Faces` — 5 dice, difficulty 7, with a comment
@@ -89,7 +90,7 @@ To use a macro, simply type `!m <macro-name>`. Macros support all the standard r
 
 !> **Note:** Saving a macro does not roll the macro!
 
-#### Examples <!-- {docsify-ignore} -->
+#### Examples
 
 * `!m attack = 7 Graceful # Dex + Brawl` — Saves both the roll syntax and the comment
 * `!m attack` — Rolls the `attack` macro
@@ -97,13 +98,13 @@ To use a macro, simply type `!m <macro-name>`. Macros support all the standard r
 
 #### ** Modify **
 
-#### Permanent {docsify-ignore}
+#### Permanent
 
 Updating a macro is as simple as using the creation command again. Note that if the current macro has a comment and you do not supply a new one, the old comment will be retained.
 
 You may update *just the comment* with `!m <macro_name> c= <new_comment>`.
 
-#### One-Time {docsify-ignore}
+#### One-Time
 
 It is also possible to modify a macro for a single roll (for instance, if your character suffers from wound penalties). The syntax for this is:
 
@@ -114,7 +115,7 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 * `pool-mod` — A positive or negative integer that adds or subtracts from the dice pool
 * `diff-mod` — *(Optional)* A positive or negative integer that adds or subtracts from the difficulty. If no sign is given, then the difficulty will be *set* to `diff-mod`
 
-#### Examples {docsify-ignore}
+#### Examples
 
 * `!m attack +2` — Rolls the `attack` macro with two extra dice
 * `!m attack 0 +1` — Rolls the `attack` macro with zero extra dice, at one higher difficulty than normal
