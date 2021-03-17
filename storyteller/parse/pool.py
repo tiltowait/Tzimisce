@@ -24,7 +24,7 @@ async def parse(ctx, command, mentioning) -> Response:
     response = None
     if pool:
         command.update(pool.groupdict())
-        send = __pool_roll(ctx.author, command)
+        send = __pool_roll(ctx, command)
 
         if isinstance(send, discord.Embed):
             response = Response(Response.POOL, embed=send)
@@ -37,7 +37,7 @@ async def parse(ctx, command, mentioning) -> Response:
 
     return response
 
-def __pool_roll(author, command):
+def __pool_roll(ctx, command):
     """
     A pool-based VtM roll. Returns the results in a pretty embed.
     Does not check that difficulty is 1 or > 10.
@@ -68,11 +68,12 @@ def __pool_roll(author, command):
         title += ", no botch"
 
     specialty = command["specialty"] # Doubles 10s if set
+    should_double = specialty is not None or command["always_double"]
 
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
         roll.Pool.Options(
-            pool, difficulty, autos, will, specialty is not None or command["always_double"],
+            pool, difficulty, autos, will, should_double,
             no_botch, command["no_double"], command["nullify_ones"], command["xpl_always"],
             command["xpl_spec"]
         )
@@ -112,7 +113,13 @@ def __pool_roll(author, command):
     if command["override"]:
         fields.append(("Macro override", command["override"], False))
 
-    fields.append(("Dice", results.formatted_dice, True))
+    if ctx.channel.permissions_for(ctx.me).external_emojis and len(results.dice) <= 40:
+        should_double = should_double and not command["no_double"]
+        ones_botch = not command["nullify_ones"]
+        names = emoji_names(results.dice, difficulty, should_double, ones_botch)
+        fields.append(("Dice", dice_as_emojis(ctx, names), True))
+    else:
+        fields.append(("Dice", results.formatted_dice, True))
 
     if specialty:
         fields.append(("Specialty", specialty, True))
@@ -120,7 +127,7 @@ def __pool_roll(author, command):
     fields.append(("Result", results.formatted_result, False))
 
     return engine.build_embed(
-        author=author, header=title, color=color, fields=fields,
+        author=ctx.author, header=title, color=color, fields=fields,
         footer=comment
     )
 
@@ -131,3 +138,58 @@ def __pluralize_autos(autos):
         string += "s"
 
     return string
+
+
+# Emoji stuff
+
+emojidict = {
+    "ss10": 821609995811553280,
+    "s10": 821613862737674261,
+    "s9": 821613862805700618,
+    "s8": 821613862457180212,
+    "s7": 821613862490341408,
+    "s6": 821613862830080031,
+    "s5": 821613862524420157,
+    "s4": 821613862783549480,
+    "s3": 821613862797049876,
+    "s2": 821613862554042389,
+    "f9": 821601300541734973,
+    "f8": 821601300541210674,
+    "f7": 821601300541603870,
+    "f6": 821601300210253825,
+    "f5": 821601300495335504,
+    "f4": 821601300486553600,
+    "f3": 821601300281425962,
+    "f2": 821601300483014666,
+    "f1": 821601300420493362,
+    "b1": 821601300310392832
+}
+
+def dice_as_emojis(ctx, names) -> str:
+    """Returns an Emoji constructed from the emojidict dictionary."""
+    emojis = []
+    for name in names:
+        emoji_id = emojidict[name]
+        emoji = ctx.bot.get_emoji(emoji_id)
+        emojis.append(emoji)
+
+    emojis = list(map(str, emojis))
+    return " ".join(emojis)
+
+def emoji_names(dice, diff, doubling, botching):
+    """Returns the emoji names based on the dice, difficulty, spec, etc."""
+    names = []
+    for die in dice:
+        name = ""
+        if die >= diff:
+            name = f"s{die}"
+        elif die > 1 or not botching:
+            name = f"f{die}"
+        else:
+            name = "b1"
+
+        if die == 10 and doubling:
+            name = f"s{name}"
+
+        names.append(name)
+    return names
