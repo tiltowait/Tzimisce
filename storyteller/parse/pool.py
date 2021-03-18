@@ -68,14 +68,14 @@ def __pool_roll(ctx, command):
         title += ", no botch"
 
     specialty = command["specialty"] # Doubles 10s if set
-    should_double = specialty is not None or command["always_double"]
+    should_double = __should_double(command, specialty is not None)
+    should_explode = __should_explode(command, specialty is not None)
 
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
         roll.Pool.Options(
             pool, difficulty, autos, will, should_double,
-            no_botch, command["no_double"], command["nullify_ones"], command["xpl_always"],
-            command["xpl_spec"]
+            no_botch, command["nullify_ones"], should_explode
         )
     )
     comment = command["comment"]
@@ -114,10 +114,8 @@ def __pool_roll(ctx, command):
         fields.append(("Macro override", command["override"], False))
 
     if ctx.channel.permissions_for(ctx.me).external_emojis and len(results.dice) <= 40:
-        should_double = should_double and not command["no_double"]
-        ones_botch = not command["nullify_ones"]
-        names = emoji_names(results.dice, difficulty, should_double, ones_botch)
-        fields.append(("Dice", dice_as_emojis(ctx, names), True))
+        names = results.dice_emoji_names
+        fields.append(("Dice", __dice_as_emojis(ctx, names), True))
     else:
         fields.append(("Dice", results.formatted_dice, True))
 
@@ -165,7 +163,7 @@ emojidict = {
     "b1": 821601300310392832
 }
 
-def dice_as_emojis(ctx, names) -> str:
+def __dice_as_emojis(ctx, names) -> str:
     """Returns an Emoji constructed from the emojidict dictionary."""
     emojis = []
     for name in names:
@@ -176,20 +174,19 @@ def dice_as_emojis(ctx, names) -> str:
     emojis = list(map(str, emojis))
     return " ".join(emojis)
 
-def emoji_names(dice, diff, doubling, botching):
-    """Returns the emoji names based on the dice, difficulty, spec, etc."""
-    names = []
-    for die in dice:
-        name = ""
-        if die >= diff:
-            name = f"s{die}"
-        elif die > 1 or not botching:
-            name = f"f{die}"
-        else:
-            name = "b1"
 
-        if die == 10 and doubling:
-            name = f"s{name}"
+def __should_double(command: dict, spec: bool) -> bool:
+    """Determines whether 10s on a roll should count as double successes."""
+    if command["no_double"]:
+        return False
+    if command["always_double"] or spec:
+        return True
+    return False
 
-        names.append(name)
-    return names
+def __should_explode(command: dict, spec: bool) -> bool:
+    """Determines whether 10s on a roll should explode."""
+    if command["xpl_always"]:
+        return True
+    if command["xpl_spec"] and spec:
+        return True
+    return False

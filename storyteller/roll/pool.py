@@ -8,8 +8,8 @@ class Pool:
 
     Options = namedtuple("Options",
         [
-            "pool", "diff", "autos", "wp", "spec", "no_botch", "no_double", "nullify_ones",
-            "explode_always", "explode_spec"
+            "pool", "diff", "autos", "wp", "should_double", "no_botch", "nullify_ones",
+            "should_explode"
         ]
     )
 
@@ -18,13 +18,12 @@ class Pool:
 
     def __init__(self, options):
         self.difficulty = options.diff
+        self.should_double = options.should_double
         self.will = options.wp
-        self.spec = options.spec
         self.autos = options.autos
         self.no_botch = options.no_botch
-        self.no_double = options.no_double
         self.nullify_ones = options.nullify_ones
-        self.should_explode = options.explode_always or (options.explode_spec and self.spec)
+        self.should_explode = options.should_explode
         self.dice = self.__roll(options.pool)
 
     @property
@@ -58,7 +57,7 @@ class Pool:
                 formatted.append(f"~~***{die}***~~")
             elif die < self.difficulty:
                 formatted.append(f"~~{die}~~")
-            elif die == 10 and (self.spec and not self.no_double):
+            elif die == 10 and self.should_double:
                 formatted.append(f"**{die}**")
             else:
                 formatted.append(str(die))
@@ -85,7 +84,7 @@ class Pool:
         for die in self.dice:
             if die >= self.difficulty:
                 suxx += 1
-                if die == 10 and self.spec and not self.no_double:
+                if die == 10 and self.should_double:
                     suxx += 1
             elif die == 1 and not (self.nullify_ones and self.no_botch):
                 fails += 1
@@ -125,3 +124,22 @@ class Pool:
 
         # Normal, non-exploding rolling
         return sorted(traditional.roll(pool, 10), reverse=True)
+
+    @property
+    def dice_emoji_names(self):
+        """Returns the emoji names based on the dice, difficulty, spec, etc."""
+        names = []
+        for die in self.dice:
+            name = ""
+            if die >= self.difficulty:
+                name = f"s{die}"
+            elif die > 1 or (self.nullify_ones and self.no_botch):
+                name = f"f{die}"
+            else:
+                name = "b1"
+
+            if die == 10 and self.should_double:
+                name = f"s{name}"
+
+            names.append(name)
+        return names
