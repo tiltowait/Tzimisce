@@ -115,7 +115,8 @@ def __pool_roll(ctx, command):
 
     if ctx.channel.permissions_for(ctx.me).external_emojis and len(results.dice) <= 40:
         names = results.dice_emoji_names
-        fields.append(("Dice", __dice_as_emojis(ctx, names), True))
+        emojis = __dice_as_emojis(ctx, names)
+        fields.append(("Dice", __emoji_add_wp_autos(emojis, will, autos), True))
     else:
         fields.append(("Dice", results.formatted_dice, True))
 
@@ -190,3 +191,12 @@ def __should_explode(command: dict, spec: bool) -> bool:
     if command["xpl_spec"] and spec:
         return True
     return False
+
+def __emoji_add_wp_autos(emojis, willpower, autos) -> str:
+    """Returns a string of the emojis with WP and auto-successes added."""
+    if willpower:
+        emojis += " *+WP*"
+    if autos > 0:
+        emojis += f" *+{autos}*"
+
+    return emojis
