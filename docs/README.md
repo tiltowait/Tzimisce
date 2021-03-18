@@ -218,5 +218,8 @@ If you cannot see rolls, check that the bot has the permissions below. If it sti
 * **Send Messages:** Should be obvious, no?
 * **Embed Links:** Used for roll display (outside of compact mode), initiative, help display, etc.
 * **Read Message History:** Used for the reply feature
-* **Add Reactions:** Used when suggesting macro names and alerting the user that an action declaration was registered
 
+## Optional Permissions <!-- {docsify-ignore} -->
+
+* **Add Reactions:** Used when suggesting macro names and alerting the user that an action declaration was registered. If not granted, the user can't click to automatically roll a macro suggestion, and there will be no feedback that an action declaration has been logged
+* **Use external emojis:** Used for color-coded display of pool-based dice results. If not granted, it will default to plaintext
