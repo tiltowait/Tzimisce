@@ -2,6 +2,8 @@
 
 import os
 from collections import defaultdict
+from distutils.util import strtobool
+
 import psycopg2
 
 class SettingsDB:
@@ -90,25 +92,39 @@ class SettingsDB:
             return (prefix,)
         return ("!", "/")
 
-    def update(self, guild, key, value):
+    def update(self, guild, key, value) -> str:
         """Sets a server parameter."""
+        value = self.__validated_parameter(key, value) # Raises ValueError if invalid
 
         # Normally unsafe, but we do input validation before we get here
         query = f"UPDATE Guilds SET {key}=%s WHERE ID=%s;"
         self.__execute(query, (value, guild,))
-
         self.__all_settings[guild][key] = value
+
+        message = f"Setting `{key}` to `{value}`!"
+        if key == self.PREFIX:
+            if value:
+                message = f"Setting the prefix to `{value}m`."
+                if len(value) > 3:
+                    message += " A prefix this long might be annoying to type!"
+            else:
+                message = "Reset the command prefix to `/m` and `!m`."
+
+        return message
 
     def value(self, guild, key):
         """Retrieves a value for a specific key for a given guild."""
+        if key not in self.available_parameters:
+            raise ValueError(f"Unknown setting `{key}`!")
+
         if key == SettingsDB.PREFIX:
             return ", ".join(self.get_prefix(guild))
 
         return self.__all_settings[guild][key]
 
+    @property
     def available_parameters(self):
         """Returns a list of available configuration options."""
-
         return [
             self.COMPACT, self.EXPLODE_ALWAYS, self.EXPLODE_SPEC, self.NO_DOUBLE, self.NULLIFY_ONES,
             self.DEFAULT_DIFF, self.ALWAYS_DOUBLE, self.PREFIX
@@ -136,3 +152,26 @@ class SettingsDB:
             return "Defines the bot invokation prefix."
 
         return "Unknown parameter!"
+
+    def __validated_parameter(self, key, new_value):
+        """Returns the proper value type for the parameter, or none."""
+        if key not in self.available_parameters:
+            raise ValueError(f"Unknown setting `{key}`!")
+
+        if key == self.DEFAULT_DIFF:
+            try:
+                new_value = int(new_value)
+                if 2 <= new_value <= 10:
+                    return new_value
+                raise ValueError
+            except ValueError:
+                raise ValueError(f"Error! `{key}` must be an integer between 2-10.") from None
+        if key == self.PREFIX:
+            return new_value
+
+        # All other keys are true/false
+        try:
+            new_value = bool(strtobool(new_value))
+            return new_value
+        except ValueError:
+            raise ValueError(f"Error! `{key}` must be `true` or `false`!") from None

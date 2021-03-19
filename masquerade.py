@@ -79,13 +79,12 @@ async def standard_roll(ctx, *, args=None):
 @commands.has_permissions(administrator=True)
 async def settings(ctx, *args):
     """Fetch or update server settings."""
-    params = storyteller.settings.available_parameters()
 
     # Display settings
     if len(args) < 1:
         prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
         msg = []
-        for param in params:
+        for param in storyteller.settings.available_parameters:
             value = storyteller.settings.value(ctx.guild.id, param)
             msg.append(f"`{param}`: `{value}`")
         msg = "\n".join(msg)
@@ -100,59 +99,22 @@ async def settings(ctx, *args):
 
     # Display or update indivitual settings
     key = args[0]
-    if key in params:
+    try:
+        # Display
         if len(args) < 2:
             value = storyteller.settings.value(ctx.guild.id, key)
             info = storyteller.settings.parameter_information(key)
             await ctx.reply(f"{info} (Current: `{value}`)")
+        # Update
         else:
             new_value = args[1]
+            if key == storyteller.settings.PREFIX and new_value == "reset":
+                new_value = None
 
-            # Prefixes aren't true/false
-            if key == storyteller.settings.DEFAULT_DIFF:
-                try:
-                    new_value = int(new_value)
-                    if new_value > 10 or new_value < 2:
-                        raise ValueError
-
-                    storyteller.settings.update(ctx.guild.id, key, new_value)
-                except ValueError:
-                    await ctx.reply(f"Error! `{key}` must be an integer between 2-10.")
-                    return
-
-                await ctx.reply(f"Setting `{key}` to `{new_value}`!")
-            elif key == storyteller.settings.PREFIX:
-                if new_value == "reset":
-                    await __reset_prefix(ctx)
-                else:
-                    await __set_prefix(ctx, new_value)
-            else:
-                try:
-                    new_value = bool(strtobool(new_value))
-                    storyteller.settings.update(ctx.guild.id, key, new_value)
-                except ValueError:
-                    await ctx.reply(f"Error! `{key}` must be `true` or `false`!")
-                    return
-
-                await ctx.reply(f"Setting `{key}` to `{new_value}`!")
-    else:
-        await ctx.reply(f"Unknown setting `{key}`!")
-
-async def __set_prefix(ctx, new_value):
-    """Set a custom prefix for the guild."""
-    storyteller.settings.update(ctx.guild.id, storyteller.settings.PREFIX, new_value)
-
-    message = f"Setting the prefix to `{new_value}m`."
-    if len(new_value) > 3:
-        message += " A prefix this long might be annoying to type!"
-
-    await ctx.send(message)
-
-async def __reset_prefix(ctx):
-    """Reset the current guild's prefix."""
-    storyteller.settings.update(ctx.guild.id, storyteller.settings.PREFIX, None)
-
-    await ctx.send("Reset the command prefix to `/m` and `!m`.")
+            message = storyteller.settings.update(ctx.guild.id, key, new_value)
+            await ctx.reply(message)
+    except ValueError as error:
+        await ctx.reply(error)
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
