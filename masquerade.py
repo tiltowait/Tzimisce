@@ -52,7 +52,7 @@ async def standard_roll(ctx, *, args=None):
     command["syntax"] = " ".join(syntax.split())
     command["comment"] = " ".join(comment.split()) if comment else None
 
-    guild_settings = storyteller.settings.settings_for_guild(ctx.guild.id)
+    guild_settings = storyteller.settings.settings_for_guild(ctx.guild)
     command.update(guild_settings)
 
     # See what options the user has selected, if any
@@ -436,6 +436,7 @@ async def on_guild_update(_, after):
 @bot.event
 async def on_command_error(ctx, error):
     """Ignore CommandNotFound errors."""
+    # pylint: disable=too-many-return-statements
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingPermissions):
@@ -459,8 +460,9 @@ async def on_command_error(ctx, error):
             return
 
     # Unknown error; print invoking message and raise
+    chat = ctx.guild.name if ctx.guild else "DM"
     print("\n\n**********************")
-    print(f"{ctx.guild.name}: UNKNOWN ERROR ON {ctx.message.clean_content}")
+    print(f"{chat}: UNKNOWN ERROR ON {ctx.message.clean_content}")
     print("**********************\n\n")
 
     raise error

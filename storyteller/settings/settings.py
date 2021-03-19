@@ -75,23 +75,20 @@ class SettingsDB:
 
     def settings_for_guild(self, guild) -> dict:
         """Fetch the settings for a specific server."""
+        if guild and not isinstance(guild, int):
+            guild = guild.id
 
         return self.__all_settings[guild]
 
     def get_prefix(self, guild) -> tuple:
         """Returns the guild's prefix. If the guild is None, returns a default."""
-        default_prefixes = ("!", "/")
-
-        if not guild:
-            return default_prefixes
-
-        if not isinstance(guild, int):
+        if guild and not isinstance(guild, int):
             guild = guild.id
 
         prefix = self.settings_for_guild(guild)[SettingsDB.PREFIX]
         if prefix:
             return (prefix,)
-        return default_prefixes
+        return ("!", "/")
 
     def update(self, guild, key, value):
         """Sets a server parameter."""
