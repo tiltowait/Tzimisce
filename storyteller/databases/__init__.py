@@ -2,3 +2,4 @@
 
 from .database import RollDB
 from .settings import SettingsDB
+from .initiative import InitiativeDB

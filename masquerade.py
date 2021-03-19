@@ -166,7 +166,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
     usage += f"`{prefix}mi clear` — Clear the table"
 
-    manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
+    manager = storyteller.initiative.get_table(ctx.channel.id)
 
     if not mod: # Not rolling
         if manager:
@@ -195,7 +195,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
             init = None
             if not is_modifier:
                 init = manager.add_init(character_name, mod)
-                storyteller.INITIATIVE_MANAGERS[ctx.channel.id] = manager
+                storyteller.initiative.add_table(ctx.channel.id, manager)
             else:
                 init = manager.modify_init(character_name, mod)
                 if not init:
@@ -214,7 +214,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
                 title=title, description=str(init), fields=[], footer=footer
             )
 
-            storyteller.engine.database.set_initiative(
+            storyteller.initiative.set_initiative(
                 ctx.channel.id, character_name, init.mod, init.die
             )
 
@@ -229,8 +229,7 @@ async def initiative_manager(ctx, mod=None, *, args=None):
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
     try:
-        del storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
-        storyteller.engine.database.clear_initiative(ctx.channel.id)
+        storyteller.initiative.remove_table(ctx.channel.id)
         await ctx.reply("Reset initiative in this channel!")
     except KeyError:
         await ctx.reply("This channel's initiative table is already empty!")
@@ -239,17 +238,17 @@ async def initiative_reset(ctx):
 @commands.guild_only()
 async def initiative_remove_character(ctx, *, args=None):
     """Remove a character from initiative manager."""
-    manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
+    manager = storyteller.initiative.get_table(ctx.channel.id)
 
     if manager:
         character = args or ctx.author.display_name
         removed = manager.remove_init(character)
         if removed:
-            storyteller.engine.database.remove_initiative(ctx.channel.id, character)
+            storyteller.initiative.remove_initiative(ctx.channel.id, character)
             message = f"Removed {character} from initiative!"
 
             if manager.count == 0:
-                del storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
+                storyteller.initiative.remove_table(ctx.channel.id)
                 message += "\nNo characters left in initiative. Clearing table."
 
             await ctx.reply(message)
@@ -262,7 +261,7 @@ async def initiative_remove_character(ctx, *, args=None):
 @commands.guild_only()
 async def initiative_reroll(ctx):
     """Rerolls all initiative and prints the new table."""
-    manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
+    manager = storyteller.initiative.get_table(ctx.channel.id)
 
     if manager:
         manager.reroll()
@@ -273,7 +272,7 @@ async def initiative_reroll(ctx):
         for character in characters:
             init = characters[character]
 
-            storyteller.engine.database.set_initiative(
+            storyteller.initiative.set_initiative(
                 ctx.channel.id, character, init.mod, init.die
             )
     else:
@@ -295,11 +294,11 @@ async def initiative_declare(ctx, *args):
         if parsed.character:
             character = " ".join(parsed.character)
 
-        manager = storyteller.INITIATIVE_MANAGERS[ctx.channel.id]
+        manager = storyteller.initiative.get_table(ctx.channel.id)
         if not manager.declare_action(character, action):
             raise NameError(character)
 
-        storyteller.engine.database.set_initiative_action(
+        storyteller.initiative.set_initiative_action(
             ctx.channel.id, character, action
         )
         await ctx.message.add_reaction("👍")

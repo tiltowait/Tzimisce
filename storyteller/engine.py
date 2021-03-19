@@ -58,9 +58,6 @@ async def handle_command(command, ctx, mentioning=False):
             if response.type == parse.Response.TRADITIONAL:
                 database.increment_traditional_rolls(ctx.guild.id)
 
-                # Initiative was suggested
-                if response.init_suggested:
-                    database.suggested_initiative(ctx.guild.id)
         return
 
     # Unrecognized input

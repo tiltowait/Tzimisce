@@ -1,9 +1,7 @@
 """Database handler for rolls stored rolls."""
 
 import re
-from collections import defaultdict
 
-from storyteller.initiative import InitiativeManager
 from .base import Database
 
 class RollDB(Database):
@@ -298,55 +296,3 @@ class RollDB(Database):
         query = "UPDATE Guilds SET Initiative_Rolls = Initiative_Rolls + 1 WHERE ID=%s;"
 
         self._execute(query, (guildid,))
-
-
-    # Initiative Stuff
-
-    def suggested_initiative(self, guildid):
-        """Keep track of number of times initiative manager has been suggested."""
-        query = "UPDATE Guilds SET initiative_suggestions=initiative_suggestions+1 WHERE ID=%s;"
-
-        self._execute(query, (guildid,))
-
-    def set_initiative(self, channel, character, mod, die):
-        """Adds an initiative record."""
-        self.remove_initiative(channel, character)
-
-        query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s);"
-
-        self._execute(query, (channel, character, mod, die,))
-
-    def set_initiative_action(self, channel, character, action):
-        """Stores the declared action for a character."""
-        query = "UPDATE Initiative SET Action=%s WHERE Channel=%s AND Character=%s;"
-
-        self._execute(query, (action, channel, character))
-
-    def remove_initiative(self, channel, character):
-        """Removes a character from a given channel."""
-        query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
-
-        self._execute(query, (channel, character,))
-
-    def clear_initiative(self, channel):
-        """Removes all initiative records from a given channel."""
-        query = "DELETE FROM Initiative WHERE Channel=%s;"
-
-        self._execute(query, (channel,))
-
-    def get_initiative_tables(self):
-        """Returns a dictionary of all initiatives."""
-        query = "SELECT Channel, Character, Mod, Die, Action FROM Initiative ORDER BY Channel;"
-
-        self._execute(query, ())
-        managers = defaultdict(lambda: None)
-
-        for channel, character, mod, die, action in self.cursor.fetchall():
-            manager = managers[channel]
-            if not manager:
-                manager = InitiativeManager()
-                managers[channel] = manager
-
-            manager.add_init(character, mod, die, action)
-
-        return managers

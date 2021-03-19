@@ -7,9 +7,8 @@ class Response:
     TRADITIONAL = 2
     DATABASE = 3
 
-    def __init__(self, response_type, embed=None, content=None, suggested=False):
+    def __init__(self, response_type, embed=None, content=None):
         self.type = response_type
         self.embed = embed
         self.content = content
-        self.init_suggested = suggested
         self.add_reaction = False

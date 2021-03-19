@@ -3,9 +3,9 @@
 from storyteller import engine
 from storyteller import initiative
 from storyteller import roll
-from storyteller.databases import SettingsDB
+from storyteller.databases import SettingsDB, InitiativeDB
 
 # This is a defaultdict, lambda None
-INITIATIVE_MANAGERS = engine.database.get_initiative_tables()
+initiative = InitiativeDB()
 
 settings = SettingsDB()

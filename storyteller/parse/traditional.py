@@ -18,8 +18,8 @@ async def parse(ctx, command, mentioning) -> Response:
     if traditional:
         command.update(traditional.groupdict())
 
-        init, send = __traditional_roll(ctx.author, command)
-        response = Response(Response.TRADITIONAL, suggested=init)
+        send = __traditional_roll(ctx.author, command)
+        response = Response(Response.TRADITIONAL)
         if isinstance(send, discord.Embed):
             response.embed = send
             if mentioning:
@@ -29,13 +29,12 @@ async def parse(ctx, command, mentioning) -> Response:
 
     return response
 
-def __traditional_roll(author, command) -> list:
+def __traditional_roll(author, command):
     """A "traditional" roll, such as 5d10+2."""
     compact = command["compact"]
     syntax = command["syntax"]
     comment = command["comment"]
     description = None # Used to show individual dice
-    suggested = False
 
     # Get the rolls and assemble the fields
     rolls, rolling_initiative = roll.traditional.roll_from_string(syntax)
@@ -43,7 +42,6 @@ def __traditional_roll(author, command) -> list:
 
     if rolling_initiative:
         suggestion = "Rolling initiative? Try the /mi command!"
-        suggested = True
         if comment:
             comment += f"\n{suggestion}"
         else:
@@ -63,7 +61,7 @@ def __traditional_roll(author, command) -> list:
         if comment:
             compact_string += f"\n> {comment}"
 
-        return (suggested, compact_string)
+        return compact_string
 
     # Not using compact mode!
     fields = [("Result", result, False),]
@@ -73,4 +71,4 @@ def __traditional_roll(author, command) -> list:
         footer=comment, description=description
     )
 
-    return (suggested, embed)
+    return embed
