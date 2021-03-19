@@ -154,23 +154,6 @@ async def __reset_prefix(ctx):
 
     await ctx.send("Reset the command prefix to `/m` and `!m`.")
 
-
-@standard_roll.command()
-@commands.guild_only()
-@commands.has_permissions(administrator=True)
-async def set_prefix(ctx):
-    """DEPRECATED: User should use /m settings prefix."""
-    prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
-    await ctx.reply(f"This function has moved! Use `{prefix}m settings prefix`.")
-
-@standard_roll.command()
-@commands.guild_only()
-@commands.has_permissions(administrator=True)
-async def reset_prefix(ctx):
-    """Reset the guild's prefixes to the defaults."""
-    prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
-    await ctx.reply(f"This function has moved! Use `{prefix}m settings prefix reset`.")
-
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
