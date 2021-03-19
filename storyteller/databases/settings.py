@@ -1,12 +1,11 @@
 """settings.py - Database for managing server settings."""
 
-import os
 from collections import defaultdict
 from distutils.util import strtobool
 
-import psycopg2
+from .base import Database
 
-class SettingsDB:
+class SettingsDB(Database):
     """Interface for setting and retrieving server parameters."""
 
     # Non-boolean keys
@@ -25,30 +24,14 @@ class SettingsDB:
     }
 
     def __init__(self):
-        # Set up the database
-        self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
-        self.conn.autocommit = True
-        self.cursor = self.conn.cursor()
-
+        super().__init__()
         self.__all_settings = self.__fetch_all_settings()
-
-    def __execute(self, query, args):
-        """Executes the specified query. Tries to reconnect to the database if there's an error."""
-        try:
-            self.cursor.execute(query, args)
-        except psycopg2.errors.AdminShutdown: # pylint: disable=no-member
-            # Connection got reset for some reason, so fix it
-            print("Lost database connection. Retrying.")
-            self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
-            self.conn.autocommit = True
-            self.cursor = self.conn.cursor()
-            self.cursor.execute(query, args) # Reconnected, so try again!
 
     def __fetch_all_settings(self) -> dict:
         """Fetch settings for each server."""
         query_cols = ", ".join(self.available_parameters)
         query = f"SELECT ID, {query_cols} FROM Guilds;"
-        self.__execute(query, ())
+        self._execute(query, ())
         results = self.cursor.fetchall()
 
         default_params = defaultdict(lambda: False)
@@ -89,7 +72,7 @@ class SettingsDB:
 
         # Normally unsafe, but we do input validation before we get here
         query = f"UPDATE Guilds SET {key}=%s WHERE ID=%s;"
-        self.__execute(query, (value, guild,))
+        self._execute(query, (value, guild,))
         self.__all_settings[guild][key] = value
 
         message = f"Setting `{key}` to `{value}`!"

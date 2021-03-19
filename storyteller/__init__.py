@@ -3,7 +3,7 @@
 from storyteller import engine
 from storyteller import initiative
 from storyteller import roll
-from storyteller.settings import SettingsDB
+from storyteller.databases import SettingsDB
 
 # This is a defaultdict, lambda None
 INITIATIVE_MANAGERS = engine.database.get_initiative_tables()

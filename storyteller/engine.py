@@ -3,8 +3,8 @@
 import re
 
 import discord
-from storyteller.database import RollDB
 from storyteller import parse
+from storyteller.databases import RollDB
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
@@ -104,7 +104,7 @@ def help_embed(prefix):
     embed.add_field(name="Example", value=f"```{prefix}m 8 5 Mesmerizing # Summon```", inline=False)
     embed.add_field(
         name="Become a Patron",
-        value="Support \[Tzimisce\]'s development [here](https://www.patreon.com/tzimisce)!",
+        value=r"Support \[Tzimisce\]'s development [here](https://www.patreon.com/tzimisce)!",
         inline=False
     )
 
