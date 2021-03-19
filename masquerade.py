@@ -425,7 +425,7 @@ async def __alert_permissions(ctx):
 def __status_message():
     """Sets the bot's Discord presence message."""
     servers = len(bot.guilds)
-    return f"/m help | {servers} chronicles"
+    return f"!m help | {servers} chronicles"
 
 
 # End definitions
