@@ -17,7 +17,7 @@ async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
     return storyteller.settings.get_prefix(message.guild)
 
-bot = commands.Bot(command_prefix=determine_prefix)
+bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
 bot.remove_command("help")
 
 # Commands
