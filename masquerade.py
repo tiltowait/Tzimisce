@@ -2,7 +2,6 @@
 
 import os
 from collections import defaultdict
-from distutils.util import strtobool
 import argparse
 
 import discord

@@ -7,22 +7,29 @@ from distutils.util import strtobool
 import psycopg2
 
 class SettingsDB:
-    """Interface for setting and retriving server parameters."""
+    """Interface for setting and retrieving server parameters."""
 
-    # Keys
-    COMPACT = "use_compact"
-    EXPLODE_ALWAYS = "xpl_always"
-    EXPLODE_SPEC = "xpl_spec"
-    NO_DOUBLE = "no_double"
-    ALWAYS_DOUBLE = "always_double"
-    NULLIFY_ONES = "nullify_ones"
+    # Non-boolean keys
     DEFAULT_DIFF = "default_diff"
     PREFIX = "prefix"
 
+    __PARAMETERS = {
+        "use_compact": "Set the server to always use compact rolls.",
+        "xpl_always": "If `true`, tens always explode.",
+        "xpl_spec": "If `true`, specialty tens explode.",
+        "no_double": "If `true`, tens will never count as double successes.",
+        "always_double": "If `true`, tens will always count as double successes.",
+        "nullify_ones": "If `true`, the `z` roll option causes ones to not subtract successes.",
+        DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
+        PREFIX: "Defines the bot invocation prefix.",
+    }
+
     def __init__(self):
+        # Set up the database
         self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
+
         self.__all_settings = self.__fetch_all_settings()
 
     def __execute(self, query, args):
@@ -39,9 +46,8 @@ class SettingsDB:
 
     def __fetch_all_settings(self) -> dict:
         """Fetch settings for each server."""
-
-        query = """SELECT ID, use_compact, nullify_ones, prefix, xpl_always, xpl_spec, no_double,
-                   default_diff, always_double FROM Guilds;"""
+        query_cols = ", ".join(self.available_parameters)
+        query = f"SELECT ID, {query_cols} FROM Guilds;"
         self.__execute(query, ())
         results = self.cursor.fetchall()
 
@@ -50,28 +56,13 @@ class SettingsDB:
 
         for row in results:
             row = list(row)
-
             guild = row.pop(0)
-            compact = row.pop(0)
-            nullify_ones = row.pop(0)
-            prefix = row.pop(0)
-            explode_always = row.pop(0)
-            explode_spec = row.pop(0)
-            no_double = row.pop(0)
-            default_diff = row.pop(0)
-            always_double = row.pop(0)
 
-            params = {
-                "use_compact": compact,
-                "xpl_always": explode_always,
-                "xpl_spec": explode_spec,
-                "no_double": no_double,
-                self.ALWAYS_DOUBLE: always_double,
-                "nullify_ones": nullify_ones,
-                "default_diff": default_diff,
-                "prefix": prefix
-            }
-            settings[guild] = params
+            parameters = {}
+            for i, param in enumerate(self.available_parameters):
+                parameters[param] = row[i]
+
+            settings[guild] = parameters
 
         return settings
 
@@ -125,36 +116,17 @@ class SettingsDB:
     @property
     def available_parameters(self):
         """Returns a list of available configuration options."""
-        return [
-            self.COMPACT, self.EXPLODE_ALWAYS, self.EXPLODE_SPEC, self.NO_DOUBLE, self.NULLIFY_ONES,
-            self.DEFAULT_DIFF, self.ALWAYS_DOUBLE, self.PREFIX
-        ]
+        return self.__PARAMETERS.keys()
 
     def parameter_information(self, param) -> str:
         """Returns a description of what a given parameter does."""
-        # pylint: disable=too-many-return-statements
-
-        if param == self.COMPACT:
-            return "Set the server to always use compact rolls."
-        if param == self.EXPLODE_ALWAYS:
-            return "If `true`, tens always explode."
-        if param == self.EXPLODE_SPEC:
-            return "If `true`, specialty tens explode."
-        if param == self.NO_DOUBLE:
-            return "If `true`, tens never count as double successes."
-        if param == self.NULLIFY_ONES:
-            return "If `true`, the `z` roll option causes ones to not subtract successes."
-        if param == self.DEFAULT_DIFF:
-            return "The default difficulty for a pool-based roll."
-        if param == self.ALWAYS_DOUBLE:
-            return "If `true`, tens will count as double successes regardless of specialty."
-        if param == self.PREFIX:
-            return "Defines the bot invokation prefix."
-
-        return "Unknown parameter!"
+        try:
+            return self.__PARAMETERS[param]
+        except KeyError:
+            return f"Unknown parameter `{param}`!"
 
     def __validated_parameter(self, key, new_value):
-        """Returns the proper value type for the parameter, or none."""
+        """Returns the proper value type for the parameter, or None."""
         if key not in self.available_parameters:
             raise ValueError(f"Unknown setting `{key}`!")
 
