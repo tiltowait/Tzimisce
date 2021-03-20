@@ -26,7 +26,6 @@ class InitiativeDB(Database):
         del self.__tables[channel]
         self.__clear_initiative(channel)
 
-
     # Database actions
 
     def set_initiative(self, channel, character, mod, die):
@@ -34,32 +33,28 @@ class InitiativeDB(Database):
         self.remove_initiative(channel, character)
 
         query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s);"
-
         self._execute(query, (channel, character, mod, die,))
 
     def set_initiative_action(self, channel, character, action):
         """Stores the declared action for a character."""
         query = "UPDATE Initiative SET Action=%s WHERE Channel=%s AND Character=%s;"
-
         self._execute(query, (action, channel, character))
 
     def remove_initiative(self, channel, character):
         """Removes a character from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
-
         self._execute(query, (channel, character,))
 
     def __clear_initiative(self, channel):
         """Removes all initiative records from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s;"
-
         self._execute(query, (channel,))
 
     def __fetch_initiative_tables(self):
         """Returns a dictionary of all initiatives."""
         query = "SELECT Channel, Character, Mod, Die, Action FROM Initiative ORDER BY Channel;"
-
         self._execute(query, ())
+
         managers = defaultdict(lambda: None)
 
         for channel, character, mod, die, action in self.cursor.fetchall():

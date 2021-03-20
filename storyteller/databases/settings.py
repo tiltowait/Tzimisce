@@ -35,6 +35,8 @@ class SettingsDB(Database):
         results = self.cursor.fetchall()
 
         default_params = defaultdict(lambda: False)
+        default_params[self.DEFAULT_DIFF] = 6
+        default_params[self.PREFIX] = None
         settings = defaultdict(lambda: default_params)
 
         for row in results:
@@ -56,7 +58,7 @@ class SettingsDB(Database):
 
         return self.__all_settings[guild]
 
-    def get_prefix(self, guild) -> tuple:
+    def get_prefixes(self, guild) -> tuple:
         """Returns the guild's prefix. If the guild is None, returns a default."""
         if guild and not isinstance(guild, int):
             guild = guild.id
@@ -92,7 +94,7 @@ class SettingsDB(Database):
             raise ValueError(f"Unknown setting `{key}`!")
 
         if key == SettingsDB.PREFIX:
-            return ", ".join(self.get_prefix(guild))
+            return ", ".join(self.get_prefixes(guild))
 
         return self.__all_settings[guild][key]
 
@@ -116,9 +118,9 @@ class SettingsDB(Database):
         if key == self.DEFAULT_DIFF:
             try:
                 new_value = int(new_value)
-                if 2 <= new_value <= 10:
-                    return new_value
-                raise ValueError
+                if not 2 <= new_value <= 10:
+                    raise ValueError
+                return new_value
             except ValueError:
                 raise ValueError(f"Error! `{key}` must be an integer between 2-10.") from None
         if key == self.PREFIX:

@@ -17,7 +17,7 @@ async def handle_command(command, ctx, mentioning=False):
     """Parse every message and determine if action is needed."""
 
     # The COMMAND dict contains info on compact mode, willpower, comment,
-    # and the command syntax. At this poitn, the syntax is unvalidated and
+    # and the command syntax. At this point, the syntax is unvalidated and
     # may be in error. Validators below determine if syntax is actionable
     # or display an error message.
 
@@ -76,7 +76,7 @@ async def show_stored_rolls(ctx):
         )
         await ctx.reply("List sent. Please check your DMs!")
         await ctx.author.send(
-            content=f"Here are your macros on {ctx.guild}:",
+            content=f"Here are your macros on **{ctx.guild}**:",
             embed=embed
         )
 

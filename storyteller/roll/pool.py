@@ -1,30 +1,21 @@
 """A class for performing pool-based rolls and determining number of successes."""
 
-from collections import namedtuple
 from . import traditional
 
 class Pool:
     """Provides facilities for pool-based rolls."""
+    # pylint: disable=too-many-instance-attributes
 
-    Options = namedtuple("Options",
-        [
-            "pool", "diff", "autos", "wp", "should_double", "no_botch", "nullify_ones",
-            "should_explode"
-        ]
-    )
-
-    # pylint: disable=too-many-arguments
-    # We don't have a choice here.
-
-    def __init__(self, options):
-        self.difficulty = options.diff
-        self.should_double = options.should_double
-        self.will = options.wp
-        self.autos = options.autos
-        self.no_botch = options.no_botch
-        self.nullify_ones = options.nullify_ones
-        self.should_explode = options.should_explode
-        self.dice = self.__roll(options.pool)
+    def __init__(self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode):
+        # pylint: disable=too-many-arguments
+        self.difficulty = diff
+        self.should_double = double
+        self.will = wp
+        self.autos = autos
+        self.no_botch = no_botch
+        self.nullify_ones = nullify_ones
+        self.should_explode = explode
+        self.dice = self.__roll(pool)
 
     @property
     def formatted_result(self):

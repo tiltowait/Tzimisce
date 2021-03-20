@@ -14,7 +14,7 @@ from storyteller.initiative import InitiativeManager
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
-    return storyteller.settings.get_prefix(message.guild)
+    return storyteller.settings.get_prefixes(message.guild)
 
 bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
 bot.remove_command("help")
@@ -81,7 +81,7 @@ async def settings(ctx, *args):
 
     # Display settings
     if len(args) < 1:
-        prefix = storyteller.settings.get_prefix(ctx.guild.id)[0]
+        prefix = storyteller.settings.get_prefixes(ctx.guild.id)[0]
         msg = []
         for param in storyteller.settings.available_parameters:
             value = storyteller.settings.value(ctx.guild.id, param)
@@ -131,7 +131,7 @@ async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
 
     # We want to display the correct prefix for the server
-    prefix = storyteller.settings.get_prefix(ctx.guild)[0]
+    prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
     embed = storyteller.engine.help_embed(prefix)
 
     await ctx.reply(embed=embed)
@@ -157,7 +157,7 @@ async def delete_all(ctx):
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
-    prefix = storyteller.settings.get_prefix(ctx.guild)[0]
+    prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"

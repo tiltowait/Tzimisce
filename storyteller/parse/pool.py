@@ -47,19 +47,19 @@ def __pool_roll(ctx, command):
     no_botch = command["no_botch"]
     pool = int(command["pool"])
 
-    if pool < 1 or pool > 100:
+    if not 1 <= pool <= 100:
         return f"Sorry, pools must be between 1 and 100. *(Input: {pool})*"
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
-    difficulty = int(command["difficulty"] or command["default_diff"] or 6)
-    if difficulty > 10 or difficulty < 2:
+    difficulty = int(command["difficulty"] or command["default_diff"])
+    if not 2 <= difficulty <= 10:
         return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
 
     title = f"Pool {pool}, diff. {difficulty}"
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
-    autos = int(command["auto"] or "0")
+    autos = int(command["auto"] or 0)
     if autos > 0:
         title += f", +{__pluralize_autos(autos)}"
 
@@ -73,29 +73,21 @@ def __pool_roll(ctx, command):
 
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
-        roll.Pool.Options(
-            pool, difficulty, autos, will, should_double,
-            no_botch, command["nullify_ones"], should_explode
-        )
+        pool, difficulty, autos, will, should_double,
+        no_botch, command["nullify_ones"], should_explode
     )
     comment = command["comment"]
 
     # Compact formatting
     if compact:
-        compact_string = ""
-
-        if comment:
-            compact_string += f"> {comment}\n\n"
-
-        compact_string += f"{results.formatted_dice}"
-        if specialty:
-            compact_string += f"   ({specialty})"
-
-        compact_string += f"\n**{results.formatted_result}**"
-
-        return compact_string
+        return __build_compact(results, specialty, comment)
 
     # If not compact, put the results into an embed
+    return __build_embed(ctx, command["override"], results, specialty, will, autos, title, comment)
+
+def __build_embed(ctx, override, results, specialty, will, autos, title, comment):
+    """Builds an embed for the roll results."""
+    # pylint: disable=too-many-arguments
 
     # The embed's color indicates if the roll succeeded, failed, or botched
     color = FAIL_COLOR
@@ -110,13 +102,13 @@ def __pool_roll(ctx, command):
 
     # Set up the embed fields
     fields = []
-    if command["override"]:
-        fields.append(("Macro override", command["override"], False))
+    if override:
+        fields.append(("Macro override", override, False))
 
     if ctx.channel.permissions_for(ctx.me).external_emojis and len(results.dice) <= 40:
         names = results.dice_emoji_names
-        emojis = __dice_as_emojis(ctx, names)
-        fields.append(("Dice", __emoji_add_wp_autos(emojis, will, autos), True))
+        emojis = __emojify_dice(ctx, names, will, autos)
+        fields.append(("Dice", emojis, True))
     else:
         fields.append(("Dice", results.formatted_dice, True))
 
@@ -130,6 +122,21 @@ def __pool_roll(ctx, command):
         footer=comment
     )
 
+def __build_compact(results, specialty, comment):
+    """Builds a compact result string for the roll."""
+    compact_string = ""
+
+    if comment:
+        compact_string += f"> {comment}\n\n"
+
+    compact_string += f"{results.formatted_dice}"
+    if specialty:
+        compact_string += f"   ({specialty})"
+
+    compact_string += f"\n**{results.formatted_result}**"
+
+    return compact_string
+
 def __pluralize_autos(autos):
     """Pluralize 'N auto(s)' as needed"""
     string = f"{autos} auto"
@@ -140,6 +147,11 @@ def __pluralize_autos(autos):
 
 
 # Emoji stuff
+
+# Dice are programmatically converted to their emoji name. The name is composed of
+# two or three elements: specialty/success/failure/botch + the number. A successful 6
+# becomes 's6', whereas a failing 2 becomes 'f2'. 'ss10' means a specialty 10, and
+# 'b1' means a botching 1.
 
 emojidict = {
     "ss10": 821609995811553280,
@@ -164,7 +176,7 @@ emojidict = {
     "b1": 821601300310392832
 }
 
-def __dice_as_emojis(ctx, names) -> str:
+def __emojify_dice(ctx, names, willpower, autos) -> str:
     """Returns an Emoji constructed from the emojidict dictionary."""
     emojis = []
     for name in names:
@@ -173,8 +185,14 @@ def __dice_as_emojis(ctx, names) -> str:
         emojis.append(emoji)
 
     emojis = list(map(str, emojis))
-    return " ".join(emojis)
+    emoji_string = " ".join(emojis)
 
+    if willpower:
+        emoji_string += " *+WP*"
+    if autos > 0:
+        emoji_string += f" *+{autos}*"
+
+    return emoji_string
 
 def __should_double(command: dict, spec: bool) -> bool:
     """Determines whether 10s on a roll should count as double successes."""
@@ -191,12 +209,3 @@ def __should_explode(command: dict, spec: bool) -> bool:
     if command["xpl_spec"] and spec:
         return True
     return False
-
-def __emoji_add_wp_autos(emojis, willpower, autos) -> str:
-    """Returns a string of the emojis with WP and auto-successes added."""
-    if willpower:
-        emojis += " *+WP*"
-    if autos > 0:
-        emojis += f" *+{autos}*"
-
-    return emojis
