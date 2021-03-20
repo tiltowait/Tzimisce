@@ -10,9 +10,11 @@ class Initiative:
         self.action = action
 
     def __eq__(self, other):
-        return self.init == other.init
+        return self.init == other.init and self.mod == other.mod
 
     def __lt__(self, other):
+        if self.init == other.init:
+            return self.mod < other.mod
         return self.init < other.init
 
     def __str__(self):
