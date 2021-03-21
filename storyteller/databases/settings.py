@@ -18,7 +18,7 @@ class SettingsDB(Database):
         DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
         "xpl_always": "If `true`, tens always explode.",
         "xpl_spec": "If `true`, specialty tens explode.",
-        "no_double": "If `true`, tens will never count as double successes.",
+        "never_double": "If `true`, tens will never count as double successes.",
         "always_double": "If `true`, tens will always count as double successes.",
         "nullify_ones": "If `true`, the `z` roll option causes ones to not subtract successes.",
         "wp_cancelable": "Allows ones to cancel a Willpower success.",

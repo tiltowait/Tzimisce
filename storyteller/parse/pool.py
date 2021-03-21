@@ -196,7 +196,7 @@ def __emojify_dice(ctx, names, willpower, autos) -> str:
 
 def __should_double(command: dict, spec: bool) -> bool:
     """Determines whether 10s on a roll should count as double successes."""
-    if command["no_double"]:
+    if command["never_double"]:
         return False
     if command["always_double"] or spec:
         return True

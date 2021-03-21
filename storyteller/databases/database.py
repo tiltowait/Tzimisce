@@ -44,9 +44,10 @@ class RollDB(Database):
                                xpl_spec          boolean DEFAULT FALSE,
                                nullify_ones      boolean DEFAULT FALSE,
                                xpl_always        boolean DEFAULT FALSE,
-                               no_double         boolean DEFAULT FALSE,
+                               never_double      boolean DEFAULT FALSE,
                                always_double     boolean DEFAULT FALSE,
-                               default_diff      int     DEFAULT 6
+                               default_diff      int     DEFAULT 6,
+                               wp_cancelable     boolean DEFAULT FALSE
                                );"""
         )
 
