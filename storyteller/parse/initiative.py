@@ -2,7 +2,8 @@
 
 import argparse
 
-import storyteller
+import storyteller.engine # pylint: disable=cyclic-import
+import storyteller.initiative
 from storyteller.initiative import InitiativeManager
 from .response import Response
 
@@ -23,9 +24,9 @@ def initiative(ctx, mod, args) -> Response:
 
     if not mod: # Not rolling
         if manager:
-            init_commands = "Commands: remove | clear | reroll | declare"
             embed = storyteller.engine.build_embed(
-                title="Initiative", footer=init_commands, description=str(manager),
+                title="Initiative", description=str(manager),
+                footer="Commands: remove | clear | reroll | declare",
                 fields=[]
             )
 

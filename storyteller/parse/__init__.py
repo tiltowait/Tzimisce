@@ -2,6 +2,6 @@
 
 from .pool import pool
 from .traditional import traditional
-from .db import db
+from .db import database
 from .initiative import initiative, initiative_removal, initiative_declare
 from .response import Response

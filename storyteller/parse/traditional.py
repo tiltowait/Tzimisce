@@ -13,10 +13,10 @@ __tradx = re.compile(
 
 async def traditional(ctx, command, mentioning) -> Response:
     """Perform a traditional roll if appropriate."""
-    traditional = __tradx.match(command["syntax"])
+    traditional_command = __tradx.match(command["syntax"])
     response = None
-    if traditional:
-        command.update(traditional.groupdict())
+    if traditional_command:
+        command.update(traditional_command.groupdict())
 
         send = __traditional_roll(ctx.author, command)
         response = Response(Response.TRADITIONAL)

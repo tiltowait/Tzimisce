@@ -8,7 +8,7 @@ from storyteller.parse.response import Response
 
 __suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
 
-async def db(ctx, command):
+async def database(ctx, command):
     """Inspects command for database queries and acts on them as necessary."""
     query_result = None
 

@@ -85,61 +85,7 @@ class RollDB(Database):
         # Use a stored roll.
         match = self.usex.match(syntax)
         if match:
-            name = match.group("name")
-            compound = self.retrieve_stored_roll(guild, userid, name)
-
-            if not compound:
-                alt = self.__find_similar_macro(guild, userid, name)
-                if alt:
-                    return f"`{name}` not found. Did you mean `{alt}`?"
-
-                return f"Sorry, you have no macro named `{name}`!"
-
-            syntax = compound[0]
-            mods = match.group("mods")
-
-            # The user may modify a stored roll by changing the pool, diff, or both
-            if mods:
-                mods = mods.split()
-                pool_mod = int(mods[0])
-
-                if pool_mod != 0 and not match.group("sign"):
-                    return "Pool modifiers must be zero or have a +/- sign."
-
-                pool_desc = f"Pool {pool_mod:+}. " if pool_mod != 0 else ""
-
-                # Modify the pool first
-                syntax = syntax.split()
-                if len(syntax) == 1 or not syntax[1][0].isdigit(): # Need a default difficulty
-                    syntax.insert(1, 6)
-
-                new_pool = int(syntax[0]) + pool_mod
-                syntax[0] = str(new_pool)
-
-                # Modify or replace the difficulty
-                diff_desc = ""
-                diff_mod = "+0" if len(mods) < 2 else mods[1]
-
-                if diff_mod.isdigit(): # No +/- sign
-                    syntax[1] = diff_mod
-                    diff_desc = f"Diff. to {diff_mod}."
-                else:
-                    diff_mod = int(diff_mod)
-                    current_diff = int(syntax[1])
-                    syntax[1] = str(current_diff + diff_mod)
-
-                    if diff_mod != 0:
-                        diff_desc = f"Diff. {diff_mod:+}."
-
-                command["override"] = f"{pool_desc}{diff_desc}" # Notice of override
-
-                syntax = " ".join(syntax)
-
-            # Only use the stored command if a new one isn't given
-            command["syntax"] = syntax
-            if compound[1] and not command["comment"]:
-                command["comment"] = compound[1]
-
+            command = self.__match_stored_roll(command, match, guild, userid)
             return command
 
         # Delete a stored roll.
@@ -154,6 +100,64 @@ class RollDB(Database):
 
         # We have no idea what the user wanted to do.
         return "Come again?"
+
+    def __match_stored_roll(self, command, match, guild, userid):
+        """Attempts to pull a roll from the database and modify as needed."""
+        name = match.group("name")
+        compound = self.retrieve_stored_roll(guild, userid, name)
+
+        if not compound:
+            alt = self.__find_similar_macro(guild, userid, name)
+            if alt:
+                return f"`{name}` not found. Did you mean `{alt}`?"
+
+            return f"Sorry, you have no macro named `{name}`!"
+
+        syntax = compound[0]
+        mods = match.group("mods")
+
+        # The user may modify a stored roll by changing the pool, diff, or both
+        if mods:
+            mods = mods.split()
+            pool_mod = int(mods[0])
+
+            if pool_mod != 0 and not match.group("sign"):
+                return "Pool modifiers must be zero or have a +/- sign."
+
+            pool_desc = f"Pool {pool_mod:+}. " if pool_mod != 0 else ""
+
+            # Modify the pool first
+            syntax = syntax.split()
+            if len(syntax) == 1 or not syntax[1][0].isdigit(): # Need a default difficulty
+                syntax.insert(1, 6)
+
+            # Set the recalculated pool
+            syntax[0] = str(int(syntax[0]) + pool_mod)
+
+            # Modify or replace the difficulty
+            diff_desc = ""
+            diff_mod = "+0" if len(mods) < 2 else mods[1]
+
+            if diff_mod.isdigit(): # No +/- sign
+                syntax[1] = diff_mod
+                diff_desc = f"Diff. to {diff_mod}."
+            else:
+                diff_mod = int(diff_mod)
+                current_diff = int(syntax[1])
+                syntax[1] = str(current_diff + diff_mod)
+
+                if diff_mod != 0:
+                    diff_desc = f"Diff. {diff_mod:+}."
+
+            command["override"] = f"{pool_desc}{diff_desc}" # Notice of override
+            syntax = " ".join(syntax)
+
+        # Only use the stored command if a new one isn't given
+        command["syntax"] = syntax
+        if compound[1] and not command["comment"]:
+            command["comment"] = compound[1]
+
+        return command
 
     def __store_roll(self, guild, userid, name, syntax, comment):
         """Store a new roll, or update an old one."""

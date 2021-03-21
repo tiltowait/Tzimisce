@@ -20,10 +20,10 @@ BOTCH_COLOR = 0XfF0000
 
 async def pool(ctx, command, mentioning) -> Response:
     """Determine if a roll is appropriate, and roll it."""
-    pool = __poolx.match(command["syntax"])
+    pool_command = __poolx.match(command["syntax"])
     response = None
-    if pool:
-        command.update(pool.groupdict())
+    if pool_command:
+        command.update(pool_command.groupdict())
         send = __pool_roll(ctx, command)
 
         if isinstance(send, discord.Embed):
@@ -45,10 +45,10 @@ def __pool_roll(ctx, command):
     will = command["will"]
     compact = command["compact"]
     no_botch = command["no_botch"]
-    pool = int(command["pool"])
+    dice_pool = int(command["pool"])
 
-    if not 1 <= pool <= 100:
-        return f"Sorry, pools must be between 1 and 100. *(Input: {pool})*"
+    if not 1 <= dice_pool <= 100:
+        return f"Sorry, pools must be between 1 and 100. *(Input: {dice_pool})*"
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
@@ -56,7 +56,7 @@ def __pool_roll(ctx, command):
     if not 2 <= difficulty <= 10:
         return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
 
-    title = f"Pool {pool}, diff. {difficulty}"
+    title = f"Pool {dice_pool}, diff. {difficulty}"
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
     autos = int(command["auto"] or 0)
@@ -73,7 +73,7 @@ def __pool_roll(ctx, command):
 
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
-        pool, difficulty, autos, will, should_double,
+        dice_pool, difficulty, autos, will, should_double,
         no_botch, command["nullify_ones"], should_explode, command["wp_cancelable"]
     )
     comment = command["comment"]

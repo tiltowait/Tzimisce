@@ -30,7 +30,7 @@ async def handle_command(command, ctx, mentioning=False):
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
-    response = await parse.db(ctx, command)
+    response = await parse.database(ctx, command)
     if isinstance(response, dict): # Database didn't generate a user response
         command = response
         response = None
