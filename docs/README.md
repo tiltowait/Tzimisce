@@ -1,4 +1,4 @@
-**\[Tzimisce\]** is a Discord dicebot for White Wolf's World of Darkness RPGs, including **Vampire: The Masquerade**, **Mage: The Ascension**, **Werewolf: The Apocalypse**, and **Wraith: The Oblivion**. It features simple syntax; easy-to-read, color-coded output; and a number of advanced features.
+**\[Tzimisce\]** is a Discord dicebot for White Wolf's World of Darkness RPGs, including **Vampire: The Masquerade** (V20), **Mage: The Ascension** (M20), **Werewolf: The Apocalypse** (W20), and **Wraith: The Oblivion** (WtO). It features simple syntax; easy-to-read, color-coded output; and a number of advanced features.
 
 > ### Quick Links
 > * **[Invite \[Tzimisce\] to your server](https://top.gg/bot/642775025770037279)**
