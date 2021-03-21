@@ -187,14 +187,15 @@ If the `-n character` option is set, the action will be declared under the name 
 
 | Parameter       | Description                                                                           |
 |-----------------|---------------------------------------------------------------------------------------|
+| `prefix`        | Change the bot's invocation prefix. Defaults to `!` and `/`                           |
 | `use_compact`   | Always use compact mode for rolls                                                     |
+| `default_diff`  | The default difficulty for pool-based rolls. Default `6`.                             |
 | `xpl_always`    | On pool-based rolls, tens explode (roll an additional die, recursively)               |
 | `xpl_spec`      | When rolling a specialty, tens explode                                                |
 | `no_double`     | Tens *never* count as double successes                                                |
 | `always_double` | Tens *always* count as double successes                                               |
 | `nullify_ones`  | When using the `z` (upgrade botches) roll option, ones do not subtract from successes |
-| `default_diff`  | The default difficulty for pool-based rolls. Default `6`.                             |
-| `prefix`        | Change the bot's invocation prefix. Defaults to `!` and `/`                           |
+| `wp_cancelable` | If `true`, the automatic success given by Willpower may be canceled by ones           |
 
 ?> Unless specified otherwise, these parameters default to `false`.
 
