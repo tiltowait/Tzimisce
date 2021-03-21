@@ -6,7 +6,7 @@ class Pool:
     """Provides facilities for pool-based rolls."""
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode):
+    def __init__(self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode, wp_c):
         # pylint: disable=too-many-arguments
         self.difficulty = diff
         self.should_double = double
@@ -15,6 +15,7 @@ class Pool:
         self.no_botch = no_botch
         self.nullify_ones = nullify_ones
         self.should_explode = explode
+        self.wp_cancelable = wp_c
         self.dice = self.__roll(pool)
 
     @property
@@ -69,7 +70,7 @@ class Pool:
           * Failure if ones > successes
           * Success if successes > ones
         """
-        suxx = self.autos
+        suxx = self.autos + (1 if self.will else 0)
         fails = 0
 
         for die in self.dice:
@@ -90,7 +91,7 @@ class Pool:
 
         suxx = suxx - fails
         suxx = 0 if suxx < 0 else suxx
-        if self.will:
+        if suxx == 0 and self.will and not self.wp_cancelable:
             suxx += 1
 
         if self.no_botch and suxx < 0:

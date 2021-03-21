@@ -74,7 +74,7 @@ def __pool_roll(ctx, command):
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
         pool, difficulty, autos, will, should_double,
-        no_botch, command["nullify_ones"], should_explode
+        no_botch, command["nullify_ones"], should_explode, command["wp_cancelable"]
     )
     comment = command["comment"]
 

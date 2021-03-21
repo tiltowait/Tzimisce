@@ -13,14 +13,15 @@ class SettingsDB(Database):
     PREFIX = "prefix"
 
     __PARAMETERS = {
+        PREFIX: "Defines the bot invocation prefix.",
         "use_compact": "Set the server to always use compact rolls.",
+        DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
         "xpl_always": "If `true`, tens always explode.",
         "xpl_spec": "If `true`, specialty tens explode.",
         "no_double": "If `true`, tens will never count as double successes.",
         "always_double": "If `true`, tens will always count as double successes.",
         "nullify_ones": "If `true`, the `z` roll option causes ones to not subtract successes.",
-        DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
-        PREFIX: "Defines the bot invocation prefix.",
+        "wp_cancelable": "Allows ones to cancel a Willpower success.",
     }
 
     def __init__(self):
