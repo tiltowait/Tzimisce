@@ -153,75 +153,15 @@ async def delete_all(ctx):
 
 # Initiative Management
 
-@bot.group(invoke_without_command=True, name="mi", aliases=["minit"])
+@bot.group(invoke_without_command=True, name="mi", aliases=["minit"], case_insensitive=True)
 @commands.guild_only()
 async def initiative_manager(ctx, mod=None, *, args=None):
     """Displays the initiative table for the current channel."""
-    prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
-    usage = "**Initiative Manager Commands**\n"
-    usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
-    usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
-    usage += f"`{prefix}mi dec <action> [-n character]` — Declare an action for a character\n"
-    usage += f"`{prefix}mi remove [character]` — Remove initiative (character optional)\n"
-    usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
-    usage += f"`{prefix}mi clear` — Clear the table"
-
-    manager = storyteller.initiative.get_table(ctx.channel.id)
-
-    if not mod: # Not rolling
-        if manager:
-            init_commands = "Commands: remove | clear | reroll | declare"
-            embed = storyteller.engine.build_embed(
-                title="Initiative", footer=init_commands, description=str(manager),
-                fields=[]
-            )
-
-            content = None
-            if ctx.invoked_with == "reroll":
-                content = "Rerolling initiative!"
-            await ctx.send(content=content, embed=embed)
-        else:
-            await ctx.reply(usage)
-    else: # We are rolling initiative
-        try:
-            is_modifier = mod[0] == "-" or mod[0] == "+"
-            mod = int(mod)
-
-            # Add init to manager
-            if not manager:
-                manager = InitiativeManager()
-            character_name = args or ctx.author.display_name
-
-            init = None
-            if not is_modifier:
-                init = manager.add_init(character_name, mod)
-                storyteller.initiative.add_table(ctx.channel.id, manager)
-            else:
-                init = manager.modify_init(character_name, mod)
-                if not init:
-                    await ctx.reply(f"{character_name} has no initiative to modify!")
-                    return
-
-            title = f"{character_name}'s Initiative"
-
-            entry = "entries" if manager.count > 1 else "entry"
-            footer = f"{manager.count} {entry} in table. To see initiative: {prefix}mi"
-
-            if is_modifier:
-                footer = f"Initiative modified by {mod:+}.\n{footer}"
-
-            embed = storyteller.engine.build_embed(
-                title=title, description=str(init), fields=[], footer=footer
-            )
-
-            storyteller.initiative.set_initiative(
-                ctx.channel.id, character_name, init.mod, init.die
-            )
-
-            await ctx.reply(embed=embed)
-            storyteller.engine.database.increment_initiative_rolls(ctx.guild.id)
-        except ValueError:
-            await ctx.reply(usage)
+    response = storyteller.parse.initiative(ctx, mod, args)
+    if response.both_set:
+        await ctx.send(content=response.content, embed=response.embed)
+    else:
+        await ctx.reply(content=response.content, embed=response.embed)
 
 
 @initiative_manager.command(aliases=["reset", "clear", "empty"])
@@ -238,24 +178,8 @@ async def initiative_reset(ctx):
 @commands.guild_only()
 async def initiative_remove_character(ctx, *, args=None):
     """Remove a character from initiative manager."""
-    manager = storyteller.initiative.get_table(ctx.channel.id)
-
-    if manager:
-        character = args or ctx.author.display_name
-        removed = manager.remove_init(character)
-        if removed:
-            storyteller.initiative.remove_initiative(ctx.channel.id, character)
-            message = f"Removed {character} from initiative!"
-
-            if manager.count == 0:
-                storyteller.initiative.remove_table(ctx.channel.id)
-                message += "\nNo characters left in initiative. Clearing table."
-
-            await ctx.reply(message)
-        else:
-            await ctx.reply(f"Unable to remove {character}; not in initiative!")
-    else:
-        await ctx.reply("Initiative isn't running in this channel!")
+    response = storyteller.parse.initiative_removal(ctx, args)
+    await ctx.reply(content=response.content, embed=response.embed)
 
 @initiative_manager.command(name="reroll")
 @commands.guild_only()
@@ -265,9 +189,9 @@ async def initiative_reroll(ctx):
 
     if manager:
         manager.reroll()
-        await initiative_manager(ctx)
+        await initiative_manager(ctx) # Print the new initiative table
 
-        # Get the new rolls
+        # Store the new initiatives
         characters = manager.characters
         for character in characters:
             init = characters[character]
@@ -282,33 +206,12 @@ async def initiative_reroll(ctx):
 @commands.guild_only()
 async def initiative_declare(ctx, *args):
     """Declare an initiative action."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("action", nargs="+")
-    parser.add_argument("-n", "-c", "--name", nargs="+", dest="character")
-
     try:
-        parsed = parser.parse_args(args)
-
-        action = " ".join(parsed.action)
-        character = ctx.author.display_name
-        if parsed.character:
-            character = " ".join(parsed.character)
-
-        manager = storyteller.initiative.get_table(ctx.channel.id)
-        if not manager.declare_action(character, action):
-            raise NameError(character)
-
-        storyteller.initiative.set_initiative_action(
-            ctx.channel.id, character, action
-        )
+        storyteller.parse.initiative_declare(ctx, args)
         await ctx.message.add_reaction("👍")
         await ctx.message.add_reaction("⚔️")
-    except AttributeError:
-        await ctx.reply("Initiative isn't set in this channel!")
-    except NameError:
-        await ctx.reply(f"{character} isn't in the initiative table!")
-    except SystemExit:
-        await ctx.reply("Usage: `/mi dec <action> [-n character]`")
+    except SyntaxError as error:
+        await ctx.reply(error)
 
 # Events
 

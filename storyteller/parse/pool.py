@@ -18,7 +18,7 @@ FAIL_COLOR = 0X777777
 BOTCH_COLOR = 0XfF0000
 
 
-async def parse(ctx, command, mentioning) -> Response:
+async def pool(ctx, command, mentioning) -> Response:
     """Determine if a roll is appropriate, and roll it."""
     pool = __poolx.match(command["syntax"])
     response = None

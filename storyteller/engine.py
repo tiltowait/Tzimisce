@@ -30,18 +30,18 @@ async def handle_command(command, ctx, mentioning=False):
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
-    response = await parse.db.parse(ctx, command)
+    response = await parse.db(ctx, command)
     if isinstance(response, dict): # Database didn't generate a user response
         command = response
         response = None
 
     # Pooled roll
     if not response:
-        response = await parse.pool.parse(ctx, command, mentioning)
+        response = await parse.pool(ctx, command, mentioning)
 
     # Traditional roll (e.g. 2d10+4)
     if not response:
-        response = await parse.traditional.parse(ctx, command, mentioning)
+        response = await parse.traditional(ctx, command, mentioning)
 
     if response:
         message = None
@@ -55,7 +55,7 @@ async def handle_command(command, ctx, mentioning=False):
 
         if ctx.guild:
             database.increment_rolls(ctx.guild.id)
-            if response.type == parse.Response.TRADITIONAL:
+            if response.is_traditional:
                 database.increment_traditional_rolls(ctx.guild.id)
 
         return

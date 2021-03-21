@@ -11,7 +11,7 @@ __tradx = re.compile(
     r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
 )
 
-async def parse(ctx, command, mentioning) -> Response:
+async def traditional(ctx, command, mentioning) -> Response:
     """Perform a traditional roll if appropriate."""
     traditional = __tradx.match(command["syntax"])
     response = None
