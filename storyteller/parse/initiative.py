@@ -1,6 +1,8 @@
 """parse/initiative.py - Parses user input when invoking minit."""
 
 import argparse
+import io
+from contextlib import redirect_stderr
 
 import storyteller.engine # pylint: disable=cyclic-import
 import storyteller.initiative
@@ -116,7 +118,10 @@ parser.add_argument("-n", "-c", "--name", nargs="+", dest="character")
 def initiative_declare(ctx, args):
     """Declares an initiative action, if possible."""
     try:
-        parsed = parser.parse_args(args)
+        parsed = None
+        stream = io.StringIO()
+        with redirect_stderr(stream): # Redirect argparse's error message
+            parsed = parser.parse_args(args)
 
         action = " ".join(parsed.action)
         character = ctx.author.display_name
