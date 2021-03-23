@@ -68,7 +68,7 @@ In order to add Potence-style automatic successes, both the `pool` and the `diff
 !m XdY+...+n # comment
 ```
 
-\[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, etc. Currently, only addition is allowed. This may be combined with **compact mode** (`!mc`). Other options are ignored.
+\[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, 3d6\*7d10/(2d4+1d2), etc. This may be combined with **compact mode** (`!mc`). Other options are ignored.
 
 ## Macros
 
