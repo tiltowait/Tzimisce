@@ -41,5 +41,5 @@ def roll_from_string(equation: str) -> TraditionalRoll:
         total = str(dice.roll(equation))
 
         return TraditionalRoll(equation, total, rolling_initiative)
-    except dice.exceptions.DiceException:
+    except dice.DiceBaseException:
         return None
