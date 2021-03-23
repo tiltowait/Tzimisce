@@ -1,24 +1,15 @@
 """traditional.py - Performs traditional rolls for the user."""
 
-import re
-
 import discord
 from storyteller import engine # pylint: disable=cyclic-import
 from storyteller import roll # pylint: disable=cyclic-import
 from .response import Response
 
-__tradx = re.compile(
-    r"^(?P<syntax>\d+(d\d+)?(\s*\+\s*(\d+|\d+d\d+))*)$"
-)
-
 async def traditional(ctx, command, mentioning) -> Response:
     """Perform a traditional roll if appropriate."""
-    traditional_command = __tradx.match(command["syntax"])
     response = None
-    if traditional_command:
-        command.update(traditional_command.groupdict())
-
-        send = __traditional_roll(ctx.author, command)
+    send = __traditional_roll(ctx.author, command)
+    if send:
         response = Response(Response.TRADITIONAL)
         if isinstance(send, discord.Embed):
             response.embed = send
@@ -34,13 +25,14 @@ def __traditional_roll(author, command):
     compact = command["compact"]
     syntax = command["syntax"]
     comment = command["comment"]
-    description = None # Used to show individual dice
+    description = "" # Used to show individual dice
 
     # Get the rolls and assemble the fields
-    rolls, rolling_initiative = roll.traditional.roll_from_string(syntax)
-    result = str(sum(rolls))
+    result = roll.traditional.roll_from_string(syntax)
+    if not result:
+        return None
 
-    if rolling_initiative:
+    if result.is_initiative:
         suggestion = "Rolling initiative? Try the /mi command!"
         if comment:
             comment += f"\n{suggestion}"
@@ -48,8 +40,8 @@ def __traditional_roll(author, command):
             comment = suggestion
 
     # Show the individual dice if more than 1 were rolled
-    if len(rolls) > 1:
-        description = "+".join([str(roll) for roll in rolls])
+    if result.equation != result.total:
+        description = result.equation
 
     # Compact mode means no embed
     if compact:
@@ -57,14 +49,14 @@ def __traditional_roll(author, command):
         if description:
             compact_string = f"{description} ="
 
-        compact_string = f"{compact_string} {result}"
+        compact_string = f"{compact_string} {result.total}"
         if comment:
             compact_string += f"\n> {comment}"
 
         return compact_string
 
     # Not using compact mode!
-    fields = [("Result", result, False),]
+    fields = [("Result", result.total, False),]
 
     embed = engine.build_embed(
         author=author, header=syntax, color=0x000000, fields=fields,
