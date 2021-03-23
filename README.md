@@ -24,6 +24,7 @@ For a full command listing, check [the help file](https://tiltowait.github.io/Tz
 * **Embed Links:** Used for roll display (outside of compact mode), initiative, help display, etc.
 * **Read Message History:** Used for the reply feature
 * **Add Reactions:** Used when suggesting macro names and alerting the user that an action declaration was registered
+* **Use External Emoji:** For displaying individual dice throws
 
 ## Troubleshooting
 Unable to see the results? Make sure the bot has the permissions above. If you still have problems, you might have website previews disabled. Go into *User Settings -> Text & Images* and enable *Show website preview info from links pasted into chat*. If you *still* have issues, you may have antivirus software that prevents embeds from showing (certain versions of McAfee are known to cause problems).
