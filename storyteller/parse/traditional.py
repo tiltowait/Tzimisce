@@ -1,6 +1,8 @@
 """traditional.py - Performs traditional rolls for the user."""
 
 import discord
+import dice
+
 from storyteller import engine # pylint: disable=cyclic-import
 from storyteller import roll # pylint: disable=cyclic-import
 from .response import Response
@@ -19,6 +21,16 @@ async def traditional(ctx, command, mentioning) -> Response:
             response.content = send
 
     return response
+
+def is_valid_traditional(syntax: str) -> bool:
+    """Determines whether the syntax is a valid traditional roll."""
+
+    # We just try a full roll, because it's cheaper than using roll.traditional.roll_from_string
+    try:
+        dice.roll(syntax)
+        return True
+    except dice.DiceBaseException:
+        return False
 
 def __traditional_roll(author, command):
     """A "traditional" roll, such as 5d10+2."""

@@ -2,6 +2,7 @@
 
 import re
 
+import storyteller.parse
 from .base import Database
 
 class RollDB(Database):
@@ -55,9 +56,7 @@ class RollDB(Database):
         self.cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
 
         # Macro patterns
-        self.storex = re.compile(
-            r"^(?P<name>[\w-]+)\s*=\s*(?P<syn>\d+\s*\d*\s*.*|\d+(d\d+)?(\+(\d+|\d+d\d+))*)$"
-        )
+        self.storex = re.compile(r"^(?P<name>[\w-]+)\s*=\s*(?P<syntax>.+)$")
         self.commentx = re.compile(r"^(?P<name>[\w-]+)\s+c=(?P<comment>.*)$")
         self.usex = re.compile(r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$")
         self.deletex = re.compile(r"^(?P<name>[\w-]+)\s*=$")
@@ -71,9 +70,11 @@ class RollDB(Database):
         # Store a new roll or change an old one.
         match = self.storex.match(syntax)
         if match:
-            name = match.group("name")
-            syntax = match.group("syn")
-            return self.__store_roll(guild, userid, name, syntax, comment)
+            syntax = match.group("syntax")
+            if storyteller.parse.is_valid_roll(syntax):
+                name = match.group("name")
+                return self.__store_roll(guild, userid, name, syntax, comment)
+            return f"Sorry, `{syntax}` is invalid roll syntax!"
 
         # Change the comment of a stored roll
         match = self.commentx.match(syntax)

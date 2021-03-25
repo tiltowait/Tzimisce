@@ -37,6 +37,10 @@ async def pool(ctx, command, mentioning) -> Response:
 
     return response
 
+def is_valid_pool(syntax: str) -> bool:
+    """Determines whether the syntax is a valid pool roll."""
+    return __poolx.match(syntax) is not None
+
 def __pool_roll(ctx, command):
     """
     A pool-based VtM roll. Returns the results in a pretty embed.
