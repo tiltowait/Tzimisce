@@ -81,9 +81,17 @@ class MetaMacro:
         macro = self.macros.pop(0)
         self.command["syntax"] = macro
         self.command["comment"] = None
-        await self.handler(self.command, self.ctx)
+        return await self.handler(self.command, self.ctx, send=False)
 
     @property
     def is_done(self):
         """Returns True if the macro list is empty."""
         return len(self.macros) == 0
+
+    @property
+    def next_macro_name(self):
+        """Returns the name of the next macro to be run."""
+        try:
+            return self.macros[0]
+        except IndexError:
+            return None

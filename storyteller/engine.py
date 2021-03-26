@@ -15,7 +15,7 @@ invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)?(?P<no_botch>z)? (?P<syntax>
 # Database stuff
 database = RollDB()
 
-async def handle_command(command, ctx, mentioning=False):
+async def handle_command(command, ctx, mentioning=False, send=True):
     """Parse every message and determine if action is needed."""
 
     # The COMMAND dict contains info on compact mode, willpower, comment,
@@ -49,34 +49,50 @@ async def handle_command(command, ctx, mentioning=False):
     if not response and command["syntax"][0] == "$":
         response = parse.metamacros(ctx, command, handle_command)
         if isinstance(response, parse.MetaMacro):
-            await run_metamacro(response)
+            await __run_metamacro(response)
             return
 
     if response:
-        message = None
-        if mentioning:
-            message = await ctx.send(embed=response.embed, content=response.content)
-        else:
-            message = await ctx.reply(embed=response.embed, content=response.content)
-
-        if response.add_reaction:
-            await message.add_reaction("👍")
-
-        if ctx.guild:
-            database.increment_rolls(ctx.guild.id)
-            if response.is_traditional:
-                database.increment_traditional_rolls(ctx.guild.id)
-
+        if not send:
+            return response
+        await __send_response(ctx, response, mentioning)
         return
 
     # Unrecognized input
     await ctx.reply("Come again?")
 
+async def __send_response(ctx, response, mentioning=False):
+    """Sends the response to the given channel."""
+    message = None
+    if mentioning:
+        message = await ctx.send(embed=response.embed, content=response.content)
+    else:
+        message = await ctx.reply(embed=response.embed, content=response.content)
 
-async def run_metamacro(metamacro):
+    if response.add_reaction:
+        await message.add_reaction("👍")
+
+    if ctx.guild:
+        database.increment_rolls(ctx.guild.id)
+        if response.is_traditional:
+            database.increment_traditional_rolls(ctx.guild.id)
+
+
+async def __run_metamacro(metamacro):
     """Performs each macro in a MetaMacro until finished."""
     while not metamacro.is_done:
-        await metamacro.run_next_macro()
+        # Tell the user what macro we're rolling
+        macro = metamacro.next_macro_name
+        roll_msg = f"Rolling `{macro}` ..."
+
+        response = await metamacro.run_next_macro()
+        if response.content:
+            response.content = f"{roll_msg}\n\n{response.content}"
+        else:
+            response.content = roll_msg
+
+        # Send the response and sleep half a second
+        await __send_response(metamacro.ctx, response)
         await asyncio.sleep(0.5)
 
 
