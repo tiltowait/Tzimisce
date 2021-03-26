@@ -1,8 +1,10 @@
 """The main Tzimisce dicebot class."""
 
 import re
+import asyncio
 
 import discord
+
 from storyteller import parse
 from storyteller.databases import RollDB
 
@@ -43,6 +45,13 @@ async def handle_command(command, ctx, mentioning=False):
     if not response:
         response = await parse.traditional(ctx, command, mentioning)
 
+    # Meta-macros
+    if not response and command["syntax"][0] == "$":
+        response = parse.metamacros(ctx, command, handle_command)
+        if isinstance(response, parse.MetaMacro):
+            await run_metamacro(response)
+            return
+
     if response:
         message = None
         if mentioning:
@@ -62,6 +71,14 @@ async def handle_command(command, ctx, mentioning=False):
 
     # Unrecognized input
     await ctx.reply("Come again?")
+
+
+async def run_metamacro(metamacro):
+    """Performs each macro in the list until finished."""
+    while not metamacro.is_done:
+        await metamacro.next_macro()
+        await asyncio.sleep(0.5)
+
 
 async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""

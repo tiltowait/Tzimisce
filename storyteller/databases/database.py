@@ -19,7 +19,9 @@ class RollDB(Database):
                                Name    Text   NOT NULL,
                                Syntax  Text   NOT NULL,
                                Guild   bigint NOT NULL,
-                               Comment Text   NULL);"""
+                               Comment Text   NULL,
+                               macro_id int GENERATED ALWAYS AS IDENTITY,
+                               PRIMARY KEY(macro_id));"""
         )
 
         # The initiative table(s)

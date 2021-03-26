@@ -7,6 +7,7 @@ class Response:
     TRADITIONAL = 2
     DATABASE = 3
     INITIATIVE = 4
+    META_MACRO = 5
 
     def __init__(self, response_type, embed=None, content=None):
         self.type = response_type
