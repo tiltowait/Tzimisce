@@ -74,22 +74,26 @@ async def handle_command(command, ctx, mentioning=False):
 
 
 async def run_metamacro(metamacro):
-    """Performs each macro in the list until finished."""
+    """Performs each macro in a MetaMacro until finished."""
     while not metamacro.is_done:
-        await metamacro.next_macro()
+        await metamacro.run_next_macro()
         await asyncio.sleep(0.5)
 
 
 async def show_stored_rolls(ctx):
     """Sends an embed describing all the user's macros."""
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
+    meta_records = parse.meta_records(ctx.guild.id, ctx.author.id)
+
+    fields = stored_rolls + meta_records
+
     if len(stored_rolls) == 0:
         await ctx.reply(f"You have no macros on {ctx.guild}!")
     else:
         embed = build_embed(
             title="Stored Rolls",
             color=0x1F3446,
-            fields=stored_rolls,
+            fields=fields,
         )
         await ctx.reply("List sent. Please check your DMs!")
         await ctx.author.send(
@@ -97,10 +101,12 @@ async def show_stored_rolls(ctx):
             embed=embed
         )
 
+
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
     await ctx.reply(f"Deleted your macros on {ctx.guild}.")
+
 
 def help_embed(prefix):
     """Return a handy help embed."""
@@ -123,6 +129,7 @@ def help_embed(prefix):
     )
 
     return embed
+
 
 def build_embed(
     fields, author=None, title="", color=0x1F3446, description="", header=None,

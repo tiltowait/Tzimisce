@@ -232,7 +232,7 @@ class RollDB(Database):
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
         self._execute(query, (guild, userid, name,))
 
-        return f"`{name}` deleted!"
+        return f"`{name}` deleted! It has also been removed from any meta-macros containing it."
 
     def delete_user_rolls(self, guild, userid):
         """Deletes all of a user's rolls on a given guild."""
