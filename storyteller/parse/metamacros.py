@@ -37,9 +37,9 @@ def parse(ctx, command, handler):
             try:
                 overwriting = __meta_macros.store_metamacro(guildid, userid, meta_name, *macros)
                 if overwriting:
-                    response.content = f"Meta-macro `{meta_name}` updated!"
+                    response.content = f"Meta-macro `${meta_name}` updated!"
                 else:
-                    response.content = f"Meta-macro `{meta_name}` created!"
+                    response.content = f"Meta-macro `${meta_name}` created!"
             except KeyError as err:
                 response.content = str(err)
 
@@ -49,9 +49,9 @@ def parse(ctx, command, handler):
     if match:
         meta_name = match.group("name")
         if __meta_macros.delete_metamacro(guildid, userid, meta_name):
-            response.content = f"Deleted meta-macro `{meta_name}`!"
+            response.content = f"Deleted meta-macro `${meta_name}`!"
             return response
-        response.content = f"Error! You have no meta-macro named `{meta_name}` on this server!"
+        response.content = f"Error! You have no meta-macro named `${meta_name}` on this server!"
         return response
 
     return None
