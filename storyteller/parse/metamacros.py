@@ -2,8 +2,6 @@
 
 import re
 
-from discord.ext import tasks
-
 from storyteller.databases import MetaMacroDB
 from .response import Response
 
