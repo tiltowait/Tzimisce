@@ -29,6 +29,9 @@ class InitiativeManager:
             del self.characters[character]
             contained = True
 
+        if character in self.celerity:
+            del self.celerity[character]
+
         return contained
 
     def modify_init(self, character: str, mod: int) -> Initiative:
