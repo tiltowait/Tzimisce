@@ -1,4 +1,6 @@
 """Manages character initiative."""
+
+from collections import defaultdict
 from .initiative import Initiative
 
 class InitiativeManager:
@@ -6,6 +8,11 @@ class InitiativeManager:
 
     def __init__(self):
         self.characters = {} # str: initiative
+        self.celerity = defaultdict(lambda: 0) # str: int
+
+    def has_character(self, character) -> bool:
+        """Returns true if a character is in the table."""
+        return character in self.characters
 
     def add_init(self, character: str, mod: int, die: int = None, action: str = None) -> int:
         """Add initiative to the manager."""
@@ -40,10 +47,20 @@ class InitiativeManager:
 
         return False
 
+    def add_celerity(self, character: str) -> bool:
+        """Adds a celerity action for a character."""
+        if character in self.characters:
+            self.celerity[character] += 1
+            return True
+
+        return False
+
     def reroll(self):
         """Rerolls all initiatives."""
         for key in self.characters:
             self.characters[key].reroll()
+
+        self.celerity = []
 
     @property
     def count(self) -> int:
@@ -65,6 +82,13 @@ class InitiativeManager:
             if action:
                 retval += f" - {action}"
 
+            retval += "\n"
+
+        if len(self.celerity) > 0:
+            retval += "\n**Celerity\n**"
+
+            celerity_list = list(map(lambda kv: f"{kv[0]} ({kv[1]})", self.celerity.items()))
+            retval += "\n".join(sorted(celerity_list))
             retval += "\n"
 
         return retval

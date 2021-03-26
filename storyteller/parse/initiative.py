@@ -112,8 +112,9 @@ def initiative_removal(ctx, args):
 # Initiative Declarations
 
 parser = argparse.ArgumentParser(exit_on_error=False)
-parser.add_argument("action", nargs="+")
-parser.add_argument("-n", "-c", "--name", nargs="+", dest="character")
+parser.add_argument("action", nargs="*", default=None)
+parser.add_argument("-n", "--name", nargs="*", dest="character")
+parser.add_argument("-c", "--celerity", nargs="?", type=int, const=1)
 
 def initiative_declare(ctx, args):
     """Declares an initiative action, if possible."""
@@ -123,21 +124,32 @@ def initiative_declare(ctx, args):
         with redirect_stderr(stream): # Redirect argparse's error message
             parsed = parser.parse_args(args)
 
-        action = " ".join(parsed.action)
         character = ctx.author.display_name
         if parsed.character:
             character = " ".join(parsed.character)
 
         manager = storyteller.initiative.get_table(ctx.channel.id)
-        if not manager.declare_action(character, action):
-            raise NameError(character)
+        if not parsed.celerity:
+            if not parsed.action:
+                raise SyntaxError("You need to supply an action!")
 
-        storyteller.initiative.set_initiative_action(
-            ctx.channel.id, character, action
-        )
+            action = " ".join(parsed.action)
+            if not manager.declare_action(character, action):
+                raise NameError(character)
+
+            storyteller.initiative.set_initiative_action(
+                ctx.channel.id, character, action
+            )
+        else:
+            if not manager.has_character(character):
+                raise NameError(character)
+
+            for _ in range(parsed.celerity):
+                manager.add_celerity(character)
+
     except AttributeError:
         raise SyntaxError("Initiative isn't set in this channel!") from None
     except NameError:
         raise SyntaxError(f"{character} isn't in the initiative table!") from None
-    except SystemExit:
-        raise SyntaxError("Usage: `/mi dec <action> [-n character]`") from None
+    except (SystemExit, argparse.ArgumentError):
+        raise SyntaxError("Usage: `/mi dec <action> [-n character] [--celerity]`") from None
