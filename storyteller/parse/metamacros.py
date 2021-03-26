@@ -2,7 +2,7 @@
 
 import re
 
-from storyteller.databases import MetaMacroDB
+from storyteller.databases import MetaMacroDB # pylint: disable=cyclic-import
 from .response import Response
 
 __meta_macros = MetaMacroDB()
@@ -24,7 +24,10 @@ def parse(ctx, command, handler):
     # See if using a metamacro
     if __use_meta_macro.match(syntax):
         macros = __meta_macros.retrieve_metamacro(guildid, userid, syntax)
-        return MetaMacro(ctx, command, macros, handler)
+        if macros:
+            return MetaMacro(ctx, command, macros, handler)
+        response.content = f"Error! You have no meta-macro named `${syntax}`."
+        return response
 
     match = __store_meta_macro.match(syntax)
     if match:
