@@ -178,6 +178,33 @@ If the `-n character` option is set, the action will be declared under the name 
 
 <!-- tabs:end -->
 
+## Meta-Macros
+
+Meta-macros are macros that call a series of macros. Each meta-macro may contain between 2-10 macros.
+
+<!-- tabs:start -->
+
+#### ** Create **
+
+Every meta-macro begins with the `$` character. Creation follows a similar syntax to regular macro creation, with each component macro being separated by a space.
+
+```!m $<meta> = <macro1> <macro2> ... <macroN>```
+
+Using a metamacro is as simple as `!m $<meta>`.
+
+#### Example
+
+* `!m $rituals = pavis deflection impressive-visage ironbody` — Will create a meta-macro called `$rituals` that calls the macros `pavis`, `deflection`, `impressive-visage`, and `ironbody` when used. To invoke: `!m $rituals`
+
+#### ** Other Commands **
+
+| Command               | Syntax                                                      |
+|-----------------------|-------------------------------------------------------------|
+| **Delete meta-macro** | `!m $<meta> =` (where `meta` is the name of the meta-macro) |
+| **List meta-macros**  | `!m $`  (also lists regular macros)                         |
+
+<!-- tabs:end -->
+
 # Customization
 **\[Tzimisce\]** has a number of settings that can be changed on a per-server basis.
 
