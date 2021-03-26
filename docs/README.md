@@ -159,14 +159,16 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### ** Declare **
 ```
-!mi dec <action> [-n character]
+!mi dec <action> [-n character] [-c celerity]
 ```
 
 * `action` — The action to be declared
+* `character` — The character performing the action (optional)
+* `celerity` — The number of celerity actions to perform (optional, default 1)
 
-If the `-n character` option is set, the action will be declared under the name of `character`. For instance: `!mi dec Ends the world -n Caine` will declare that Caine intends to end the world.
+?> If `celerity` is set, then `action` will be ignored.
 
-!> If `character` is not already in the initiative table, the command will fail.
+!> If `character` is not in the initiative table, the command will fail.
 
 #### ** Other **
 
