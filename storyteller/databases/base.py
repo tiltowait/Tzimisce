@@ -13,7 +13,7 @@ class Database:
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
 
-    def _execute(self, query, args):
+    def _execute(self, query, *args):
         """Executes the specified query. Tries to reconnect to the database if there's an error."""
         try:
             self.cursor.execute(query, args)

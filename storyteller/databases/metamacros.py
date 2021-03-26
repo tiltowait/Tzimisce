@@ -26,7 +26,7 @@ class MetaMacroDB(Database):
     def retrieve_metamacro(self, guildid, userid, meta_name) -> list:
         """Retrieves the macro names for a given MetaMacro."""
         query = "SELECT MacroID FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
-        self._execute(query, (guildid, userid, meta_name,))
+        self._execute(query, guildid, userid, meta_name)
         macro_ids = self.cursor.fetchall()
 
         # Convert each MacroID to a macro name
@@ -53,7 +53,7 @@ class MetaMacroDB(Database):
         for macro in macros:
             macro_id = self.__macro_id(guildid, userid, macro)
             query = "INSERT INTO MetaMacros VALUES (%s, %s, %s, %s);"
-            self._execute(query, (guildid, userid, meta_name, macro_id))
+            self._execute(query, guildid, userid, meta_name, macro_id)
 
         return overwriting
 
@@ -64,14 +64,14 @@ class MetaMacroDB(Database):
             return False
 
         query = "DELETE FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
-        self._execute(query, (guildid, userid, meta_name,))
+        self._execute(query, guildid, userid, meta_name)
 
         return True
 
     def metamacro_list(self, guildid, userid) -> list:
         """Returns a list of metamacros and their components."""
         query = "SELECT DISTINCT MetaName FROM MetaMacros WHERE GuildID=%s AND UserID=%s;"
-        self._execute(query, (guildid, userid,))
+        self._execute(query, guildid, userid)
         meta_names = list(map(lambda name: name[0], self.cursor.fetchall()))
 
         records = []
@@ -93,7 +93,7 @@ class MetaMacroDB(Database):
                 ON MacroID=macro_id
             WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;
         """
-        self._execute(query, (guildid, userid, meta_name,))
+        self._execute(query, guildid, userid, meta_name)
         macros = list(map(lambda item: item[0], self.cursor.fetchall()))
 
         return macros
@@ -102,7 +102,7 @@ class MetaMacroDB(Database):
     def __macro_exists(self, guildid, userid, macro_name) -> bool:
         """Returns true if a given macro exists in SavedRolls."""
         query = "SELECT * FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
-        self._execute(query, (guildid, userid, macro_name,))
+        self._execute(query, guildid, userid, macro_name)
         result = self.cursor.fetchone()
 
         return result is not None
@@ -114,7 +114,7 @@ class MetaMacroDB(Database):
             raise KeyError(f"Error! {macro_name} doesn't exist!")
 
         query = "SELECT macro_id FROM SavedROLLS WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
-        self._execute(query, (guildid, userid, macro_name,))
+        self._execute(query, guildid, userid, macro_name)
         result = self.cursor.fetchone()
 
         return result[0]
@@ -123,7 +123,7 @@ class MetaMacroDB(Database):
     def __macro_name(self, guildid, userid, macro_id) -> str:
         """Returns the name of a macro, given its ID."""
         query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND macro_id=%s;"
-        self._execute(query, (guildid, userid, macro_id,))
+        self._execute(query, guildid, userid, macro_id)
         result = self.cursor.fetchone()
 
         return result[0]
@@ -132,7 +132,7 @@ class MetaMacroDB(Database):
     def __metamacro_exists(self, guildid, userid, metamacro_name) -> bool:
         """Returns true if a given metamacro exists."""
         query = "SELECT * FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
-        self._execute(query, (guildid, userid, metamacro_name,))
+        self._execute(query, guildid, userid, metamacro_name)
         result = self.cursor.fetchone()
 
         return result is not None

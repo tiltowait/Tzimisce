@@ -32,7 +32,7 @@ class SettingsDB(Database):
         """Fetch settings for each server."""
         query_cols = ", ".join(self.available_parameters)
         query = f"SELECT ID, {query_cols} FROM Guilds;"
-        self._execute(query, ())
+        self._execute(query)
         results = self.cursor.fetchall()
 
         default_params = defaultdict(lambda: False)
@@ -75,7 +75,7 @@ class SettingsDB(Database):
 
         # Normally unsafe, but we do input validation before we get here
         query = f"UPDATE Guilds SET {key}=%s WHERE ID=%s;"
-        self._execute(query, (value, guild,))
+        self._execute(query, value, guild)
         self.__all_settings[guild][key] = value
 
         message = f"Setting `{key}` to `{value}`!"

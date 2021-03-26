@@ -170,7 +170,7 @@ class RollDB(Database):
         if not self.__is_roll_stored(guild, userid, name):
             # Create the roll
             query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
-            self._execute(query, (userid, name, syntax, guild, comment,))
+            self._execute(query, userid, name, syntax, guild, comment)
 
             return f"Saved new macro: `{name}`."
 
@@ -183,13 +183,13 @@ class RollDB(Database):
                 SET Syntax=%s, Comment=%s
                 WHERE ID=%s AND Guild=%s AND Name ILIKE %s;
             """
-            self._execute(query, (syntax, comment, userid, guild, name,))
+            self._execute(query, syntax, comment, userid, guild, name)
 
             return f"Updated `{name}` syntax and comment."
 
         # Update only syntax
         query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
-        self._execute(query, (syntax, userid, guild, name,))
+        self._execute(query, syntax, userid, guild, name)
 
         return f"Updated `{name}` syntax."
 
@@ -200,7 +200,7 @@ class RollDB(Database):
                 comment = None
 
             query = "UPDATE SavedRolls SET Comment=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
-            self._execute(query, (comment, userid, guild, name,))
+            self._execute(query, comment, userid, guild, name)
 
             return f"Updated comment for `{name}`."
 
@@ -209,14 +209,14 @@ class RollDB(Database):
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
         query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
-        self._execute(query, (guild, userid, name,))
+        self._execute(query, guild, userid, name)
         result = self.cursor.fetchone()
 
         return result
 
     def __find_similar_macro(self, guild, userid, name):
         query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s)>0.2;"
-        self._execute(query, (guild, userid, name,))
+        self._execute(query, guild, userid, name)
         result = self.cursor.fetchone()
 
         if result:
@@ -230,20 +230,20 @@ class RollDB(Database):
             return f"Can't delete. `{name}` not found!"
 
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
-        self._execute(query, (guild, userid, name,))
+        self._execute(query, guild, userid, name)
 
         return f"`{name}` deleted! It has also been removed from any meta-macros containing it."
 
     def delete_user_rolls(self, guild, userid):
         """Deletes all of a user's rolls on a given guild."""
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s;"
-        self._execute(query, (guild, userid,))
+        self._execute(query, guild, userid)
 
     def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
         query = """SELECT Name, Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s
                    ORDER BY Name;"""
-        self._execute(query, (guild, userid,))
+        self._execute(query, guild, userid)
         results = self.cursor.fetchall()
 
         fields = []
@@ -267,40 +267,40 @@ class RollDB(Database):
         """Adds a guild to the Guilds table."""
         query = "INSERT INTO Guilds VALUES (%s, %s);"
 
-        self._execute(query, (guildid, name,))
+        self._execute(query, guildid, name)
 
     def remove_guild(self, guildid):
         """Removes a guild from the Guilds table."""
         query = "DELETE FROM Guilds WHERE ID=%s;"
 
-        self._execute(query, (guildid,))
+        self._execute(query, guildid)
 
     def rename_guild(self, guildid, name):
         """Updates the name of a guild in the Guilds table."""
         query = "UPDATE Guilds SET Name=%s WHERE ID=%s;"
 
-        self._execute(query, (name, guildid,))
+        self._execute(query, name, guildid)
 
     def increment_rolls(self, guildid):
         """Keep track of the number of rolls performed on each server."""
         query = "UPDATE Guilds SET Rolls = Rolls + 1 WHERE ID=%s;"
 
-        self._execute(query, (guildid,))
+        self._execute(query, guildid)
 
     def increment_compact_rolls(self, guildid):
         """Keep track of the number of compact rolls performed on each server."""
         query = "UPDATE Guilds SET Compact_Rolls = Compact_Rolls + 1 WHERE ID=%s;"
 
-        self._execute(query, (guildid,))
+        self._execute(query, guildid)
 
     def increment_traditional_rolls(self, guildid):
         """Keep track of the number of compact rolls performed on each server."""
         query = "UPDATE Guilds SET Traditional_Rolls = Traditional_Rolls + 1 WHERE ID=%s;"
 
-        self._execute(query, (guildid,))
+        self._execute(query, guildid)
 
     def increment_initiative_rolls(self, guildid):
         """Keep track of the number of compact rolls performed on each server."""
         query = "UPDATE Guilds SET Initiative_Rolls = Initiative_Rolls + 1 WHERE ID=%s;"
 
-        self._execute(query, (guildid,))
+        self._execute(query, guildid)
