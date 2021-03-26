@@ -16,7 +16,7 @@ def initiative(ctx, mod, args) -> Response:
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
     usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
-    usage += f"`{prefix}mi dec <action> [-n character]` — Declare an action for a character\n"
+    usage += f"`{prefix}mi dec <action> [-n character] [-c N]` — Declare a character action\n"
     usage += f"`{prefix}mi remove [character]` — Remove initiative (character optional)\n"
     usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
     usage += f"`{prefix}mi clear` — Clear the table"
@@ -152,4 +152,4 @@ def initiative_declare(ctx, args):
     except NameError:
         raise SyntaxError(f"{character} isn't in the initiative table!") from None
     except (SystemExit, argparse.ArgumentError):
-        raise SyntaxError("Usage: `/mi dec <action> [-n character] [--celerity]`") from None
+        raise SyntaxError("Usage: `/mi dec <action> [-n character] [--celerity N]`") from None
