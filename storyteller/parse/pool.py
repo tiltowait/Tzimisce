@@ -184,8 +184,11 @@ def __emojify_dice(ctx, names, willpower, autos) -> str:
     """Returns an Emoji constructed from the emojidict dictionary."""
     emojis = []
     for name in names:
-        emoji_id = emojidict[name]
-        emoji = ctx.bot.get_emoji(emoji_id)
+        emoji = emojidict[name]
+        if isinstance(emoji, int):
+            emoji = ctx.bot.get_emoji(emoji)
+            emojidict[name] = emoji # Cache the emoji rather than the id
+
         emojis.append(emoji)
 
     emojis = list(map(str, emojis))
