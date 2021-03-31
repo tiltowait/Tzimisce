@@ -17,6 +17,7 @@ class Pool:
         self.should_explode = explode
         self.wp_cancelable = wp_c
         self.dice = self.__roll(pool)
+        self.successes = self.__calculate_successes()
 
     @property
     def formatted_result(self):
@@ -62,8 +63,7 @@ class Pool:
 
         return formatted
 
-    @property
-    def successes(self) -> int:
+    def __calculate_successes(self) -> int:
         """
         Sums the number of successes, taking into account Willpower use.
           * Botch if no successes or willpower and failures > 0
