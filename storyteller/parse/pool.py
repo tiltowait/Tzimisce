@@ -7,7 +7,7 @@ from storyteller import roll, engine # pylint: disable=cyclic-import
 from .response import Response
 
 __poolx = re.compile(
-    r"^(?P<pool>-?\d+)[\s@]?(?P<difficulty>\d+)?[\s\+]?(?P<auto>\d+)?(?: (?P<specialty>\D[^#]*))?$"
+    r"^(?P<pool>-?\d+)[\s@]?(?P<difficulty>\d+)?\s?(?P<auto>[+-]?\d+)?(?: (?P<specialty>\D[^#]*))?$"
 )
 
 # Colors help show, at a glance, if a roll was successful
@@ -64,8 +64,8 @@ def __pool_roll(ctx, command):
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
     autos = int(command["auto"] or 0)
-    if autos > 0:
-        title += f", +{__pluralize_autos(autos)}"
+    if autos != 0:
+        title += f", {__pluralize_autos(autos)}"
 
     # Let the user know if we aren't allowing botches
     if no_botch:
@@ -143,9 +143,9 @@ def __build_compact(results, specialty, comment):
 
 def __pluralize_autos(autos):
     """Pluralize 'N auto(s)' as needed"""
-    string = f"{autos} auto"
-    if autos > 1:
-        string += "s"
+    string = f"{autos:+} success"
+    if abs(autos) > 1:
+        string += "es"
 
     return string
 
@@ -193,8 +193,8 @@ def __emojify_dice(ctx, names, willpower, autos) -> str:
 
     if willpower:
         emoji_string += " *+WP*"
-    if autos > 0:
-        emoji_string += f" *+{autos}*"
+    if autos != 0:
+        emoji_string += f" *{autos:+}*"
 
     return emoji_string
 

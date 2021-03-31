@@ -70,8 +70,12 @@ class Pool:
           * Failure if ones > successes
           * Success if successes > ones
         """
-        suxx = self.autos + (1 if self.will else 0)
+        suxx = 1 if self.will else 0
         fails = 0
+        if self.autos > 0:
+            suxx += self.autos
+        elif self.autos < 0:
+            fails -= self.autos # Auto-failures are negative
 
         for die in self.dice:
             if die >= self.difficulty:
