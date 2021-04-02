@@ -67,7 +67,7 @@ class SettingsDB(Database):
         prefix = self.settings_for_guild(guild)[SettingsDB.PREFIX]
         if prefix:
             return (prefix,)
-        return ("!", "/")
+        return ("!m", "/m")
 
     def update(self, guild, key, value) -> str:
         """Sets a server parameter."""
@@ -81,7 +81,7 @@ class SettingsDB(Database):
         message = f"Setting `{key}` to `{value}`!"
         if key == self.PREFIX:
             if value:
-                message = f"Setting the prefix to `{value}m`."
+                message = f"Setting the prefix to `{value}`."
                 if len(value) > 3:
                     message += " A prefix this long might be annoying to type!"
             else:

@@ -134,10 +134,10 @@ def help_embed(prefix):
     )
     embed.add_field(
         name="Basic Syntax",
-        value=f"```{prefix}m <pool> [difficulty] [specialty] # comment```Only `pool` is required.",
+        value=f"```{prefix} <pool> [difficulty] [specialty] # comment```Only `pool` is required.",
         inline=False
     )
-    embed.add_field(name="Example", value=f"```{prefix}m 8 5 Mesmerizing # Summon```", inline=False)
+    embed.add_field(name="Example", value=f"```{prefix} 8 5 Mesmerizing # Summon```", inline=False)
     embed.add_field(
         name="Become a Patron",
         value=r"Support \[Tzimisce\]'s development [here](https://www.patreon.com/tzimisce)!",

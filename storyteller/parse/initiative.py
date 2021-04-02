@@ -14,12 +14,12 @@ def initiative(ctx, mod, args) -> Response:
     """Parses minit input and returns appropriate results."""
     prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
-    usage += f"`{prefix}mi` — Show initiative table (if one exists in this channel)\n"
-    usage += f"`{prefix}mi <mod> <character>` — Roll initiative (character optional)\n"
-    usage += f"`{prefix}mi dec <action> [-n character] [-c N]` — Declare a character action\n"
-    usage += f"`{prefix}mi remove [character]` — Remove initiative (character optional)\n"
-    usage += f"`{prefix}mi reroll` — Reroll all initiatives\n"
-    usage += f"`{prefix}mi clear` — Clear the table"
+    usage += f"`{prefix}i` — Show initiative table (if one exists in this channel)\n"
+    usage += f"`{prefix}i <mod> <character>` — Roll initiative (character optional)\n"
+    usage += f"`{prefix}i dec <action> [-n character] [-c N]` — Declare a character action\n"
+    usage += f"`{prefix}i remove [character]` — Remove initiative (character optional)\n"
+    usage += f"`{prefix}i reroll` — Reroll all initiatives\n"
+    usage += f"`{prefix}i clear` — Clear the table"
 
     manager = storyteller.initiative.get_table(ctx.channel.id)
     response = Response(Response.INITIATIVE)
@@ -65,7 +65,7 @@ def initiative(ctx, mod, args) -> Response:
         title = f"{character_name}'s Initiative"
 
         entry = "entries" if manager.count > 1 else "entry"
-        footer = f"{manager.count} {entry} in table. To see initiative: {prefix}mi"
+        footer = f"{manager.count} {entry} in table. To see initiative: {prefix}i"
 
         if is_modifier:
             footer = f"Initiative modified by {mod:+}.\n{footer}"

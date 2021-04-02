@@ -17,6 +17,43 @@ async def determine_prefix(_, message):
 bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
 bot.remove_command("help")
 
+@bot.event
+async def on_message(message):
+    """Determines how to handle messages."""
+
+    # Make sure the user is invoking the bot
+    prefixes = storyteller.settings.get_prefixes(message.guild)
+    used_prefix = None
+    for prefix in prefixes:
+        if message.clean_content.startswith(prefix):
+            used_prefix = prefix
+            break
+    if not used_prefix:
+        return
+
+    updated_prefix = f"{used_prefix}m" # Standardize to internal prefix
+    content = message.clean_content.removeprefix(used_prefix)
+    components = content.split()
+
+    # While most commands require a space between m and the command, minit does
+    # not. Thus, we need to check if the first argument given is a valid command.
+    # If not, then we add a space between the prefix and the command.
+    #
+    # Example transformations (if prefix is !!)
+    # !!5 -> !!m5 -> !!m 5
+    # !!coin -> !!mcoin -> !!m coin
+    # !!init -> !!minit
+
+    command = components[0]
+    if not bot.get_command(f"m{command}"):
+        content = f"{updated_prefix} {content}"
+    else:
+        content = f"{updated_prefix}{content}"
+
+    message.content = content
+    await bot.process_commands(message)
+
+
 # Commands
 
 # m - Invoke a roll
@@ -37,7 +74,7 @@ async def standard_roll(ctx, *, args=None):
         return
 
     # Split the comment from the syntax
-    content = ctx.message.clean_content.split(" ", 1)[1] # Just the command arguments
+    content = ctx.message.content.split(" ", 1)[1] # Just the command arguments
     content = content.split("#", 1) # Split out the comment from the syntax
     syntax = content[0]
     comment = content[1] if len(content) > 1 else None
@@ -85,7 +122,7 @@ async def settings(ctx, *args):
             value = storyteller.settings.value(ctx.guild.id, param)
             msg.append(f"`{param}`: `{value}`")
         msg = "\n".join(msg)
-        details = f"For more info or to set: `{prefix}m settings <parameter> [value]`"
+        details = f"For more info or to set: `{prefix} settings <parameter> [value]`"
 
         await ctx.reply(f"This server's settings:\n{msg}\n{details}")
         return
@@ -306,7 +343,7 @@ async def on_command_error(ctx, error):
     # Unknown error; print invoking message and raise
     chat = ctx.guild.name if ctx.guild else "DM"
     print("\n\n**********************")
-    print(f"{chat}: UNKNOWN ERROR ON {ctx.message.clean_content}")
+    print(f"{chat}: UNKNOWN ERROR ON {ctx.message.content}")
     print("**********************\n\n")
 
     raise error
