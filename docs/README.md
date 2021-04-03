@@ -6,6 +6,8 @@
 > * **[View the source code](https://github.com/tiltowait/Tzimisce)**
 > * **[Become a patron](https://www.patreon.com/tzimisce)**
 
+?> **Note:** Parameter names are presented `<like this>` or `[this]`. When entering a parameter, omit the brackets.
+
 ---
 
 # Commands
