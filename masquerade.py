@@ -208,6 +208,7 @@ async def delete_all(ctx):
     message = await ctx.reply(prompt)
 
     await message.add_reaction("✅")
+    await message.add_reaction("❌")
     #await storyteller.engine.delete_user_rolls(ctx)
 
 # Initiative Management
@@ -310,6 +311,9 @@ async def on_reaction_add(reaction, user):
         if user in reaction.message.mentions:
             ctx = await __get_reaction_message_reference_context(reaction, user)
             await storyteller.engine.delete_user_rolls(ctx)
+            await reaction.message.delete()
+    elif reaction.emoji == "❌" and reaction.message.author == bot.user:
+        if user in reaction.message.mentions:
             await reaction.message.delete()
 
 async def __get_reaction_message_reference_context(reaction, user):
