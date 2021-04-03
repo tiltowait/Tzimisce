@@ -294,6 +294,10 @@ async def on_reaction_add(reaction, user):
         match = storyteller.engine.invokex.match(suggestion)
         command.update(match.groupdict())
 
+        # Get the server settings
+        guild_settings = storyteller.settings.settings_for_guild(reaction.message.guild)
+        command.update(guild_settings)
+
         await reaction.message.delete()
 
         # We are going to try to reply to the original invocation message. If
