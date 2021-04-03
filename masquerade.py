@@ -275,14 +275,18 @@ async def initiative_declare(ctx, *args):
 
 # Events
 
+def __is_valid_reaction(reaction, user, emoji):
+    """Determines if the correct user clicked the correct reaction."""
+    if reaction.emoji == emoji and reaction.message.author == bot.user:
+        return user in reaction.message.mentions
+    return False
+
 def suggestion_to_roll(reaction, user):
     """Returns a suggested macro if the correct user replies with a thumbsup."""
-    message = reaction.message
-    if reaction.emoji == "👍" and message.author == bot.user:
-        if not message.embeds and user in message.mentions:
-            match = storyteller.engine.suggestx.search(message.content)
-            if match:
-                return match.group("suggestion")
+    if __is_valid_reaction(reaction, user, "👍"):
+        match = storyteller.engine.suggestx.search(reaction.message.content)
+        if match:
+            return match.group("suggestion")
 
     return None
 
@@ -307,14 +311,12 @@ async def on_reaction_add(reaction, user):
         ctx.author = user
 
         await storyteller.engine.handle_command(command, ctx)
-    elif reaction.emoji == "✅" and reaction.message.author == bot.user:
-        if user in reaction.message.mentions:
-            ctx = await __get_reaction_message_reference_context(reaction, user)
-            await storyteller.engine.delete_user_rolls(ctx)
-            await reaction.message.delete()
-    elif reaction.emoji == "❌" and reaction.message.author == bot.user:
-        if user in reaction.message.mentions:
-            await reaction.message.delete()
+    elif __is_valid_reaction(reaction, user, "✅"):
+        ctx = await __get_reaction_message_reference_context(reaction, user)
+        await storyteller.engine.delete_user_rolls(ctx)
+        await reaction.message.delete()
+    elif __is_valid_reaction(reaction, user, "❌"):
+        await reaction.message.delete()
 
 async def __get_reaction_message_reference_context(reaction, user):
     """Returns the context of the message replied to in the reaction's message."""
