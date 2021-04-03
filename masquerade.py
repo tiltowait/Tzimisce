@@ -302,17 +302,10 @@ async def on_reaction_add(reaction, user):
 
         # We are going to try to reply to the original invocation message. If
         # that fails, then we will simply @ the user.
-        ctx = await bot.get_context(reaction.message)
-        reference = reaction.message.reference
+        ctx = await __get_reaction_message_reference_context(reaction, user)
+        ctx.author = user
 
-        try:
-            msg = await ctx.fetch_message(reference.message_id)
-            ctx = await bot.get_context(msg)
-            ctx.author = user # Otherwise, the user is the bot
-            await storyteller.engine.handle_command(command, ctx, False)
-        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
-            ctx.author = user
-            await storyteller.engine.handle_command(command, ctx, True)
+        await storyteller.engine.handle_command(command, ctx, ctx.message.content is None)
     elif reaction.emoji == "✅" and reaction.message.author == bot.user:
         if user in reaction.message.mentions:
             ctx = await __get_reaction_message_reference_context(reaction, user)
@@ -327,6 +320,7 @@ async def __get_reaction_message_reference_context(reaction, user):
         ctx = await bot.get_context(msg)
         return ctx
     except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+        # If the above fails, we return the reaction's message context and zero out the content."""
         ctx.author = user
         ctx.message.content = None
         return ctx
