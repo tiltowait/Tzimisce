@@ -7,7 +7,7 @@ from storyteller import engine # pylint: disable=cyclic-import
 from storyteller import roll # pylint: disable=cyclic-import
 from .response import Response
 
-async def traditional(ctx, command, mentioning) -> Response:
+async def traditional(ctx, command) -> Response:
     """Perform a traditional roll if appropriate."""
     response = None
     send = __traditional_roll(ctx.author, command)
@@ -15,8 +15,6 @@ async def traditional(ctx, command, mentioning) -> Response:
         response = Response(Response.TRADITIONAL)
         if isinstance(send, discord.Embed):
             response.embed = send
-            if mentioning:
-                response.content = ctx.author.mention
         else:
             response.content = send
 

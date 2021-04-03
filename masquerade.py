@@ -305,7 +305,7 @@ async def on_reaction_add(reaction, user):
         ctx = await __get_reaction_message_reference_context(reaction, user)
         ctx.author = user
 
-        await storyteller.engine.handle_command(command, ctx, ctx.message.content is None)
+        await storyteller.engine.handle_command(command, ctx)
     elif reaction.emoji == "✅" and reaction.message.author == bot.user:
         if user in reaction.message.mentions:
             ctx = await __get_reaction_message_reference_context(reaction, user)

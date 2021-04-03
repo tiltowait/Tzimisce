@@ -18,7 +18,7 @@ FAIL_COLOR = 0X777777
 BOTCH_COLOR = 0XfF0000
 
 
-async def pool(ctx, command, mentioning) -> Response:
+async def pool(ctx, command) -> Response:
     """Determine if a roll is appropriate, and roll it."""
     pool_command = __poolx.match(command["syntax"])
     response = None
@@ -28,11 +28,7 @@ async def pool(ctx, command, mentioning) -> Response:
 
         if isinstance(send, discord.Embed):
             response = Response(Response.POOL, embed=send)
-            if mentioning:
-                response.content = ctx.author.mention
         else: # It's a string
-            if mentioning:
-                send = f"{ctx.author.mention}: {send}"
             response = Response(Response.POOL, content=send)
 
     return response

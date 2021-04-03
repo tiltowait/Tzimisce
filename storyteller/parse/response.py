@@ -39,3 +39,9 @@ class Response:
     def both_set(self) -> bool:
         """True if both the embed and content are set."""
         return self.embed is not None and self.content is not None
+
+    def mentioned_content(self, author) -> str:
+        """Returns the content with the author mentioned at the top."""
+        if self.content:
+            return f"{author.mention}\n{self.content}"
+        return author.mention
