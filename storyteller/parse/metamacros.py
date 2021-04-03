@@ -63,6 +63,10 @@ def meta_records(guildid, userid):
     """Returns the MetaRecords for the user."""
     return __meta_macros.metamacro_list(guildid, userid)
 
+def meta_count(guildid, userid):
+    """Returns the number of MetaMacros for the user."""
+    return __meta_macros.metamacro_count(guildid, userid)
+
 
 class MetaMacro:
     """Stores a context, command, and list of macros to perform."""

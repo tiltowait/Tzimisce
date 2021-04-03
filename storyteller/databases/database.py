@@ -162,6 +162,16 @@ class RollDB(Database):
 
         return command
 
+    def macro_count(self, guildid, userid) -> int:
+        """Returns the number of macros associated with the user and guild."""
+        # Get the macro count
+        query = "SELECT COUNT(*) FROM SavedRolls WHERE Guild=%s AND ID=%s;"
+        self._execute(query, guildid, userid)
+        macro_count = self.cursor.fetchone()[0]
+
+        return macro_count
+
+
     def __store_roll(self, guild, userid, name, syntax, comment):
         """Store a new roll, or update an old one."""
         # pylint: disable=too-many-arguments

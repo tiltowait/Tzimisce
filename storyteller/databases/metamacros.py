@@ -84,6 +84,11 @@ class MetaMacroDB(Database):
 
         return records
 
+    def metamacro_count(self, guildid, userid) -> int:
+        """Returns the number of metamacros the user has on the guild."""
+        records = self.metamacro_list(guildid, userid)
+        return len(records)
+
     def __metamacro_composition(self, guildid, userid, meta_name) -> list:
         """Returns the list of macros comprising a given metamacro."""
         query = """

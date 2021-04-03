@@ -117,11 +117,22 @@ async def show_stored_rolls(ctx):
             embed=embed
         )
 
+def macro_counts(ctx) -> list:
+    """Returns the number of macros and metamacros the user has stored."""
+    macro_count = database.macro_count(ctx.guild.id, ctx.author.id)
+    meta_count = parse.meta_count(ctx.guild.id, ctx.author.id)
+
+    return (macro_count, meta_count)
 
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
-    await ctx.reply(f"Deleted your macros on {ctx.guild}.")
+    message = f"Deleted your macros on {ctx.guild}."
+
+    if ctx.message.content:
+        await ctx.reply(message)
+    else:
+        await ctx.send(f"{ctx.author.mention}: {message}")
 
 
 def help_embed(prefix):

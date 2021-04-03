@@ -184,7 +184,31 @@ async def show_stored_rolls(ctx):
 @commands.guild_only()
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
-    await storyteller.engine.delete_user_rolls(ctx)
+    macro_count, meta_count = storyteller.engine.macro_counts(ctx)
+    prompt = "Are you sure you wish to delete your macros on this server? Click ✅ to confirm."
+
+    # Correctly pluralize and display number of macros/metamacros to delete
+    newline = ""
+    notice = ""
+    if macro_count > 0:
+        newline = "\n"
+        notice = f"**{macro_count}** macro"
+        if macro_count > 1:
+            notice += "s"
+
+    if meta_count > 0:
+        newline = "\n"
+        prompt_addition = f" and **{meta_count}** meta-macro"
+        if meta_count > 1:
+            prompt_addition += "s"
+
+        notice = f"{notice}{prompt_addition}"
+
+    prompt += f"{newline}{notice} will be deleted."
+    message = await ctx.reply(prompt)
+
+    await message.add_reaction("✅")
+    #await storyteller.engine.delete_user_rolls(ctx)
 
 # Initiative Management
 
@@ -285,6 +309,23 @@ async def on_reaction_add(reaction, user):
         except (discord.NotFound, discord.Forbidden, discord.HTTPException):
             ctx.author = user
             await storyteller.engine.handle_command(command, ctx, True)
+    elif reaction.emoji == "✅" and reaction.message.author == bot.user:
+        if user in reaction.message.mentions:
+            ctx = await __get_reaction_message_reference_context(reaction, user)
+            await storyteller.engine.delete_user_rolls(ctx)
+            await reaction.message.delete()
+
+async def __get_reaction_message_reference_context(reaction, user):
+    """Returns the context of the message replied to in the reaction's message."""
+    ctx = await bot.get_context(reaction.message)
+    try:
+        msg = await ctx.fetch_message(reaction.message.reference.message_id)
+        ctx = await bot.get_context(msg)
+        return ctx
+    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+        ctx.author = user
+        ctx.message.content = None
+        return ctx
 
 @bot.event
 async def on_ready():
