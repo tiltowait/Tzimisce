@@ -63,7 +63,7 @@ class InitiativeManager:
         for key in self.characters:
             self.characters[key].reroll()
 
-        self.celerity = defaultdict(lambda: 0)
+        self.celerity.clear()
 
     @property
     def count(self) -> int:
