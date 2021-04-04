@@ -75,8 +75,11 @@ class InitiativeManager:
         sorted_inits = sorted(self.characters.items(), key=lambda x: x[1], reverse=True)
 
         retval = ""
+        celerities = []
         for init in sorted_inits:
             character = init[0]
+
+            # Format initiatives
             initiative = init[1].init
             action = init[1].action
 
@@ -87,11 +90,14 @@ class InitiativeManager:
 
             retval += "\n"
 
-        if len(self.celerity) > 0:
-            retval += "\n**Celerity\n**"
+            # Figure out celerities
+            celerity = self.celerity[character]
+            if celerity > 0:
+                celerities.append(f"{character} ({celerity})")
 
-            celerity_list = list(map(lambda kv: f"{kv[0]} ({kv[1]})", self.celerity.items()))
-            retval += "\n".join(sorted(celerity_list))
+        if len(celerities) > 0:
+            retval += "\n**Celerity\n**"
+            retval += "\n".join(celerities)
             retval += "\n"
 
         return retval
