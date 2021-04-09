@@ -17,7 +17,7 @@ class Database:
         """Executes the specified query. Tries to reconnect to the database if there's an error."""
         try:
             self.cursor.execute(query, args)
-        except psycopg2.errors.AdminShutdown: # pylint: disable=no-member
+        except (psycopg2.errors.OperationalError, psycopg2.errors.InterfaceError): # pylint: disable=no-member
             # Connection got reset for some reason, so fix it
             print("Lost database connection. Retrying.")
             self.conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
