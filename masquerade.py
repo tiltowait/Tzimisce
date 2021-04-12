@@ -44,7 +44,11 @@ async def on_message(message):
     # !!coin -> !!mcoin -> !!m coin
     # !!init -> !!minit
 
-    command = components[0]
+    if len(components) == 0:
+        command = "help"
+    else:
+        command = components[0]
+
     if not bot.get_command(f"m{command}"):
         content = f"{updated_prefix} {content}"
     else:
