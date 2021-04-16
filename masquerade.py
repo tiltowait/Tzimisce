@@ -256,13 +256,13 @@ async def statistics(ctx, *args):
         title = f"Statistics for {target} {success} at {pool} v {diff}"
         embed = discord.Embed(title=title)
 
-        standard = f"**Average successes:** {prob.avg:.2}\n"
+        standard = f"**Average successes:** {prob.avg:.3}\n"
         standard += f"**{target}+ {success}:** {prob.prob:.3%}\n"
         standard += f"**Using Willpower:** {prob.prob_wp:.3%}\n"
         standard += f"**Total Failure:** {prob.fail:.3%}\n"
         standard += f"**Botch:** {prob.botch:.3%}"
 
-        spec = f"**Average successes:** {prob.avg_spec:.2}\n"
+        spec = f"**Average successes:** {prob.avg_spec:.3}\n"
         spec += f"**{target}+ {success}:** {prob.prob_spec:.3%}\n"
         spec += f"**Using Willpower:** {prob.prob_spec_wp:.3%}\n"
         spec += f"**Total Failure:** {prob.fail_spec:.3%}\n"
