@@ -3,9 +3,8 @@
 from storyteller import engine
 from storyteller import initiative
 from storyteller import roll
-from storyteller.databases import SettingsDB, InitiativeDB
+from storyteller.databases import SettingsDB, InitiativeDB, ProbabilityDB
 
-# This is a defaultdict, lambda None
 initiative = InitiativeDB()
-
 settings = SettingsDB()
+probabilities = ProbabilityDB()
