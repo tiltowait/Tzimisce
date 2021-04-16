@@ -262,7 +262,7 @@ async def statistics(ctx, *args):
         standard += f"**Total Failure:** {prob.fail:.3%}\n"
         standard += f"**Botch:** {prob.botch:.3%}"
 
-        spec = f"**Average successes:** {prob.avg_spec}\n"
+        spec = f"**Average successes:** {prob.avg_spec:.2}\n"
         spec += f"**{target}+ {success}:** {prob.prob_spec:.3%}\n"
         spec += f"**Using Willpower:** {prob_wp.prob_spec:.3%}\n"
         spec += f"**Total Failure:** {prob.fail_spec:.3%}\n"
