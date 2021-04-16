@@ -245,7 +245,7 @@ async def statistics(ctx, *args):
         if not storyteller.probabilities.is_cached(pool, diff, target):
             msg = await ctx.reply("Give me a minute to calculate!")
 
-        prob, prob_wp = storyteller.probabilities.get_probabilities(pool, diff, target)
+        prob = storyteller.probabilities.get_probabilities(pool, diff, target)
         if msg:
             await msg.delete() # This is now just clutter
 
@@ -258,13 +258,13 @@ async def statistics(ctx, *args):
 
         standard = f"**Average successes:** {prob.avg:.2}\n"
         standard += f"**{target}+ {success}:** {prob.prob:.3%}\n"
-        standard += f"**Using Willpower:** {prob_wp.prob:.3%}\n"
+        standard += f"**Using Willpower:** {prob.prob_wp:.3%}\n"
         standard += f"**Total Failure:** {prob.fail:.3%}\n"
         standard += f"**Botch:** {prob.botch:.3%}"
 
         spec = f"**Average successes:** {prob.avg_spec:.2}\n"
         spec += f"**{target}+ {success}:** {prob.prob_spec:.3%}\n"
-        spec += f"**Using Willpower:** {prob_wp.prob_spec:.3%}\n"
+        spec += f"**Using Willpower:** {prob.prob_spec_wp:.3%}\n"
         spec += f"**Total Failure:** {prob.fail_spec:.3%}\n"
         spec += f"**Botch:** {prob.botch:.3%}"
 
