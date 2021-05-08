@@ -11,6 +11,18 @@ class InitiativeDB(Database):
     def __init__(self):
         super().__init__()
 
+        # Create the initiative table
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Initiative(
+                Channel   bigint NOT NULL,
+                Character Text NOT NULL,
+                Mod       int NOT NULL,
+                Die       int NOT NULL
+            );
+            """
+        )
+
         self.__tables = self.__fetch_initiative_tables()
 
     def get_table(self, channel: int) -> InitiativeManager:
