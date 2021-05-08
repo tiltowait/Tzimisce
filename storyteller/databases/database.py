@@ -14,23 +14,33 @@ class RollDB(Database):
         # Create the tables we will use
         # The main table for storing rolls.
         self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS SavedRolls
-                              (ID      bigint NOT NULL,
-                               Name    Text   NOT NULL,
-                               Syntax  Text   NOT NULL,
-                               Guild   bigint NOT NULL,
-                               Comment Text   NULL,
-                               macro_id int GENERATED ALWAYS AS IDENTITY,
-                               PRIMARY KEY(macro_id));"""
+            """
+            CREATE TABLE IF NOT EXISTS SavedRolls(
+                ID      bigint NOT NULL,
+                Name    Text   NOT NULL,
+                Syntax  Text   NOT NULL,
+                Guild   bigint NOT NULL,
+                Comment Text   NULL,
+                macro_id int GENERATED ALWAYS AS IDENTITY,
+                PRIMARY KEY(macro_id),
+                CONSTRAINT fk_guild
+                    FOREIGN KEY (Guild)
+                        REFERENCES GuildSettings(ID)
+                        ON DELETE CASCADE
+            );
+            """
         )
 
         # The initiative table(s)
         self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS Initiative
-                              (Channel   bigint NOT NULL,
-                               Character Text NOT NULL,
-                               Mod       int NOT NULL,
-                               Die       int NOT NULL);"""
+            """
+            CREATE TABLE IF NOT EXISTS Initiative(
+                Channel   bigint NOT NULL,
+                Character Text NOT NULL,
+                Mod       int NOT NULL,
+                Die       int NOT NULL
+            );
+            """
         )
 
         # Install trigrams

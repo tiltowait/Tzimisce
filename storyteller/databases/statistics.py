@@ -17,7 +17,7 @@ class StatisticsDB(Database):
                 Compact_Rolls     int     NOT NULL DEFAULT 0,
                 Traditional_Rolls int     NOT NULL DEFAULT 0,
                 Initiative_Rolls  int     NOT NULL DEFAULT 0
-            )
+            );
             """
         )
 

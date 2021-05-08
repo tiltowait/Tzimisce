@@ -49,7 +49,7 @@ class SettingsDB(Database):
                 wp_cancelable     boolean DEFAULT FALSE,
                 chronicles        boolean DEFAULT FALSE,
                 no_botch          boolean DEFAULT FALSE
-            )
+            );
             """
         )
         self.__all_settings = self.__fetch_all_settings()
