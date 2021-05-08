@@ -11,17 +11,24 @@ class SettingsDB(Database):
     # Non-boolean keys
     DEFAULT_DIFF = "default_diff"
     PREFIX = "prefix"
+    XPL_ALWAYS = "xpl_always"
+    NEVER_DOUBLE = "never_double"
+    NULLIFY_ONES = "nullify_ones"
+    NO_BOTCH = "no_botch"
+    CHRONICLES = "chronicles"
 
     __PARAMETERS = {
         PREFIX: "Defines the bot invocation prefix.",
         "use_compact": "Set the server to always use compact rolls.",
         DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
         "xpl_always": "If `true`, tens always explode.",
-        "xpl_spec": "If `true`, specialty tens explode.",
-        "never_double": "If `true`, tens will never count as double successes.",
+        XPL_ALWAYS: "If `true`, specialty tens explode.",
+        NEVER_DOUBLE: "If `true`, tens will never count as double successes.",
         "always_double": "If `true`, tens will always count as double successes.",
-        "nullify_ones": "If `true`, the `z` roll option causes ones to not subtract successes.",
+        NULLIFY_ONES: "If `true`, the `z` roll option causes ones to not subtract successes.",
+        NO_BOTCH: "Permanently disables botches.",
         "wp_cancelable": "Allows ones to cancel a Willpower success.",
+        CHRONICLES: "Enables Chronicles of Darkness-style rolls."
     }
 
     def __init__(self):
@@ -86,6 +93,15 @@ class SettingsDB(Database):
                     message += " A prefix this long might be annoying to type!"
             else:
                 message = "Reset the command prefix to `/m` and `!m`."
+        elif key == self.CHRONICLES:
+            # Also set default difficulty, always explode, nullify ones, no botching
+            self.update(guild, self.DEFAULT_DIFF, 8 if value else 6)
+            self.update(guild, self.XPL_ALWAYS, str(value))
+            self.update(guild, self.NULLIFY_ONES, str(value))
+            self.update(guild, self.NO_BOTCH, str(value))
+
+            message = "Enabling" if value else "Disabling"
+            message += " Chronicles of Darkness mode."
 
         return message
 

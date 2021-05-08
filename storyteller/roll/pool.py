@@ -6,11 +6,18 @@ class Pool:
     """Provides facilities for pool-based rolls."""
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode, wp_c):
+    def __init__(self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode, wp_c, cofd):
         # pylint: disable=too-many-arguments
-        self.difficulty = diff
+        self.cofd = cofd
+        if cofd:
+            self.difficulty = 8
+            self.will = False
+            if wp:
+                pool += 3
+        else:
+            self.difficulty = diff
+            self.will = wp
         self.should_double = double
-        self.will = wp
         self.autos = autos
         self.no_botch = no_botch
         self.nullify_ones = nullify_ones
