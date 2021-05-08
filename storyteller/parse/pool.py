@@ -57,6 +57,8 @@ def __pool_roll(ctx, command):
         return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
 
     title = f"Pool {dice_pool}, diff. {difficulty}"
+    if command["chronicles"]:
+        title = f"Pool {dice_pool}"
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
     autos = int(command["auto"] or 0)
@@ -64,7 +66,7 @@ def __pool_roll(ctx, command):
         title += f", {__pluralize_autos(autos)}"
 
     # Let the user know if we aren't allowing botches
-    if no_botch:
+    if no_botch and not command["chronicles"]:
         title += ", no botch"
 
     specialty = command["specialty"] # Doubles 10s if set
@@ -77,6 +79,11 @@ def __pool_roll(ctx, command):
         should_explode, command["wp_cancelable"], command["chronicles"]
     )
     comment = command["comment"]
+
+    # Add explosion info, if applicable
+    if should_explode and results.explosions > 0:
+        explosions = "explosion" if results.explosions == 1 else "explosions"
+        title += f" (+{results.explosions} {explosions})"
 
     # Compact formatting
     if compact:

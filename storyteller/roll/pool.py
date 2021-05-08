@@ -8,7 +8,6 @@ class Pool:
 
     def __init__(self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode, wp_c, cofd):
         # pylint: disable=too-many-arguments
-        self.cofd = cofd
         if cofd:
             self.difficulty = 8
             self.will = False
@@ -23,6 +22,7 @@ class Pool:
         self.nullify_ones = nullify_ones
         self.should_explode = explode
         self.wp_cancelable = wp_c
+        self.explosions = 0
         self.dice = self.__roll(pool)
         self.successes = self.__calculate_successes()
 
@@ -121,6 +121,7 @@ class Pool:
                 while die == 10:
                     dice.append(die)
                     die = traditional.roll(1, 10)[0]
+                    self.explosions += 1
                 dice.append(die)
 
             return sorted(dice, reverse=True)
