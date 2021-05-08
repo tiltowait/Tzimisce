@@ -33,12 +33,32 @@ class SettingsDB(Database):
 
     def __init__(self):
         super().__init__()
+
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS GuildSettings(
+                ID                bigint  PRIMARY KEY,
+                Prefix            Text,
+                use_compact       boolean DEFAULT FALSE,
+                xpl_spec          boolean DEFAULT FALSE,
+                nullify_ones      boolean DEFAULT FALSE,
+                xpl_always        boolean DEFAULT FALSE,
+                never_double      boolean DEFAULT FALSE,
+                always_double     boolean DEFAULT FALSE,
+                default_diff      int     DEFAULT 6,
+                wp_cancelable     boolean DEFAULT FALSE,
+                chronicles        boolean DEFAULT FALSE,
+                no_botch          boolean DEFAULT FALSE
+            )
+            """
+        )
         self.__all_settings = self.__fetch_all_settings()
+
 
     def __fetch_all_settings(self) -> dict:
         """Fetch settings for each server."""
         query_cols = ", ".join(self.available_parameters)
-        query = f"SELECT ID, {query_cols} FROM Guilds;"
+        query = f"SELECT ID, {query_cols} FROM GuildSettings;"
         self._execute(query)
         results = self.cursor.fetchall()
 
@@ -59,12 +79,14 @@ class SettingsDB(Database):
 
         return settings
 
+
     def settings_for_guild(self, guild) -> dict:
         """Fetch the settings for a specific server."""
         if guild and not isinstance(guild, int):
             guild = guild.id
 
         return self.__all_settings[guild]
+
 
     def get_prefixes(self, guild) -> tuple:
         """Returns the guild's prefix. If the guild is None, returns a default."""
@@ -76,12 +98,13 @@ class SettingsDB(Database):
             return (prefix,)
         return ("!m", "/m")
 
+
     def update(self, guild, key, value) -> str:
         """Sets a server parameter."""
         value = self.__validated_parameter(key, value) # Raises ValueError if invalid
 
         # Normally unsafe, but we do input validation before we get here
-        query = f"UPDATE Guilds SET {key}=%s WHERE ID=%s;"
+        query = f"UPDATE GuildSettings SET {key}=%s WHERE ID=%s;"
         self._execute(query, value, guild)
         self.__all_settings[guild][key] = value
 
@@ -105,6 +128,7 @@ class SettingsDB(Database):
 
         return message
 
+
     def value(self, guild, key):
         """Retrieves a value for a specific key for a given guild."""
         if key not in self.available_parameters:
@@ -115,17 +139,6 @@ class SettingsDB(Database):
 
         return self.__all_settings[guild][key]
 
-    @property
-    def available_parameters(self):
-        """Returns a list of available configuration options."""
-        return self.__PARAMETERS.keys()
-
-    def parameter_information(self, param) -> str:
-        """Returns a description of what a given parameter does."""
-        try:
-            return self.__PARAMETERS[param]
-        except KeyError:
-            return f"Unknown parameter `{param}`!"
 
     def __validated_parameter(self, key, new_value):
         """Returns the proper value type for the parameter, or None."""
@@ -149,3 +162,30 @@ class SettingsDB(Database):
             return new_value
         except ValueError:
             raise ValueError(f"Error! `{key}` must be `true` or `false`!") from None
+
+
+    @property
+    def available_parameters(self):
+        """Returns a list of available configuration options."""
+        return self.__PARAMETERS.keys()
+
+
+    def parameter_information(self, param) -> str:
+        """Returns a description of what a given parameter does."""
+        try:
+            return self.__PARAMETERS[param]
+        except KeyError:
+            return f"Unknown parameter `{param}`!"
+
+
+    # Housekeeping stuff
+
+    def add_guild(self, guildid):
+        """Adds a guild to the GuildSettings table."""
+        query = "INSERT INTO GuildSettings VALUES (%s);"
+        self._execute(query, guildid)
+
+    def remove_guild(self, guildid):
+        """Removes a guild from the GuildSettings table."""
+        query = "DELETE FROM GuildSettings WHERE ID=%s;"
+        self._execute(query, guildid)

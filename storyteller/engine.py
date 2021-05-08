@@ -6,7 +6,7 @@ import asyncio
 import discord
 
 from storyteller import parse
-from storyteller.databases import RollDB
+from storyteller.databases import RollDB, StatisticsDB
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
@@ -14,6 +14,7 @@ invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)?(?P<no_botch>z)? (?P<syntax>
 
 # Database stuff
 database = RollDB()
+statistics = StatisticsDB()
 
 async def handle_command(command, ctx, send=True):
     """Parse every message and determine if action is needed."""
@@ -67,7 +68,9 @@ async def __send_response(ctx, response):
 
     # If the ctx's content is None, then there is no message to reply to
     if ctx.message.content is None:
-        message = await ctx.send(embed=response.embed, content=response.mentioned_content(ctx.author))
+        message = await ctx.send(
+            embed=response.embed, content=response.mentioned_content(ctx.author)
+        )
     else:
         message = await ctx.reply(embed=response.embed, content=response.content)
 
@@ -75,9 +78,9 @@ async def __send_response(ctx, response):
         await message.add_reaction("👍")
 
     if ctx.guild:
-        database.increment_rolls(ctx.guild.id)
+        statistics.increment_rolls(ctx.guild.id)
         if response.is_traditional:
-            database.increment_traditional_rolls(ctx.guild.id)
+            statistics.increment_traditional_rolls(ctx.guild.id)
 
 
 async def __run_metamacro(metamacro):

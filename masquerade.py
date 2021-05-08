@@ -99,7 +99,7 @@ async def standard_roll(ctx, *, args=None):
     if "c" in ctx.invoked_with or guild_settings["use_compact"]:
         command["compact"] = "c"
         if ctx.guild:
-            storyteller.engine.database.increment_compact_rolls(ctx.guild.id)
+            storyteller.engine.statistics.increment_compact_rolls(ctx.guild.id)
 
     # If the bot doesn't have embed permissions, then we don't want to count that in the stats
     if not ctx.channel.permissions_for(ctx.me).embed_links:
@@ -411,20 +411,21 @@ async def on_ready():
 async def on_guild_join(guild):
     """When joining a guild, log it for statistics purposes."""
     print(f"Joining {guild}!")
-    storyteller.engine.database.add_guild(guild.id, guild.name)
+    storyteller.settings.add_guild(guild.id)
+    storyteller.engine.statistics.add_guild(guild.id, guild.name)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
     print(f"Removing {guild}.")
-    storyteller.engine.database.remove_guild(guild.id)
+    storyteller.settings.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 @bot.event
 async def on_guild_update(_, after):
     """Sometimes guilds are renamed. Fix that."""
-    storyteller.engine.database.rename_guild(after.id, after.name)
+    storyteller.engine.statistics.rename_guild(after.id, after.name)
 
 @bot.event
 async def on_command_error(ctx, error):

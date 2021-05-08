@@ -33,29 +33,6 @@ class RollDB(Database):
                                Die       int NOT NULL);"""
         )
 
-        # This table is just used for statistics purposes.
-        self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS Guilds
-                              (ID                bigint  PRIMARY KEY,
-                               NAME              Text    NOT NULL,
-                               Rolls             int     NOT NULL DEFAULT 0,
-                               Prefix            Text,
-                               Compact_Rolls     int     NOT NULL DEFAULT 0,
-                               Traditional_Rolls int     NOT NULL DEFAULT 0,
-                               Initiative_Rolls  int     NOT NULL DEFAULT 0,
-                               use_compact       boolean DEFAULT FALSE,
-                               xpl_spec          boolean DEFAULT FALSE,
-                               nullify_ones      boolean DEFAULT FALSE,
-                               xpl_always        boolean DEFAULT FALSE,
-                               never_double      boolean DEFAULT FALSE,
-                               always_double     boolean DEFAULT FALSE,
-                               default_diff      int     DEFAULT 6,
-                               wp_cancelable     boolean DEFAULT FALSE,
-                               chronicles        boolean DEFAULT FALSE,
-                               no_botch          boolean DEFAULT FALSE
-                               );"""
-        )
-
         # Install trigrams
         self.cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
 
@@ -274,45 +251,3 @@ class RollDB(Database):
     def __is_roll_stored(self, guild, userid, name):
         """Returns true if a roll by the given name has been stored."""
         return self.retrieve_stored_roll(guild, userid, name) is not None
-
-    def add_guild(self, guildid, name):
-        """Adds a guild to the Guilds table."""
-        query = "INSERT INTO Guilds VALUES (%s, %s);"
-
-        self._execute(query, guildid, name)
-
-    def remove_guild(self, guildid):
-        """Removes a guild from the Guilds table."""
-        query = "DELETE FROM Guilds WHERE ID=%s;"
-
-        self._execute(query, guildid)
-
-    def rename_guild(self, guildid, name):
-        """Updates the name of a guild in the Guilds table."""
-        query = "UPDATE Guilds SET Name=%s WHERE ID=%s;"
-
-        self._execute(query, name, guildid)
-
-    def increment_rolls(self, guildid):
-        """Keep track of the number of rolls performed on each server."""
-        query = "UPDATE Guilds SET Rolls = Rolls + 1 WHERE ID=%s;"
-
-        self._execute(query, guildid)
-
-    def increment_compact_rolls(self, guildid):
-        """Keep track of the number of compact rolls performed on each server."""
-        query = "UPDATE Guilds SET Compact_Rolls = Compact_Rolls + 1 WHERE ID=%s;"
-
-        self._execute(query, guildid)
-
-    def increment_traditional_rolls(self, guildid):
-        """Keep track of the number of compact rolls performed on each server."""
-        query = "UPDATE Guilds SET Traditional_Rolls = Traditional_Rolls + 1 WHERE ID=%s;"
-
-        self._execute(query, guildid)
-
-    def increment_initiative_rolls(self, guildid):
-        """Keep track of the number of compact rolls performed on each server."""
-        query = "UPDATE Guilds SET Initiative_Rolls = Initiative_Rolls + 1 WHERE ID=%s;"
-
-        self._execute(query, guildid)
