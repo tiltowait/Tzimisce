@@ -77,7 +77,7 @@ def initiative(ctx, mod, args) -> Response:
         storyteller.initiative.set_initiative(
             ctx.channel.id, character_name, init.mod, init.die
         )
-        storyteller.engine.database.increment_initiative_rolls(ctx.guild.id)
+        storyteller.engine.statistics.increment_initiative_rolls(ctx.guild.id)
 
         response.embed = embed
         return response
