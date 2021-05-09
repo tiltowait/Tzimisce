@@ -6,15 +6,18 @@ from collections import namedtuple
 
 import dice
 
+
 TraditionalRoll = namedtuple(
     "TraditionalRoll", ["equation", "total", "is_initiative"], module="roll.traditional"
 )
 __rollx = re.compile(r"(?P<dice>\d+d\d+)")
 __initx = re.compile(r"^1d10\s*\+\s*\d+$")
 
+
 def roll(repeat: int, die: int) -> list:
     """Return a list of random numbers between 1 and die."""
     return [randbelow(die) + 1 for _ in range(repeat)]
+
 
 def roll_from_string(equation: str) -> TraditionalRoll:
     """Return a list of random numbers based on an input string."""

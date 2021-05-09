@@ -7,6 +7,7 @@ from storyteller import engine # pylint: disable=cyclic-import
 from storyteller import roll # pylint: disable=cyclic-import
 from .response import Response
 
+
 async def traditional(ctx, command) -> Response:
     """Perform a traditional roll if appropriate."""
     response = None
@@ -20,6 +21,7 @@ async def traditional(ctx, command) -> Response:
 
     return response
 
+
 def is_valid_traditional(syntax: str) -> bool:
     """Determines whether the syntax is a valid traditional roll."""
 
@@ -29,6 +31,7 @@ def is_valid_traditional(syntax: str) -> bool:
         return True
     except dice.DiceBaseException:
         return False
+
 
 def __traditional_roll(author, command):
     """A "traditional" roll, such as 5d10+2."""

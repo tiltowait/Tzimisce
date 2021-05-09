@@ -8,6 +8,7 @@ from discord.ext import commands
 
 import storyteller
 
+
 # Setup
 
 async def determine_prefix(_, message):
@@ -16,6 +17,7 @@ async def determine_prefix(_, message):
 
 bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
 bot.remove_command("help")
+
 
 @bot.event
 async def on_message(message):
@@ -70,6 +72,7 @@ standard_aliases = [
     "mzcw", "mzwc", "mwzc", "mczw", "mcwz", "mwcz"
 ]
 
+
 @bot.group(invoke_without_command=True, name="m", aliases=standard_aliases)
 async def standard_roll(ctx, *, args=None):
     """Primary function. Perform a pool or traditional roll."""
@@ -109,6 +112,7 @@ async def standard_roll(ctx, *, args=None):
         command["no_botch"] = "z"
 
     await storyteller.engine.handle_command(command, ctx)
+
 
 # Subcommands
 
@@ -154,6 +158,7 @@ async def settings(ctx, *args):
     except ValueError as error:
         await ctx.reply(error)
 
+
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
@@ -164,6 +169,7 @@ async def coin_flip(ctx):
         coin = "Tails!"
 
     await ctx.reply(f"{coin}")
+
 
 @standard_roll.command(name="help")
 async def __help(ctx):
@@ -183,6 +189,7 @@ async def __help(ctx):
 async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
     await storyteller.engine.show_stored_rolls(ctx)
+
 
 @standard_roll.command(name="$delete-all")
 @commands.guild_only()
@@ -295,12 +302,14 @@ async def initiative_reset(ctx):
     except KeyError:
         await ctx.reply("This channel's initiative table is already empty!")
 
+
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
 async def initiative_remove_character(ctx, *, args=None):
     """Remove a character from initiative manager."""
     response = storyteller.parse.initiative_removal(ctx, args)
     await ctx.reply(content=response.content, embed=response.embed)
+
 
 @initiative_manager.command(name="reroll")
 @commands.guild_only()
@@ -323,6 +332,7 @@ async def initiative_reroll(ctx):
     else:
         await ctx.send("Initiative isn't set for this channel!")
 
+
 @initiative_manager.command(name="declare", aliases=["dec"])
 @commands.guild_only()
 async def initiative_declare(ctx, *args):
@@ -334,6 +344,7 @@ async def initiative_declare(ctx, *args):
     except SyntaxError as error:
         await ctx.reply(error)
 
+
 # Events
 
 def __is_valid_reaction(reaction, user, emoji):
@@ -341,6 +352,7 @@ def __is_valid_reaction(reaction, user, emoji):
     if reaction.emoji == emoji and reaction.message.author == bot.user:
         return user in reaction.message.mentions
     return False
+
 
 def suggestion_to_roll(reaction, user):
     """Returns a suggested macro if the correct user replies with a thumbsup."""
@@ -350,6 +362,7 @@ def suggestion_to_roll(reaction, user):
             return match.group("suggestion")
 
     return None
+
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -379,6 +392,7 @@ async def on_reaction_add(reaction, user):
     elif __is_valid_reaction(reaction, user, "❌"):
         await reaction.message.delete()
 
+
 async def __get_reaction_message_reference_context(reaction, user):
     """Returns the context of the message replied to in the reaction's message."""
     ctx = await bot.get_context(reaction.message)
@@ -391,6 +405,7 @@ async def __get_reaction_message_reference_context(reaction, user):
         ctx.author = user
         ctx.message.content = None
         return ctx
+
 
 @bot.event
 async def on_ready():
@@ -410,6 +425,7 @@ async def on_guild_join(guild):
     storyteller.engine.statistics.add_guild(guild.id, guild.name)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
+
 @bot.event
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
@@ -417,10 +433,12 @@ async def on_guild_remove(guild):
     storyteller.settings.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
+
 @bot.event
 async def on_guild_update(_, after):
     """Sometimes guilds are renamed. Fix that."""
     storyteller.engine.statistics.rename_guild(after.id, after.name)
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -455,6 +473,7 @@ async def on_command_error(ctx, error):
     print("**********************\n\n")
 
     raise error
+
 
 async def __alert_permissions(ctx):
     """Alerts the user to the required permissions."""

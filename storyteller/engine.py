@@ -16,6 +16,7 @@ invokex = re.compile(r"/m(?P<will>w)?(?P<compact>c)?(?P<no_botch>z)? (?P<syntax>
 database = RollDB()
 statistics = StatisticsDB()
 
+
 async def handle_command(command, ctx, send=True):
     """Parse every message and determine if action is needed."""
 
@@ -61,6 +62,7 @@ async def handle_command(command, ctx, send=True):
 
     # Unrecognized input
     await ctx.reply("Come again?")
+
 
 async def __send_response(ctx, response):
     """Sends the response to the given channel."""
@@ -121,6 +123,7 @@ async def show_stored_rolls(ctx):
             content=f"Here are your macros on **{ctx.guild}**:",
             embed=embed
         )
+
 
 def macro_counts(ctx) -> list:
     """Returns the number of macros and metamacros the user has stored."""

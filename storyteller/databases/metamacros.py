@@ -2,6 +2,7 @@
 
 from .base import Database
 
+
 class MetaMacroDB(Database):
     """A database manager for handling metamacros."""
 
@@ -23,6 +24,7 @@ class MetaMacroDB(Database):
             """
         )
 
+
     def retrieve_metamacro(self, guildid, userid, meta_name) -> list:
         """Retrieves the macro names for a given MetaMacro."""
         query = "SELECT MacroID FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
@@ -36,6 +38,7 @@ class MetaMacroDB(Database):
             macros.append(macro)
 
         return macros
+
 
     def store_metamacro(self, guildid, userid, meta_name, *macros) -> bool:
         """Stores a metamacro. Raises KeyError if one of the given macros doesn't exist."""
@@ -68,6 +71,7 @@ class MetaMacroDB(Database):
 
         return True
 
+
     def metamacro_list(self, guildid, userid) -> list:
         """Returns a list of metamacros and their components."""
         query = "SELECT DISTINCT MetaName FROM MetaMacros WHERE GuildID=%s AND UserID=%s;"
@@ -84,10 +88,12 @@ class MetaMacroDB(Database):
 
         return records
 
+
     def metamacro_count(self, guildid, userid) -> int:
         """Returns the number of metamacros the user has on the guild."""
         records = self.metamacro_list(guildid, userid)
         return len(records)
+
 
     def __metamacro_composition(self, guildid, userid, meta_name) -> list:
         """Returns the list of macros comprising a given metamacro."""

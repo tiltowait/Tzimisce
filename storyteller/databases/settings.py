@@ -5,6 +5,7 @@ from distutils.util import strtobool
 
 from .base import Database
 
+
 class SettingsDB(Database):
     """Interface for setting and retrieving server parameters."""
 
@@ -30,6 +31,7 @@ class SettingsDB(Database):
         "wp_cancelable": "Allows ones to cancel a Willpower success.",
         CHRONICLES: "Enables Chronicles of Darkness-style rolls."
     }
+
 
     def __init__(self):
         super().__init__()
@@ -184,6 +186,7 @@ class SettingsDB(Database):
         """Adds a guild to the GuildSettings table."""
         query = "INSERT INTO GuildSettings VALUES (%s);"
         self._execute(query, guildid)
+
 
     def remove_guild(self, guildid):
         """Removes a guild from the GuildSettings table."""

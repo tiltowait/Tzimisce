@@ -5,11 +5,13 @@ import re
 from storyteller.databases import MetaMacroDB # pylint: disable=cyclic-import
 from .response import Response
 
+
 __meta_macros = MetaMacroDB()
 
 __use_meta_macro = re.compile(r"^\w[\w-]*$")
 __store_meta_macro = re.compile(r"^(?P<name>\w[\w-]*)\s*=\s*(?P<macros>.+)$")
 __delete_meta_macro = re.compile(r"^(?P<name>\w[\w-]*)\s*=\s*$")
+
 
 def parse(ctx, command, handler):
     """Performs, deletes, or creates a metamacro."""
@@ -59,9 +61,11 @@ def parse(ctx, command, handler):
 
     return None
 
+
 def meta_records(guildid, userid):
     """Returns the MetaRecords for the user."""
     return __meta_macros.metamacro_list(guildid, userid)
+
 
 def meta_count(guildid, userid):
     """Returns the number of MetaMacros for the user."""
@@ -77,6 +81,7 @@ class MetaMacro:
         self.macros = macros
         self.handler = handler
 
+
     async def run_next_macro(self):
         """Performs the next macro in the list."""
         if len(self.macros) == 0:
@@ -87,10 +92,12 @@ class MetaMacro:
         self.command["comment"] = None
         return await self.handler(self.command, self.ctx, send=False)
 
+
     @property
     def is_done(self):
         """Returns True if the macro list is empty."""
         return len(self.macros) == 0
+
 
     @property
     def next_macro_name(self):

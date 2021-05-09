@@ -11,6 +11,7 @@ Probability = namedtuple("Probability", [
 
 cached_probabilities = defaultdict(lambda: None)
 
+
 def __multi_comb(total, *options) -> int:
     """Returns the number of permutations for a given combination. n! / (a! * b! * ... * z!)"""
     denominator = 1

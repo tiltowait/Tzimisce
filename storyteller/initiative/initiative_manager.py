@@ -3,6 +3,7 @@
 from collections import defaultdict
 from .initiative import Initiative
 
+
 class InitiativeManager:
     """Keeps track of character initiative scores."""
 
@@ -10,9 +11,11 @@ class InitiativeManager:
         self.characters = {} # str: initiative
         self.celerity = defaultdict(lambda: 0) # str: int
 
+
     def has_character(self, character) -> bool:
         """Returns true if a character is in the table."""
         return character in self.characters
+
 
     def add_init(self, character: str, mod: int, die: int = None, action: str = None) -> int:
         """Add initiative to the manager."""
@@ -20,6 +23,7 @@ class InitiativeManager:
         self.characters[character] = init
 
         return init
+
 
     def remove_init(self, character) -> bool:
         """Remove a character's initiative entry."""
@@ -34,6 +38,7 @@ class InitiativeManager:
 
         return contained
 
+
     def modify_init(self, character: str, mod: int) -> Initiative:
         """Change the modifier of an init if dex or celerity changes."""
         if character in self.characters:
@@ -41,6 +46,7 @@ class InitiativeManager:
             return self.characters[character]
 
         return None
+
 
     def declare_action(self, character: str, action: str) -> bool:
         """Adds a declared action to a character."""
@@ -50,6 +56,7 @@ class InitiativeManager:
 
         return False
 
+
     def add_celerity(self, character: str) -> bool:
         """Adds a celerity action for a character."""
         if character in self.characters:
@@ -58,6 +65,7 @@ class InitiativeManager:
 
         return False
 
+
     def reroll(self):
         """Rerolls all initiatives."""
         for key in self.characters:
@@ -65,10 +73,12 @@ class InitiativeManager:
 
         self.celerity.clear()
 
+
     @property
     def count(self) -> int:
         """Returns the number of characters in initiative."""
         return len(self.characters)
+
 
     def __str__(self):
         """Returns the initiative table, sorted by score."""

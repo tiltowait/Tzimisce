@@ -6,6 +6,7 @@ import discord
 from storyteller import roll, engine # pylint: disable=cyclic-import
 from .response import Response
 
+
 __poolx = re.compile(
     r"^(?P<pool>-?\d+)[\s@]?(?P<difficulty>\d+)?\s?(?P<auto>[+-]?\d+)?(?: (?P<specialty>\D[^#]*))?$"
 )
@@ -33,9 +34,11 @@ async def pool(ctx, command) -> Response:
 
     return response
 
+
 def is_valid_pool(syntax: str) -> bool:
     """Determines whether the syntax is a valid pool roll."""
     return __poolx.match(syntax) is not None
+
 
 def __pool_roll(ctx, command):
     """
@@ -92,6 +95,7 @@ def __pool_roll(ctx, command):
     # If not compact, put the results into an embed
     return __build_embed(ctx, command["override"], results, specialty, will, autos, title, comment)
 
+
 def __build_embed(ctx, override, results, specialty, will, autos, title, comment):
     """Builds an embed for the roll results."""
     # pylint: disable=too-many-arguments
@@ -128,6 +132,7 @@ def __build_embed(ctx, override, results, specialty, will, autos, title, comment
         author=ctx.author, header=title, color=color, fields=fields,
         footer=comment
     )
+
 
 def __build_compact(results, specialty, comment):
     """Builds a compact result string for the roll."""
@@ -183,6 +188,7 @@ emojidict = {
     "b1": 821601300310392832
 }
 
+
 def __emojify_dice(ctx, names, willpower, autos) -> str:
     """Returns an Emoji constructed from the emojidict dictionary."""
     emojis = []
@@ -204,6 +210,7 @@ def __emojify_dice(ctx, names, willpower, autos) -> str:
 
     return emoji_string
 
+
 def __should_double(command: dict, spec: bool) -> bool:
     """Determines whether 10s on a roll should count as double successes."""
     if command["never_double"]:
@@ -211,6 +218,7 @@ def __should_double(command: dict, spec: bool) -> bool:
     if command["always_double"] or spec:
         return True
     return False
+
 
 def __should_explode(command: dict, spec: bool) -> bool:
     """Determines whether 10s on a roll should explode."""

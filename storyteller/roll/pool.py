@@ -2,6 +2,7 @@
 
 from . import traditional
 
+
 class Pool:
     """Provides facilities for pool-based rolls."""
     # pylint: disable=too-many-instance-attributes
@@ -26,6 +27,7 @@ class Pool:
         self.dice = self.__roll(pool)
         self.successes = self.__calculate_successes()
 
+
     @property
     def formatted_result(self):
         """Format the successes to something nice for people to read."""
@@ -42,6 +44,7 @@ class Pool:
             result_str = f"Botch: {successes}"
 
         return result_str
+
 
     @property
     def formatted_dice(self):
@@ -69,6 +72,7 @@ class Pool:
             formatted += f" *+{self.autos}*"
 
         return formatted
+
 
     def __calculate_successes(self) -> int:
         """
@@ -110,6 +114,7 @@ class Pool:
 
         return suxx
 
+
     def __roll(self, pool) -> list:
         """Roll the dice!"""
 
@@ -128,6 +133,7 @@ class Pool:
 
         # Normal, non-exploding rolling
         return sorted(traditional.roll(pool, 10), reverse=True)
+
 
     @property
     def dice_emoji_names(self):

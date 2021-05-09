@@ -2,6 +2,7 @@
 
 from .base import Database
 
+
 class StatisticsDB(Database):
     """Maintains a database of guild statistics."""
 
@@ -20,6 +21,7 @@ class StatisticsDB(Database):
             );
             """
         )
+
 
     def add_guild(self, guildid, guildname):
         """Adds a guild to the GuildStats table."""

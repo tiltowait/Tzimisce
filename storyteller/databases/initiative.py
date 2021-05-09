@@ -5,6 +5,7 @@ from collections import defaultdict
 from storyteller.initiative import InitiativeManager
 from .base import Database
 
+
 class InitiativeDB(Database):
     """Initiative database. Provides interface for managing initiative."""
 
@@ -30,23 +31,28 @@ class InitiativeDB(Database):
 
         self.__tables = self.__fetch_initiative_tables()
 
+
     def temp_associate_guild(self, guild: int, channel:int):
         """Associates a channel with its guild."""
         query = "UPDATE Initiative SET Guild=%s WHERE Channel=%s;"
         self._execute(query, guild, channel)
 
+
     def get_table(self, channel: int) -> InitiativeManager:
         """Returns the channel's initiative manager, if it exists."""
         return self.__tables[channel]
+
 
     def add_table(self, channel: int, table: InitiativeManager):
         """Adds a table to the list."""
         self.__tables[channel] = table
 
+
     def remove_table(self, channel: int):
         """Removes a table from the list."""
         del self.__tables[channel]
         self.__clear_initiative(channel)
+
 
     # Database actions
 
@@ -58,20 +64,24 @@ class InitiativeDB(Database):
         query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s, %s, %s);"
         self._execute(query, channel, character, mod, die, None, guild)
 
+
     def set_initiative_action(self, channel, character, action):
         """Stores the declared action for a character."""
         query = "UPDATE Initiative SET Action=%s WHERE Channel=%s AND Character=%s;"
         self._execute(query, action, channel, character)
+
 
     def remove_initiative(self, channel, character):
         """Removes a character from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
         self._execute(query, channel, character)
 
+
     def __clear_initiative(self, channel):
         """Removes all initiative records from a given channel."""
         query = "DELETE FROM Initiative WHERE Channel=%s;"
         self._execute(query, channel)
+
 
     def __fetch_initiative_tables(self):
         """Returns a dictionary of all initiatives."""

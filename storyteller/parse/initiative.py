@@ -85,6 +85,7 @@ def initiative(ctx, mod, args) -> Response:
         response.content = usage
         return response
 
+
 def initiative_removal(ctx, args):
     """Removes a character from initiative, if possible, and returns a status response."""
     manager = storyteller.initiative.get_table(ctx.channel.id)
@@ -109,12 +110,14 @@ def initiative_removal(ctx, args):
 
     return response
 
+
 # Initiative Declarations
 
 parser = argparse.ArgumentParser(exit_on_error=False)
 parser.add_argument("action", nargs="*", default=None)
 parser.add_argument("-n", "--name", nargs="*", dest="character")
 parser.add_argument("-c", "--celerity", nargs="?", type=int, const=1)
+
 
 def initiative_declare(ctx, args):
     """Declares an initiative action, if possible."""

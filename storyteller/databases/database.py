@@ -5,6 +5,7 @@ import re
 import storyteller.parse
 from .base import Database
 
+
 class RollDB(Database):
     """Handles stored rolls, including creation, deletion, listing, and modification."""
 
@@ -39,6 +40,7 @@ class RollDB(Database):
         self.usex = re.compile(r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$")
         self.deletex = re.compile(r"^(?P<name>[\w-]+)\s*=$")
         self.multiwordx = re.compile(r"[\w-]+ [\w-]+")
+
 
     def query_saved_rolls(self, guild, userid, command):
         """Parses the message to see what kind of query is needed, then performs it."""
@@ -79,6 +81,7 @@ class RollDB(Database):
 
         # We have no idea what the user wanted to do.
         return "Come again?"
+
 
     def __match_stored_roll(self, command, match, guild, userid):
         """Attempts to pull a roll from the database and modify as needed."""
@@ -138,6 +141,7 @@ class RollDB(Database):
 
         return command
 
+
     def macro_count(self, guildid, userid) -> int:
         """Returns the number of macros associated with the user and guild."""
         # Get the macro count
@@ -179,6 +183,7 @@ class RollDB(Database):
 
         return f"Updated `{name}` syntax."
 
+
     def __update_stored_comment(self, guild, userid, name, comment):
         """Set or delete a stored roll's comment"""
         if self.__is_roll_stored(guild, userid, name):
@@ -192,6 +197,7 @@ class RollDB(Database):
 
         return f"Unable to update. You don't have a roll named `{name}`!"
 
+
     def retrieve_stored_roll(self, guild, userid, name):
         """Returns the Syntax for a stored roll."""
         query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
@@ -199,6 +205,7 @@ class RollDB(Database):
         result = self.cursor.fetchone()
 
         return result
+
 
     def __find_similar_macro(self, guild, userid, name):
         query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s)>0.2;"
@@ -210,6 +217,7 @@ class RollDB(Database):
 
         return None
 
+
     def delete_stored_roll(self, guild, userid, name):
         """Delete a stored roll."""
         if not self.__is_roll_stored(guild, userid, name):
@@ -220,10 +228,12 @@ class RollDB(Database):
 
         return f"`{name}` deleted! It has also been removed from any meta-macros containing it."
 
+
     def delete_user_rolls(self, guild, userid):
         """Deletes all of a user's rolls on a given guild."""
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s;"
         self._execute(query, guild, userid)
+
 
     def stored_rolls(self, guild, userid):
         """Returns an list of all the stored rolls."""
@@ -244,6 +254,7 @@ class RollDB(Database):
             fields.append((name, syntax))
 
         return fields
+
 
     def __is_roll_stored(self, guild, userid, name):
         """Returns true if a roll by the given name has been stored."""
