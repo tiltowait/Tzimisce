@@ -50,7 +50,8 @@ class InitiativeDB(Database):
 
     def remove_table(self, channel: int):
         """Removes a table from the list."""
-        del self.__tables[channel]
+        if channel in self.__tables:
+            del self.__tables[channel]
         self.__clear_initiative(channel)
 
 
