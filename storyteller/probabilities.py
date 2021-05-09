@@ -14,12 +14,18 @@ cached_probabilities = defaultdict(lambda: None)
 
 def __multi_comb(total, *options) -> int:
     """Returns the number of permutations for a given combination. n! / (a! * b! * ... * z!)"""
+    # The sum of options must equal the total
+    options = list(options)
+    options_sum = sum(options)
+
+    if options_sum < total:
+        options.append(total - options_sum)
+    elif options_sum > total:
+        raise ValueError("The sum of the options cannot exceed the total.")
+
     denominator = 1
-    if len(options) > 1:
-        for option in options: # These must all be ints
-            denominator *= math.factorial(option)
-    else:
-        denominator = math.factorial(options[0]) * math.factorial(total - options[0])
+    for option in options: # These must all be ints
+        denominator *= math.factorial(option)
 
     return math.factorial(total) / denominator
 
