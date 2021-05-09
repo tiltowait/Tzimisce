@@ -3,8 +3,8 @@
 from storyteller import engine
 from storyteller import initiative
 from storyteller import roll
-from storyteller.databases import SettingsDB, InitiativeDB, ProbabilityDB, StatisticsDB
+from storyteller.databases import SettingsDB, InitiativeDB, StatisticsDB
+from storyteller import probabilities
 
 initiative = InitiativeDB()
 settings = SettingsDB()
-probabilities = ProbabilityDB()

@@ -240,15 +240,9 @@ async def statistics(ctx, *args):
         if not 1 <= target <= (pool * 2):
             raise ValueError("Error! Success target must be between 1 and twice your pool!")
 
-        # It can take a while to calculate the results, so let's warn the error if we have no cache
-        msg = None
-        if not storyteller.probabilities.is_cached(pool, diff, target):
-            msg = await ctx.reply("Give me a minute to calculate!")
-
         prob = storyteller.probabilities.get_probabilities(pool, diff, target)
-        if msg:
-            await msg.delete() # This is now just clutter
 
+        # Properly pluralize "successes", when applicable
         success = "success"
         if target > 1:
             success += "es"
