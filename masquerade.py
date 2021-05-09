@@ -441,6 +441,13 @@ async def on_guild_update(_, after):
 
 
 @bot.event
+async def on_guild_channel_delete(channel):
+    """Removes initiative from the deleted channel."""
+    print(f"Deleted #{channel.name} on {channel.guild.name}. Removing initiative.")
+    storyteller.initiative.remove_table(channel.id)
+
+
+@bot.event
 async def on_command_error(ctx, error):
     """Ignore CommandNotFound errors."""
     # pylint: disable=too-many-return-statements
