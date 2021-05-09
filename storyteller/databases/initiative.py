@@ -24,7 +24,6 @@ class InitiativeDB(Database):
         )
 
         self.__tables = self.__fetch_initiative_tables()
-        self.all_tables = self.__tables
 
     def temp_associate_guild(self, guild: int, channel:int):
         """Associates a channel with its guild."""
