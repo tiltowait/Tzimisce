@@ -194,7 +194,7 @@ def __emojify_dice(ctx, names, willpower, autos) -> str:
     emojis = []
     for name in names:
         emoji = emojidict[name]
-        if isinstance(emoji, int):
+        if isinstance(emoji, int) or not emoji:
             emoji = ctx.bot.get_emoji(emoji)
             emojidict[name] = emoji # Cache the emoji rather than the id
 
