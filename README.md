@@ -1,20 +1,23 @@
 # \[Tzimisce\]
-A handy Discord dicebot for classic World of Darkness tabletop RPGs, such as *Vampire: The Masquerade*, *Werewolf: The Apocalyspe*, and *Mage: The Ascension*. At its most basic, it allows for rapid entry of rolls, requiring as few as five keystrokes (including return!) or four taps on a mobile screen. It also possesses some more advanced features, such as roll saving, Willpower-based rolls, and automatic successes.
+A handy Discord dicebot for classic World of Darkness tabletop RPGs, such as *Vampire: The Masquerade*, *Werewolf: The Apocalyspe*, and *Mage: The Ascension*. At its most basic, it allows for rapid entry of rolls, requiring as few as five keystrokes (including return!). It also possesses some more advanced features, such as macros, Willpower use, automatic successes, and statistical analysis.
 
 ## Installation
 ### The Easy Way
 Simply [click this link](https://top.gg/bot/642775025770037279) to add the bot to your server. Not ready to add it yet? [Try out the demo server!](https://discord.gg/rK3RFqV)
 
 ### The Hard Way
-Should you wish to locally run the bot (perhaps to make your own, local changes), you will need to acquire a Discord developer key.
+Should you wish to run the bot locally, you will need to obtain a Discord developer key [here](https://discord.com/developers/applications).
 
 #### Setup
-You will need version >=3.9 of [Python](https://www.python.org), as well as [PostgreSQL](https://www.postgresql.org) with SSL support enabled (which may require creating your own certificate key).
+\[Tzimisce\] requires version >=3.9 of [Python](https://www.python.org) and [PostgreSQL](https://www.postgresql.org) with SSL support enabled (which means you need an SSL certificate).
 
-Additionally, you will need to use PIP to install `psycopg2` and `discord.py`.
+Additionally, you will need to use PIP to install [psycopg2](https://pypi.org/project/psycopg2/), [discord.py](https://pypi.org/project/discord.py/), and [dice](https://pypi.org/project/dice/). You can quickly install these dependencies with `pip -r requirements.txt`.
 
 ##### Setting the Environment Variables
 Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store your PostgreSQL server address in an environment variable named `DATABASE_URL`.
+
+#### Run the Bot
+Make sure Postgres is running, then enter `python3 masquerade.py` to run the bot.
 
 ## Usage
 For a full command listing, check [the help file](https://tiltowait.github.io/Tzimisce/).
