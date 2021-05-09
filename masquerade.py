@@ -327,7 +327,7 @@ async def initiative_reroll(ctx):
             init = characters[character]
 
             storyteller.initiative.set_initiative(
-                ctx.channel.id, character, init.mod, init.die
+                ctx.guild.id, ctx.channel.id, character, init.mod, init.die
             )
     else:
         await ctx.send("Initiative isn't set for this channel!")
