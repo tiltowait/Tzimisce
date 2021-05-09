@@ -24,6 +24,12 @@ class InitiativeDB(Database):
         )
 
         self.__tables = self.__fetch_initiative_tables()
+        self.all_tables = self.__tables
+
+    def temp_associate_guild(self, guild: int, channel:int):
+        """Associates a channel with its guild."""
+        query = "UPDATE Initiative SET Guild=%s WHERE Channel=%s;"
+        self._execute(query, guild, channel)
 
     def get_table(self, channel: int) -> InitiativeManager:
         """Returns the channel's initiative manager, if it exists."""
@@ -40,12 +46,13 @@ class InitiativeDB(Database):
 
     # Database actions
 
-    def set_initiative(self, channel, character, mod, die):
+    #pylint: disable=too-many-arguments
+    def set_initiative(self, guild, channel, character, mod, die):
         """Adds an initiative record."""
         self.remove_initiative(channel, character)
 
-        query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s);"
-        self._execute(query, channel, character, mod, die)
+        query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s, %s, %s);"
+        self._execute(query, channel, character, mod, die, None, guild)
 
     def set_initiative_action(self, channel, character, action):
         """Stores the declared action for a character."""

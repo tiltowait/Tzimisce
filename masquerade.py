@@ -401,6 +401,14 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Game(__status_message()))
 
+    # TEMPORARY
+    channels = set(storyteller.initiative.all_tables.keys())
+    for channel in channels:
+        channel = await bot.fetch_channel(channel)
+        guild = channel.guild
+        print(f"Channel {channel.id} => Guild {guild.id} ({guild.name})")
+        storyteller.initiative.temp_associate_guild(guild.id, channel.id)
+
 @bot.event
 async def on_guild_join(guild):
     """When joining a guild, log it for statistics purposes."""
