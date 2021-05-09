@@ -16,9 +16,14 @@ class InitiativeDB(Database):
             """
             CREATE TABLE IF NOT EXISTS Initiative(
                 Channel   bigint NOT NULL,
-                Character Text NOT NULL,
-                Mod       int NOT NULL,
-                Die       int NOT NULL
+                Character Text   NOT NULL,
+                Mod       int    NOT NULL,
+                Die       int    NOT NULL,
+                Guild     bigint NOT NULL,
+                CONSTRAINT fk_guild
+                    FOREIGN KEY (Guild)
+                        REFERENCES GuildSettings(ID)
+                        ON DELETE CASCADE
             );
             """
         )
