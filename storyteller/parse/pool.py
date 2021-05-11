@@ -47,22 +47,36 @@ def __pool_roll(ctx, command):
     """
     will = command["will"]
     compact = command["compact"]
-    no_botch = command["no_botch"]
     dice_pool = int(command["pool"])
 
     if not 1 <= dice_pool <= 100:
         return f"Sorry, pools must be between 1 and 100. *(Input: {dice_pool})*"
 
+    # Set up the base roll options
+    options = {}
+    options["no_botch"] = command["no_botch"]
+    options["nullify_ones"] = command["nullify_ones"]
+    options["wp_cancelable"] = command["wp_cancelable"]
+
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
+    chronicles = command["chronicles"]
     difficulty = int(command["difficulty"] or command["default_diff"])
-    d_given = command["difficulty"] is not None
+
+    if chronicles:
+        difficulty = command["default_diff"]
+
+        # The second argument in a CofD roll is explosion target
+        if command["difficulty"] is not None:
+            options["xpl_target"] = int(command["difficulty"])
+        else:
+            options["xpl_target"] = 10
 
     if not command["chronicles"] and not 2 <= difficulty <= 10:
         return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
 
-    if command["chronicles"] and d_given and not 8 <= difficulty <= 10:
-        return f"Whoops! X-Again targets must be between 8 and 10. *(Input: {difficulty})*"
+    if command["chronicles"] and not difficulty <= options["xpl_target"] <= 10:
+        return f"Whoops! X-Again must be between {difficulty} and 10, not {command['xpl_target']}."
 
     title = f"Pool {dice_pool}, diff. {difficulty}"
     if command["chronicles"]:
@@ -74,25 +88,22 @@ def __pool_roll(ctx, command):
         title += f", {__pluralize_autos(autos)}"
 
     # Let the user know if we aren't allowing botches
-    if no_botch and not command["chronicles"]:
+    if command["no_botch"] and not command["chronicles"]:
         title += ", no botch"
 
     specialty = command["specialty"] # Doubles 10s if set
-    should_double = __should_double(command, specialty is not None)
-    should_explode = __should_explode(command, specialty is not None)
+    options["double_tens"] = __should_double(command, specialty is not None)
+    options["exploding"] = __should_explode(command, specialty is not None)
 
     # Perform rolls, format them, and figure out how many successes we have
-    results = roll.Pool(
-        dice_pool, difficulty, autos, will, should_double, no_botch, command["nullify_ones"],
-        should_explode, command["wp_cancelable"], command["chronicles"], d_given
-    )
-    comment = command["comment"]
+    results = roll.Pool(dice_pool, difficulty, autos, will, chronicles, options)
 
     # Add explosion info, if applicable
-    if should_explode and results.explosions > 0:
+    if options["exploding"] and results.explosions > 0:
         explosions = "explosion" if results.explosions == 1 else "explosions"
         title += f" (+{results.explosions} {explosions})"
 
+    comment = command["comment"]
     # Compact formatting
     if compact:
         return __build_compact(results, specialty, comment)

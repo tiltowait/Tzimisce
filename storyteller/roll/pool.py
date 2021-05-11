@@ -7,28 +7,25 @@ class Pool:
     """Provides facilities for pool-based rolls."""
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(
-        self, pool, diff, autos, wp, double, no_botch, nullify_ones, explode, wp_c, cofd, d_given
-    ):
+    def __init__(self, pool, diff, autos, wp, cofd, options):
         # pylint: disable=too-many-arguments
+        self.difficulty = diff
         if cofd:
-            self.difficulty = 8
             self.will = False
             if wp:
                 pool += 3
 
             # In CofD, difficulty is always 8; if the user supplies it, make an X-again roll
-            self.xpl_target = diff if d_given else 10
+            self.xpl_target = options["xpl_target"]
         else:
-            self.difficulty = diff
             self.will = wp
             self.xpl_target = 10
-        self.should_double = double
+        self.should_double = options["double_tens"]
         self.autos = autos
-        self.no_botch = no_botch
-        self.nullify_ones = nullify_ones
-        self.should_explode = explode
-        self.wp_cancelable = wp_c
+        self.no_botch = options["no_botch"]
+        self.nullify_ones = options["nullify_ones"]
+        self.should_explode = options["exploding"]
+        self.wp_cancelable = options["wp_cancelable"]
         self.explosions = 0
         self.dice = self.__roll(pool)
         self.successes = self.__calculate_successes()
