@@ -56,8 +56,13 @@ def __pool_roll(ctx, command):
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.
     difficulty = int(command["difficulty"] or command["default_diff"])
-    if not 2 <= difficulty <= 10:
+    d_given = command["difficulty"] is not None
+
+    if not command["chronicles"] and not 2 <= difficulty <= 10:
         return f"Whoops! Difficulty must be between 2 and 10. *(Input: {difficulty})*"
+
+    if command["chronicles"] and d_given and not 8 <= difficulty <= 10:
+        return f"Whoops! X-Again targets must be between 8 and 10. *(Input: {difficulty})*"
 
     title = f"Pool {dice_pool}, diff. {difficulty}"
     if command["chronicles"]:
@@ -79,7 +84,7 @@ def __pool_roll(ctx, command):
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(
         dice_pool, difficulty, autos, will, should_double, no_botch, command["nullify_ones"],
-        should_explode, command["wp_cancelable"], command["chronicles"]
+        should_explode, command["wp_cancelable"], command["chronicles"], d_given
     )
     comment = command["comment"]
 
