@@ -78,12 +78,31 @@ def __pool_roll(ctx, command):
     if command["chronicles"] and not difficulty <= options["xpl_target"] <= 10:
         return f"Whoops! X-Again must be between {difficulty} and 10, not {command['xpl_target']}."
 
+    # Sometimes, a roll may have auto-successes that can be canceled by 1s.
+    autos = int(command["auto"] or 0)
+
+    specialty = command["specialty"] # Doubles 10s if set
+    options["double_tens"] = __should_double(command, specialty is not None)
+
+    if not chronicles: # Regular CofD rolls *always* explode
+        options["xpl_target"] = __explosion_target(command, specialty is not None)
+
+    # Finally, roll it!
+    results = roll.Pool(dice_pool, difficulty, autos, will, chronicles, options)
+
+    # OUTPUT GENERATION
+
+    comment = command["comment"]
+
+    # Compact formatting
+    if compact:
+        return __build_compact(results, specialty, comment)
+
+    # Title creation
     title = f"Pool {dice_pool}, diff. {difficulty}"
     if command["chronicles"]:
         title = f"Pool {dice_pool}, {options['xpl_target']}-again"
 
-    # Sometimes, a roll may have auto-successes that can be canceled by 1s.
-    autos = int(command["auto"] or 0)
     if autos != 0:
         title += f", {__pluralize_autos(autos)}"
 
@@ -91,26 +110,11 @@ def __pool_roll(ctx, command):
     if command["no_botch"] and not command["chronicles"]:
         title += ", no botch"
 
-    specialty = command["specialty"] # Doubles 10s if set
-    options["double_tens"] = __should_double(command, specialty is not None)
-
-    if not chronicles:
-        options["xpl_target"] = __explosion_target(command, specialty is not None)
-
-    # Perform rolls, format them, and figure out how many successes we have
-    results = roll.Pool(dice_pool, difficulty, autos, will, chronicles, options)
-
-    # Add explosion info, if applicable
+    # Inform the user of any explosions
     if results.explosions > 0:
         explosions = "explosion" if results.explosions == 1 else "explosions"
         title += f" (+{results.explosions} {explosions})"
 
-    comment = command["comment"]
-    # Compact formatting
-    if compact:
-        return __build_compact(results, specialty, comment)
-
-    # If not compact, put the results into an embed
     return __build_embed(ctx, command["override"], results, specialty, will, autos, title, comment)
 
 

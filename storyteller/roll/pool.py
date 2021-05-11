@@ -75,6 +75,26 @@ class Pool:
         return formatted
 
 
+    @property
+    def dice_emoji_names(self):
+        """Returns the emoji names based on the dice, difficulty, spec, etc."""
+        names = []
+        for die in self.dice:
+            name = ""
+            if die >= self.difficulty:
+                name = f"s{die}"
+            elif die > 1 or (self.ignore_ones and self.no_botch):
+                name = f"f{die}"
+            else:
+                name = "b1"
+
+            if die == 10 and self.should_double:
+                name = f"s{name}"
+
+            names.append(name)
+        return names
+
+
     def __calculate_successes(self) -> int:
         """
         Sums the number of successes, taking into account Willpower use.
@@ -128,23 +148,3 @@ class Pool:
             dice.append(die)
 
         return sorted(dice, reverse=True)
-
-
-    @property
-    def dice_emoji_names(self):
-        """Returns the emoji names based on the dice, difficulty, spec, etc."""
-        names = []
-        for die in self.dice:
-            name = ""
-            if die >= self.difficulty:
-                name = f"s{die}"
-            elif die > 1 or (self.ignore_ones and self.no_botch):
-                name = f"f{die}"
-            else:
-                name = "b1"
-
-            if die == 10 and self.should_double:
-                name = f"s{name}"
-
-            names.append(name)
-        return names
