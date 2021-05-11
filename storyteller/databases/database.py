@@ -249,7 +249,7 @@ class RollDB(Database):
             comment = row[2]
 
             if comment:
-                syntax += f"\n{comment}"
+                syntax += f" # {comment}"
 
             fields.append((name, syntax))
 

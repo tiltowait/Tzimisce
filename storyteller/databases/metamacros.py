@@ -81,7 +81,7 @@ class MetaMacroDB(Database):
         records = []
         for meta_name in meta_names:
             macros = self.__metamacro_composition(guildid, userid, meta_name)
-            meta_name = f"Meta: ${meta_name}"
+            meta_name = f"{meta_name}"
             macros = ", ".join(macros)
 
             records.append((meta_name, macros))

@@ -108,21 +108,28 @@ async def show_stored_rolls(ctx):
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     meta_records = parse.meta_records(ctx.guild.id, ctx.author.id)
 
-    fields = stored_rolls + meta_records
-
     if len(stored_rolls) == 0:
         await ctx.reply(f"You have no macros on {ctx.guild}!")
     else:
-        embed = build_embed(
-            title="Stored Rolls",
-            color=0x1F3446,
-            fields=fields,
-        )
+        message = f"Here are your macros on **{ctx.guild}**:\n"
+        message += __yaml_block(stored_rolls)
+
+        if len(meta_records) > 0:
+            message += "Meta-macros (remember to prepend with $):\n"
+            message += __yaml_block(meta_records)
+
         await ctx.reply("List sent. Please check your DMs!")
-        await ctx.author.send(
-            content=f"Here are your macros on **{ctx.guild}**:",
-            embed=embed
-        )
+        await ctx.author.send(message)
+
+
+def __yaml_block(lines) -> str:
+    """Returns a code-fenced YAML block from lines."""
+    block = "```yaml\n"
+    for line in lines:
+        block += f"{line[0]}: {line[1]}\n"
+    block += "\n```\n"
+
+    return block
 
 
 def macro_counts(ctx) -> list:
