@@ -10,22 +10,21 @@ class Pool:
     def __init__(self, pool, diff, autos, wp, cofd, options):
         # pylint: disable=too-many-arguments
         self.difficulty = diff
+        self.autos = autos
+        self.xpl_target = options["xpl_target"]
+
         if cofd:
             self.will = False
             if wp:
                 pool += 3
-
-            # In CofD, difficulty is always 8; if the user supplies it, make an X-again roll
-            self.xpl_target = options["xpl_target"]
         else:
             self.will = wp
-            self.xpl_target = 10
+
         self.should_double = options["double_tens"]
-        self.autos = autos
         self.no_botch = options["no_botch"]
-        self.nullify_ones = options["nullify_ones"]
-        self.should_explode = options["exploding"]
+        self.ignore_ones = options["nullify_ones"]
         self.wp_cancelable = options["wp_cancelable"]
+
         self.explosions = 0
         self.dice = self.__roll(pool)
         self.successes = self.__calculate_successes()
@@ -34,7 +33,6 @@ class Pool:
     @property
     def formatted_result(self):
         """Format the successes to something nice for people to read."""
-        # Determine roll string
         successes = self.successes
         result_str = ""
         if successes > 0:
@@ -59,7 +57,7 @@ class Pool:
         """
         formatted = []
         for die in self.dice:
-            if die == 1 and not (self.nullify_ones and self.no_botch):
+            if die == 1 and not (self.ignore_ones and self.no_botch):
                 formatted.append(f"~~***{die}***~~")
             elif die < self.difficulty:
                 formatted.append(f"~~{die}~~")
@@ -96,7 +94,7 @@ class Pool:
                 suxx += 1
                 if die == 10 and self.should_double:
                     suxx += 1
-            elif die == 1 and not (self.nullify_ones and self.no_botch):
+            elif die == 1 and not (self.ignore_ones and self.no_botch):
                 fails += 1
 
         # Three possible results:
@@ -120,22 +118,16 @@ class Pool:
 
     def __roll(self, pool) -> list:
         """Roll the dice!"""
-
-        # Exploding dice: on a ten, roll an additional die. This is recursive
-        if self.should_explode:
-            dice = []
-            for _ in range(pool):
-                die = traditional.roll(1, 10)[0]
-                while die >= self.xpl_target:
-                    dice.append(die)
-                    die = traditional.roll(1, 10)[0]
-                    self.explosions += 1
+        dice = []
+        for _ in range(pool):
+            die = traditional.roll(1, 10)[0]
+            while die >= self.xpl_target:
                 dice.append(die)
+                die = traditional.roll(1, 10)[0]
+                self.explosions += 1
+            dice.append(die)
 
-            return sorted(dice, reverse=True)
-
-        # Normal, non-exploding rolling
-        return sorted(traditional.roll(pool, 10), reverse=True)
+        return sorted(dice, reverse=True)
 
 
     @property
@@ -146,7 +138,7 @@ class Pool:
             name = ""
             if die >= self.difficulty:
                 name = f"s{die}"
-            elif die > 1 or (self.nullify_ones and self.no_botch):
+            elif die > 1 or (self.ignore_ones and self.no_botch):
                 name = f"f{die}"
             else:
                 name = "b1"

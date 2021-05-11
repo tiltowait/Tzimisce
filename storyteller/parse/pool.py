@@ -80,7 +80,7 @@ def __pool_roll(ctx, command):
 
     title = f"Pool {dice_pool}, diff. {difficulty}"
     if command["chronicles"]:
-        title = f"Pool {dice_pool}"
+        title = f"Pool {dice_pool}, {options['xpl_target']}-again"
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
     autos = int(command["auto"] or 0)
@@ -93,13 +93,15 @@ def __pool_roll(ctx, command):
 
     specialty = command["specialty"] # Doubles 10s if set
     options["double_tens"] = __should_double(command, specialty is not None)
-    options["exploding"] = __should_explode(command, specialty is not None)
+
+    if not chronicles:
+        options["xpl_target"] = __explosion_target(command, specialty is not None)
 
     # Perform rolls, format them, and figure out how many successes we have
     results = roll.Pool(dice_pool, difficulty, autos, will, chronicles, options)
 
     # Add explosion info, if applicable
-    if options["exploding"] and results.explosions > 0:
+    if results.explosions > 0:
         explosions = "explosion" if results.explosions == 1 else "explosions"
         title += f" (+{results.explosions} {explosions})"
 
@@ -236,10 +238,10 @@ def __should_double(command: dict, spec: bool) -> bool:
     return False
 
 
-def __should_explode(command: dict, spec: bool) -> bool:
+def __explosion_target(command: dict, spec: bool) -> bool:
     """Determines whether 10s on a roll should explode."""
     if command["xpl_always"]:
-        return True
+        return 10
     if command["xpl_spec"] and spec:
-        return True
-    return False
+        return 10
+    return 11 # Rolls can never be 11, so this is effectively ignored
