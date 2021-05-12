@@ -278,6 +278,9 @@ async def statistics(ctx, *args):
     except ValueError as error:
         await ctx.reply(f"{error}\n{usage}")
 
+    # Log statistics
+    storyteller.engine.statistics.increment_stats_calculated(ctx.guild.id)
+
 
 # Initiative Management
 
