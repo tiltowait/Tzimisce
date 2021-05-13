@@ -36,7 +36,7 @@ class RollDB(Database):
 
         # Macro patterns
         self.storex = re.compile(r"^(?P<name>[\w-]+)\s*=\s*(?P<syntax>.+)$")
-        self.commentx = re.compile(r"^(?P<name>[\w-]+)\s+c=(?P<comment>.*)$")
+        self.commentx = re.compile(r"^(?P<name>[\w-]+)\s+c=\s*(?P<comment>.*)$")
         self.usex = re.compile(r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$")
         self.deletex = re.compile(r"^(?P<name>[\w-]+)\s*=$")
         self.multiwordx = re.compile(r"[\w-]+ [\w-]+")
