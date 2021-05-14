@@ -171,6 +171,26 @@ async def coin_flip(ctx):
     await ctx.reply(f"{coin}")
 
 
+@standard_roll.command()
+async def chance(ctx):
+    """Roll a chance die (primarily for CofD games)."""
+    command = defaultdict(lambda: False)
+    command.update(storyteller.settings.settings_for_guild(ctx.guild))
+
+    # A chance roll is 1d10, and you may only succeed on a 10. A 1 is a critical failure. We need to
+    # override some/most server settings to make sure the roll is done correctly. As of now, the
+    # only thing we're keeping is †he compact mode flag; however, additional settings may be added
+    # in the future, so the framework is laid now.
+    command["syntax"] = "1 10"
+    command["comment"] = "Chance roll. Succeed on 10, botch on 1. Is today your lucky day?"
+    command["chronicles"] = False # Have to override this, because a chance roll is closer to WoD
+    command["xpl_always"] = False
+    command["no_botch"] = False
+    command["compact"] = command["use_compact"]
+
+    await storyteller.engine.handle_command(command, ctx)
+
+
 @standard_roll.command(name="help")
 async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
