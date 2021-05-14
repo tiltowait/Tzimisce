@@ -100,16 +100,15 @@ async def standard_roll(ctx, *, args=None):
     if "w" in ctx.invoked_with:
         command["will"] = "w"
     if "c" in ctx.invoked_with or guild_settings["use_compact"]:
-        command["compact"] = "c"
+        command["use_compact"] = "c"
         if ctx.guild:
             storyteller.engine.statistics.increment_compact_rolls(ctx.guild.id)
+    if "z" in ctx.invoked_with:
+        command["never_botch"] = "z"
 
     # If the bot doesn't have embed permissions, then we don't want to count that in the stats
     if not ctx.channel.permissions_for(ctx.me).embed_links:
-        command["compact"] = "c"
-
-    if "z" in ctx.invoked_with:
-        command["no_botch"] = "z"
+        command["use_compact"] = "c"
 
     await storyteller.engine.handle_command(command, ctx)
 
@@ -185,8 +184,7 @@ async def chance(ctx):
     command["comment"] = "Chance roll. Succeed on 10, botch on 1. Is today your lucky day?"
     command["chronicles"] = False # Have to override this, because a chance roll is closer to WoD
     command["xpl_always"] = False
-    command["no_botch"] = False
-    command["compact"] = command["use_compact"]
+    command["never_botch"] = False
 
     await storyteller.engine.handle_command(command, ctx)
 

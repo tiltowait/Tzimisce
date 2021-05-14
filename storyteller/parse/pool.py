@@ -46,7 +46,7 @@ def __pool_roll(ctx, command):
     Does not check that difficulty is 1 or > 10.
     """
     will = command["will"]
-    compact = command["compact"]
+    compact = command["use_compact"]
     dice_pool = int(command["pool"])
 
     if not 1 <= dice_pool <= 100:
@@ -54,8 +54,8 @@ def __pool_roll(ctx, command):
 
     # Set up the base roll options
     options = {}
-    options["no_botch"] = command["no_botch"]
-    options["nullify_ones"] = command["nullify_ones"]
+    options["never_botch"] = command["never_botch"]
+    options["ignore_ones"] = command["ignore_ones"]
     options["wp_cancelable"] = command["wp_cancelable"]
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
@@ -107,7 +107,7 @@ def __pool_roll(ctx, command):
         title += f", {__pluralize_autos(autos)}"
 
     # Let the user know if we aren't allowing botches
-    if command["no_botch"] and not command["chronicles"]:
+    if command["never_botch"] and not command["chronicles"]:
         title += ", no botch"
 
     # Inform the user of any explosions

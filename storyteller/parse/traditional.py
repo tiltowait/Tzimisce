@@ -35,7 +35,7 @@ def is_valid_traditional(syntax: str) -> bool:
 
 def __traditional_roll(author, command):
     """A "traditional" roll, such as 5d10+2."""
-    compact = command["compact"]
+    compact = command["use_compact"]
     syntax = command["syntax"]
     comment = command["comment"]
     description = "" # Used to show individual dice

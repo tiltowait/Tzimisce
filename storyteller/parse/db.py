@@ -33,8 +33,8 @@ async def database(ctx, command):
             if query_result[-2:] == "`?":
                 # First, create the invocation
                 will = command["will"] or ""
-                compact = command["compact"] or ""
-                no_botch = command["no_botch"] or ""
+                compact = command["use_compact"] or ""
+                no_botch = command["never_botch"] or ""
                 invoke = f"/m{will}{compact}{no_botch}"
 
                 # Next, get the suggestion

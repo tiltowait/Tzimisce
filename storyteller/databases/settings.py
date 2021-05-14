@@ -14,8 +14,8 @@ class SettingsDB(Database):
     PREFIX = "prefix"
     XPL_ALWAYS = "xpl_always"
     NEVER_DOUBLE = "never_double"
-    NULLIFY_ONES = "nullify_ones"
-    NO_BOTCH = "no_botch"
+    IGNORE_ONES = "ignore_ones"
+    NEVER_BOTCH = "never_botch"
     CHRONICLES = "chronicles"
 
     __PARAMETERS = {
@@ -26,8 +26,8 @@ class SettingsDB(Database):
         "xpl_spec": "If `true`, specialty tens explode.",
         NEVER_DOUBLE: "If `true`, tens will never count as double successes.",
         "always_double": "If `true`, tens will always count as double successes.",
-        NULLIFY_ONES: "If `true`, the `z` roll option causes ones to not subtract successes.",
-        NO_BOTCH: "Permanently disables botches.",
+        IGNORE_ONES: "If `true`, ones do not subtract from non-botching rolls.",
+        NEVER_BOTCH: "Permanently disables botches.",
         "wp_cancelable": "Allows ones to cancel a Willpower success.",
         CHRONICLES: "Enables Chronicles of Darkness-style rolls."
     }
@@ -43,14 +43,14 @@ class SettingsDB(Database):
                 Prefix            Text,
                 use_compact       boolean DEFAULT FALSE,
                 xpl_spec          boolean DEFAULT FALSE,
-                nullify_ones      boolean DEFAULT FALSE,
+                ignore_ones       boolean DEFAULT FALSE,
                 xpl_always        boolean DEFAULT FALSE,
                 never_double      boolean DEFAULT FALSE,
                 always_double     boolean DEFAULT FALSE,
                 default_diff      int     DEFAULT 6,
                 wp_cancelable     boolean DEFAULT FALSE,
                 chronicles        boolean DEFAULT FALSE,
-                no_botch          boolean DEFAULT FALSE
+                never_botch       boolean DEFAULT FALSE
             );
             """
         )
@@ -120,10 +120,10 @@ class SettingsDB(Database):
                 message = "Reset the command prefix to `/m` and `!m`."
         elif key == self.CHRONICLES:
             # Also set default difficulty, always explode, nullify ones, no botching
-            self.update(guild, self.DEFAULT_DIFF, 8 if value else 6)
-            self.update(guild, self.XPL_ALWAYS, str(value))
-            self.update(guild, self.NULLIFY_ONES, str(value))
-            self.update(guild, self.NO_BOTCH, str(value))
+            self.update(guild, SettingsDB.DEFAULT_DIFF, 8 if value else 6)
+            self.update(guild, SettingsDB.XPL_ALWAYS, str(value))
+            self.update(guild, SettingsDB.IGNORE_ONES, str(value))
+            self.update(guild, SettingsDB.NEVER_BOTCH, str(value))
 
             message = "Enabling" if value else "Disabling"
             message += " Chronicles of Darkness mode."

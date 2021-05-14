@@ -21,8 +21,8 @@ class Pool:
             self.will = wp
 
         self.should_double = options["double_tens"]
-        self.no_botch = options["no_botch"]
-        self.ignore_ones = options["nullify_ones"]
+        self.no_botch = options["never_botch"]
+        self.ignore_ones = options["ignore_ones"]
         self.wp_cancelable = options["wp_cancelable"]
 
         self.explosions = 0
