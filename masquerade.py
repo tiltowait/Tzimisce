@@ -297,7 +297,8 @@ async def statistics(ctx, *args):
         await ctx.reply(f"{error}\n{usage}")
 
     # Log statistics
-    storyteller.engine.statistics.increment_stats_calculated(ctx.guild.id)
+    if ctx.guild:
+        storyteller.engine.statistics.increment_stats_calculated(ctx.guild.id)
 
 
 # Initiative Management
