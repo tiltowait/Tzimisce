@@ -87,6 +87,10 @@ class SettingsDB(Database):
         if guild and not isinstance(guild, int):
             guild = guild.id
 
+        # Make sure the settings are actually in the guild
+        if guild is not None and guild not in self.__all_settings:
+            self.add_guild(guild)
+
         return self.__all_settings[guild]
 
 

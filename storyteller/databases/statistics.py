@@ -26,14 +26,12 @@ class StatisticsDB(Database):
 
     def add_guild(self, guildid, guildname):
         """Adds a guild to the GuildStats table."""
-        # Make sure the guild isn't already in the table
-        query = "SELECT * FROM GuildStats WHERE ID=%s;"
-        self._execute(query, guildid)
-        result = self.cursor.fetchone()
-
-        if result is None:
-            query = "INSERT INTO GuildStats VALUES (%s, %s);"
-            self._execute(query, guildid, guildname)
+        # If the guild was already in the table, simply update the name
+        query = """
+        INSERT INTO GuildStats VALUES (%s, %s)
+        ON CONFLICT DO UPDATE SET Name=%s;
+        """
+        self._execute(query, guildid, guildname, guildname)
 
 
     def rename_guild(self, guildid, name):
