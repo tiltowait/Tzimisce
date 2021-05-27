@@ -56,6 +56,11 @@ class SettingsDB(Database):
         )
         self.__all_settings = self.__fetch_all_settings()
 
+        # Set up the default parameters
+        self.default_params = defaultdict(lambda: False)
+        self.default_params[self.DEFAULT_DIFF] = 6
+        self.default_params[self.PREFIX] = None
+
 
     def __fetch_all_settings(self) -> dict:
         """Fetch settings for each server."""
@@ -64,10 +69,7 @@ class SettingsDB(Database):
         self._execute(query)
         results = self.cursor.fetchall()
 
-        default_params = defaultdict(lambda: False)
-        default_params[self.DEFAULT_DIFF] = 6
-        default_params[self.PREFIX] = None
-        settings = defaultdict(lambda: default_params)
+        settings = defaultdict(lambda: self.default_params)
 
         for row in results:
             row = list(row)
@@ -190,6 +192,9 @@ class SettingsDB(Database):
         """Adds a guild to the GuildSettings table."""
         query = "INSERT INTO GuildSettings VALUES (%s);"
         self._execute(query, guildid)
+
+        # Add the guild to the settings dictionary
+        self.__all_settings[guildid] = self.default_params
 
 
     def remove_guild(self, guildid):
