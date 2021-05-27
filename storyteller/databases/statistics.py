@@ -29,7 +29,7 @@ class StatisticsDB(Database):
         # If the guild was already in the table, simply update the name
         query = """
         INSERT INTO GuildStats VALUES (%s, %s)
-        ON CONFLICT DO UPDATE SET Name=%s;
+        ON CONFLICT (ID) DO UPDATE SET Name=%s;
         """
         self._execute(query, guildid, guildname, guildname)
 
