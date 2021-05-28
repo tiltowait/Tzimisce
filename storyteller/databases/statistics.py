@@ -46,17 +46,14 @@ class StatisticsDB(Database):
         # This method does the actual meat of statistics tracking. It's done this way to present
         # a unified query structure for database updates in case changes happen in the future.
 
-        # This is kind of a hack. It's possible, if unlikely, for a guild not to be present in the
-        # database. psycopg2 provides no way of knowing whether a command succeeded or not; instead,
-        # we would have to query the database directly. In that case, if we're querying the database
-        # at every turn, we may as well do the lazier, simpler method of simply attempting to add
-        # the guild whenever we update the statistics. The performance penalty is negligible, even
-        # if this method makes me twitch. Technically, doing this means we could go ahead and not
-        # call add_guild() in on_guild_join(). This may be revisited in the future.
-        self.add_guild(guild.id, guild.name)
-
         query = f"UPDATE GuildStats SET {field} = {field} + 1 WHERE ID=%s;"
         self._execute(query, guild.id)
+
+        # If nothing was updated, that means the guild isn't in the table. Add it.
+        if self.cursor.statusmessage == "UPDATE 0":
+            print(f"{guild.name} ({guild.id}) wasn't in GuildStats! Adding now.")
+            self.add_guild(guild.id, guild.name)
+            self._execute(query, guild.id)
 
 
     def increment_rolls(self, guild):
