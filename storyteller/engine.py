@@ -80,9 +80,9 @@ async def __send_response(ctx, response):
         await message.add_reaction("👍")
 
     if ctx.guild:
-        statistics.increment_rolls(ctx.guild.id)
+        statistics.increment_rolls(ctx.guild)
         if response.is_traditional:
-            statistics.increment_traditional_rolls(ctx.guild.id)
+            statistics.increment_traditional_rolls(ctx.guild)
 
 
 async def __run_metamacro(metamacro):

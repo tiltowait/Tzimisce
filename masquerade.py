@@ -102,7 +102,7 @@ async def standard_roll(ctx, *, args=None):
     if "c" in ctx.invoked_with or guild_settings["use_compact"]:
         command["use_compact"] = "c"
         if ctx.guild:
-            storyteller.engine.statistics.increment_compact_rolls(ctx.guild.id)
+            storyteller.engine.statistics.increment_compact_rolls(ctx.guild)
     if "z" in ctx.invoked_with:
         command["never_botch"] = "z"
 
@@ -298,7 +298,7 @@ async def statistics(ctx, *args):
 
     # Log statistics
     if ctx.guild:
-        storyteller.engine.statistics.increment_stats_calculated(ctx.guild.id)
+        storyteller.engine.statistics.increment_stats_calculated(ctx.guild)
 
 
 # Initiative Management

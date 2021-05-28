@@ -40,35 +40,45 @@ class StatisticsDB(Database):
         self._execute(query, name, guildid)
 
 
-    def increment_rolls(self, guildid):
-        """Keep track of the number of rolls performed on each server."""
-        query = _increment_query("Rolls")
-        self._execute(query, guildid)
+    def __increment(self, field, guild):
+        """Increment the indicated field and create the table entry if needed."""
+
+        # This method does the actual meat of statistics tracking. It's done this way to present
+        # a unified query structure for database updates in case changes happen in the future.
+
+        # This is kind of a hack. It's possible, if unlikely, for a guild not to be present in the
+        # database. psycopg2 provides no way of knowing whether a command succeeded or not; instead,
+        # we would have to query the database directly. In that case, if we're querying the database
+        # at every turn, we may as well do the lazier, simpler method of simply attempting to add
+        # the guild whenever we update the statistics. The performance penalty is negligible, even
+        # if this method makes me twitch. Technically, doing this means we could go ahead and not
+        # call add_guild() in on_guild_join(). This may be revisited in the future.
+        self.add_guild(guild.id, guild.name)
+
+        query = f"UPDATE GuildStats SET {field} = {field} + 1 WHERE ID=%s;"
+        self._execute(query, guild.id)
 
 
-    def increment_compact_rolls(self, guildid):
-        """Keep track of the number of compact rolls performed on each server."""
-        query = _increment_query("Compact_Rolls")
-        self._execute(query, guildid)
+    def increment_rolls(self, guild):
+        """Convenience: Keep track of the number of rolls performed on each server."""
+        self.__increment("Rolls", guild)
 
 
-    def increment_traditional_rolls(self, guildid):
-        """Keep track of the number of compact rolls performed on each server."""
-        query = _increment_query("Traditional_Rolls")
-        self._execute(query, guildid)
+    def increment_compact_rolls(self, guild):
+        """Convenience: Keep track of the number of compact rolls performed on each server."""
+        self.__increment("Compact_Rolls", guild)
 
 
-    def increment_initiative_rolls(self, guildid):
-        """Keep track of the number of compact rolls performed on each server."""
-        query = _increment_query("Initiative_Rolls")
-        self._execute(query, guildid)
-
-    def increment_stats_calculated(self, guildid):
-        """Keeps track of the total stats invocations."""
-        query = _increment_query("Stats_Calculated")
-        self._execute(query, guildid)
+    def increment_traditional_rolls(self, guild):
+        """Convenience: Keep track of the number of compact rolls performed on each server."""
+        self.__increment("Traditional_Rolls", guild)
 
 
-def _increment_query(field):
-    """Generates the increment query for a given field."""
-    return f"UPDATE GuildStats SET {field} = {field} + 1 WHERE ID=%s;"
+    def increment_initiative_rolls(self, guild):
+        """Convenience: Keep track of the number of compact rolls performed on each server."""
+        self.__increment("Initiative_Rolls", guild)
+
+
+    def increment_stats_calculated(self, guild):
+        """Convenience: Keeps track of the total stats invocations."""
+        self.__increment("Stats_Calculated", guild)
