@@ -111,25 +111,33 @@ async def show_stored_rolls(ctx):
     if len(stored_rolls) == 0:
         await ctx.reply(f"You have no macros on {ctx.guild}!")
     else:
-        message = f"Here are your macros on **{ctx.guild}**:\n"
-        message += __yaml_block(stored_rolls)
-
-        if len(meta_records) > 0:
-            message += "Meta-macros (remember to prepend with $):\n"
-            message += __yaml_block(meta_records)
-
         await ctx.reply("List sent. Please check your DMs!")
-        await ctx.author.send(message)
+
+        # The macro block. Users might have many macros, so we split them across multiple
+        # messages if the total length exceeds 2000 characters.
+        await ctx.author.send(f"Here are your macros on **{ctx.guild}**:\n")
+        while len(stored_rolls) > 0:
+            block, stored_rolls = __yaml_block(stored_rolls)
+            await ctx.author.send(block)
+
+        # The meta-macro block. It's theoretically possible that meta-macros exceed 2000 characters
+        # in length, but it is extremely unlikely based on use patterns. We opt against splitting to
+        # avoid spamming even more than we already are.
+        if len(meta_records) > 0:
+            message = "Meta-macros (remember to prepend with $):\n"
+            message += __yaml_block(meta_records)[0]
+            await ctx.author.send(message)
 
 
 def __yaml_block(lines) -> str:
-    """Returns a code-fenced YAML block from lines."""
+    """Creates as large a YAML block as possible; returns it and the remainder of the array."""
     block = "```yaml\n"
-    for line in lines:
+    while len(lines) > 0 and len(block) < 1500:
+        line = lines.pop(0)
         block += f"{line[0]}: {line[1]}\n"
     block += "\n```\n"
 
-    return block
+    return block, lines
 
 
 def macro_counts(ctx) -> list:
