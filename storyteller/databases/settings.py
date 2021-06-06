@@ -33,6 +33,11 @@ class SettingsDB(Database):
         "unsort_rolls": "Dice are displayed in roll order vs. sorted."
     }
 
+    # Though "sort_rolls" would be a more logical setting (and unsorted the default), for historical
+    # reasons we're doing the opposite. In earlier versions, the bot only displayed dice in sorted
+    # order. After conducting a small poll on the Discord server, it was decided to keep sorted as
+    # the default, despite the slightly clunky language and logic inherent to "unsort_rolls".
+
 
     def __init__(self):
         super().__init__()
