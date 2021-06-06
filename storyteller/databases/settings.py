@@ -29,7 +29,8 @@ class SettingsDB(Database):
         IGNORE_ONES: "If `true`, ones do not subtract from non-botching rolls.",
         NEVER_BOTCH: "Permanently disables botches.",
         "wp_cancelable": "Allows ones to cancel a Willpower success.",
-        CHRONICLES: "Enables Chronicles of Darkness-style rolls."
+        CHRONICLES: "Enables Chronicles of Darkness-style rolls.",
+        "unsort_rolls": "Dice are displayed in roll order vs. sorted."
     }
 
 
@@ -50,7 +51,8 @@ class SettingsDB(Database):
                 default_diff      int     DEFAULT 6,
                 wp_cancelable     boolean DEFAULT FALSE,
                 chronicles        boolean DEFAULT FALSE,
-                never_botch       boolean DEFAULT FALSE
+                never_botch       boolean DEFAULT FALSE,
+                unsort_rolls        boolean DEFAULT FALSE
             );
             """
         )

@@ -57,6 +57,7 @@ def __pool_roll(ctx, command):
     options["never_botch"] = command["never_botch"]
     options["ignore_ones"] = command["ignore_ones"]
     options["wp_cancelable"] = command["wp_cancelable"]
+    options["unsort_rolls"] = command["unsort_rolls"]
 
     # Difficulty must be between 2 and 10. If it isn't supplied, go with
     # the default value of 6.

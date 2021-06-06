@@ -24,6 +24,7 @@ class Pool:
         self.no_botch = options["never_botch"]
         self.ignore_ones = options["ignore_ones"]
         self.wp_cancelable = options["wp_cancelable"]
+        self.sort_rolls = not options["unsort_rolls"]
 
         self.explosions = 0
         self.dice = self.__roll(pool)
@@ -147,4 +148,6 @@ class Pool:
                 self.explosions += 1
             dice.append(die)
 
-        return sorted(dice, reverse=True)
+        if self.sort_rolls:
+            return sorted(dice, reverse=True)
+        return dice
