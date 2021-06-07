@@ -21,6 +21,7 @@ class SettingsDB(Database):
     __PARAMETERS = {
         PREFIX: "Defines the bot invocation prefix.",
         "use_compact": "Set the server to always use compact rolls.",
+        "unsort_rolls": "Dice are displayed in roll order vs. sorted.",
         DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
         XPL_ALWAYS: "If `true`, tens always explode.",
         "xpl_spec": "If `true`, specialty tens explode.",
@@ -29,8 +30,7 @@ class SettingsDB(Database):
         IGNORE_ONES: "If `true`, ones do not subtract from non-botching rolls.",
         NEVER_BOTCH: "Permanently disables botches.",
         "wp_cancelable": "Allows ones to cancel a Willpower success.",
-        CHRONICLES: "Enables Chronicles of Darkness-style rolls.",
-        "unsort_rolls": "Dice are displayed in roll order vs. sorted."
+        CHRONICLES: "Enables Chronicles of Darkness-style rolls."
     }
 
     # Though "sort_rolls" would be a more logical setting (and unsorted the default), for historical
