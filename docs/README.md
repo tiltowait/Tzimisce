@@ -236,6 +236,7 @@ Statistics are calculated using standard probability models and are thus more ac
 |-----------------|---------------------------------------------------------------------------------------|
 | `prefix`        | Change the bot's invocation prefix. Defaults to `!` and `/`                           |
 | `use_compact`   | Always use compact mode for rolls                                                     |
+| `unsort_rolls`  | Display dice in roll order rather than sort order.                                    |
 | `default_diff`  | The default difficulty for pool-based rolls. Default `6`.                             |
 | `xpl_always`    | On pool-based rolls, tens explode (roll an additional die, recursively)               |
 | `xpl_spec`      | When rolling a specialty, tens explode                                                |
