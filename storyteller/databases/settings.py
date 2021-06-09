@@ -3,13 +3,15 @@
 from collections import defaultdict
 from distutils.util import strtobool
 
+from psycopg2.sql import SQL, Identifier
+
 from .base import Database
 
 
 class SettingsDB(Database):
     """Interface for setting and retrieving server parameters."""
 
-    # Non-boolean keys
+    # "Interesting" keys that get specially referenced elsewhere
     DEFAULT_DIFF = "default_diff"
     PREFIX = "prefix"
     XPL_ALWAYS = "xpl_always"
@@ -61,7 +63,7 @@ class SettingsDB(Database):
             );
             """
         )
-        self.__all_settings = self.__fetch_all_settings()
+        self.__all_settings = self.__fetch_all_settings() # Cache for performance reasons
 
         # Set up the default parameters
         self.default_params = defaultdict(lambda: False)
@@ -70,21 +72,23 @@ class SettingsDB(Database):
 
 
     def __fetch_all_settings(self) -> dict:
-        """Fetch settings for each server."""
-        query_cols = ", ".join(self.available_parameters)
-        query = f"SELECT ID, {query_cols} FROM GuildSettings;"
+        """
+        Retrieves the settings for each server.
+        Returns (dict): The settings for each server, with the guild ID as the keys
+        """
+        fields = SQL(", ").join(map(Identifier, self.available_parameters))
+        query = SQL("SELECT ID, {fields} FROM GuildSettings;").format(fields=fields)
+
         self._execute(query)
         results = self.cursor.fetchall()
 
         settings = defaultdict(lambda: self.default_params)
 
+        # Put the fetched parameters into dictionaries
         for row in results:
             row = list(row)
             guild = row.pop(0)
-
-            parameters = {}
-            for i, param in enumerate(self.available_parameters):
-                parameters[param] = row[i]
+            parameters = dict(zip(self.available_parameters, row))
 
             settings[guild] = parameters
 
@@ -92,7 +96,12 @@ class SettingsDB(Database):
 
 
     def settings_for_guild(self, guild) -> dict:
-        """Fetch the settings for a specific server."""
+        """
+        Fetch the settings for a specific guild.
+        Args:
+            guild (int): The ID of the guild
+        Returns (dict): The guild's settings
+        """
         if guild and not isinstance(guild, int):
             guild = guild.id
 
@@ -105,7 +114,12 @@ class SettingsDB(Database):
 
 
     def get_prefixes(self, guild) -> tuple:
-        """Returns the guild's prefix. If the guild is None, returns a default."""
+        """
+        Retrieve the guild's prefixes.
+        Args:
+            guild (int): The guild's ID
+        Returns (tuple): A tuple containing the guild's prefixes
+        """
         if guild and not isinstance(guild, int):
             guild = guild.id
 
@@ -116,11 +130,18 @@ class SettingsDB(Database):
 
 
     def update(self, guild, key, value) -> str:
-        """Sets a server parameter."""
+        """
+        Set a new value for one of a guild's parameters.
+        Args:
+            guild (int): The ID of the guild to modify
+            key (str): The parameter to modify
+            value (any): The parameter's new value
+        Returns (str): A message informing the user of the change
+        """
         value = self.__validated_parameter(key, value) # Raises ValueError if invalid
 
         # Normally unsafe, but we do input validation before we get here
-        query = f"UPDATE GuildSettings SET {key}=%s WHERE ID=%s;"
+        query = SQL("UPDATE GuildSettings SET {key}=%s WHERE ID=%s;").format(key=Identifier(key))
         self._execute(query, value, guild)
         self.__all_settings[guild][key] = value
 
@@ -146,7 +167,14 @@ class SettingsDB(Database):
 
 
     def value(self, guild, key):
-        """Retrieves a value for a specific key for a given guild."""
+        """
+        Retrieve a specific setting on a given guild.
+        Args:
+            guild (int): The guild's ID
+            key (str): The parameter whose value is desired
+        Returns (any): The current value for the parameter
+        Raises: ValueError if key isn't a valid parameter
+        """
         if key not in self.available_parameters:
             raise ValueError(f"Unknown setting `{key}`!")
 
@@ -157,7 +185,14 @@ class SettingsDB(Database):
 
 
     def __validated_parameter(self, key, new_value):
-        """Returns the proper value type for the parameter, or None."""
+        """
+        Attempt to cast a value into the proper data type for the associated parameter.
+        Args:
+            key (str): The parameter being modified
+            new_value (str): The value attempting to be stored
+        Returns (any): new_value cast to the proper data type
+        Raises: ValueError if new_value is an invalid type or value
+        """
         if key not in self.available_parameters:
             raise ValueError(f"Unknown setting `{key}`!")
 
@@ -186,8 +221,13 @@ class SettingsDB(Database):
         return self.__PARAMETERS.keys()
 
 
-    def parameter_information(self, param) -> str:
-        """Returns a description of what a given parameter does."""
+    def parameter_information(self, param: str) -> str:
+        """
+        Retrieve the description for a given parameter. Sends an error message if invalid.
+        Args:
+            param (str): The parameter whose details are requested
+        Returns (str): The parameter descriptions, or an error message
+        """
         try:
             return self.__PARAMETERS[param]
         except KeyError:
@@ -196,8 +236,12 @@ class SettingsDB(Database):
 
     # Housekeeping stuff
 
-    def add_guild(self, guildid):
-        """Adds a guild to the GuildSettings table."""
+    def add_guild(self, guildid: int):
+        """
+        Add a guild with default settings to the GuildSettings table.
+        Args:
+            guildid (int): The ID of the guild to add
+        """
         query = "INSERT INTO GuildSettings VALUES (%s);"
         self._execute(query, guildid)
 
@@ -205,7 +249,11 @@ class SettingsDB(Database):
         self.__all_settings[guildid] = self.default_params
 
 
-    def remove_guild(self, guildid):
-        """Removes a guild from the GuildSettings table."""
+    def remove_guild(self, guildid: int):
+        """
+        Remove a guild from the GuildSettings table.
+        Args:
+            guildid (int): The ID of the guild to remove
+        """
         query = "DELETE FROM GuildSettings WHERE ID=%s;"
         self._execute(query, guildid)
