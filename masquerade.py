@@ -4,6 +4,7 @@ import os
 from collections import defaultdict
 
 import discord
+import topgg
 from discord.ext import commands
 
 import storyteller
@@ -511,7 +512,7 @@ async def __alert_permissions(ctx):
         await ctx.send(msg)
 
 
-# Misc
+# Misc Functions
 
 def __status_message():
     """Sets the bot's Discord presence message."""
@@ -519,5 +520,12 @@ def __status_message():
     return f"!m help | {servers} chronicles"
 
 
-# End definitions
-bot.run(os.environ["TZIMISCE_TOKEN"])
+# END BOT DEFINITIONS
+
+if __name__ == "__main__":
+    # Track guild count in top.gg. Only do this in production, not in dev setting
+    if "TOPGG_TOKEN" in os.environ:
+        print("Establishing top.gg connection.")
+        bot.dblpy = topgg.DBLClient(bot, os.environ["TOPGG_TOKEN"], autopost=True)
+
+    bot.run(os.environ["TZIMISCE_TOKEN"])
