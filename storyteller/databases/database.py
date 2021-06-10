@@ -1,6 +1,19 @@
-"""Database handler for rolls stored rolls."""
+"""database.py - Database handler for rolls stored rolls."""
+
+# Historical note:
+#
+# This module is one of the oldest in the codebase. Initially, there was no
+# separate database class; everything was handled by a single bot class. When
+# this class was made, it was the only database class and handled multiple
+# duties rather than focusing only on the SavedRolls table. This is why it has
+# the seemingly special name of "database" rather than what would be the more
+# standard "MacroDB". It also predates the use of the term "macro", which was
+# coined by one of the bot's earliest users, which is why the clumsy references
+# to "stored rolls" instead of macros. At some point in the future, a namespace
+# cleanup will be done to rectify this inconsistency.
 
 import re
+from typing import Optional
 
 import storyteller.parse
 from .base import Database
@@ -12,7 +25,12 @@ class RollDB(Database):
     def __init__(self):
         super().__init__()
 
-        # Create the SavedRolls table
+        # The foreign key constraint means that if the bot is removed from a
+        # guild (or the guild is deleted), all associated macros will be removed
+        # as well, to free up space. Additionally, it should be noted that the
+        # metamacros table has its own constraint set on the macro_id field such
+        # that when a macro is removed, so too are all metamacro entries
+        # referencing it.
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS SavedRolls(
@@ -31,10 +49,10 @@ class RollDB(Database):
             """
         )
 
-        # Install trigrams
+        # Install trigrams to enable fuzzy string matching on macro names
         self.cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
 
-        # Macro patterns
+        # Various syntax-matching regex patterns
         self.storex = re.compile(r"^(?P<name>[\w-]+)\s*=\s*(?P<syntax>.+)$")
         self.commentx = re.compile(r"^(?P<name>[\w-]+)\s+c=\s*(?P<comment>.*)$")
         self.usex = re.compile(r"^(?P<name>[\w-]+)\s*(?P<mods>(?P<sign>[+-])?\d+(?:\s[+-]?\d+)?)?$")
@@ -42,8 +60,18 @@ class RollDB(Database):
         self.multiwordx = re.compile(r"[\w-]+ [\w-]+")
 
 
-    def query_saved_rolls(self, guild, userid, command):
-        """Parses the message to see what kind of query is needed, then performs it."""
+    def query_saved_rolls(self, guild: int, userid: int, command: dict):
+        """
+        Determines the type of query, then performs the necessary actions. This
+        method creates, updates, retrieves, and deletes macros, and will even
+        attempt to find a matching macro name if the one given doesn't match
+        anything in the database.
+        Args:
+            guild (int): The Discord ID of the guild where bot was invoked
+            userid (int): The Discord ID of the invoking user
+            command (dict): A defaultdict(lambda: None). "syntax" is the most important key
+        Returns: A notification string or an updated, macro-expanded command
+        """
         syntax = command["syntax"]
         comment = command["comment"]
 
@@ -83,8 +111,16 @@ class RollDB(Database):
         return "Come again?"
 
 
-    def __match_stored_roll(self, command, match, guild, userid):
-        """Attempts to pull a roll from the database and modify as needed."""
+    def __match_stored_roll(self, command: dict, match: re.Match, guild: int, userid: int):
+        """
+        Retrieve and optionally modify a macro from the database.
+        Args:
+            command (dict): The command containing invocation context
+            match (re.Match): The pregenerated regex match for easy syntax parsing
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the user who owns the macro
+        Returns: A macro-expanded command, or an error string if unsuccessful
+        """
         name = match.group("name")
         compound = self.retrieve_stored_roll(guild, userid, name)
 
@@ -142,8 +178,14 @@ class RollDB(Database):
         return command
 
 
-    def macro_count(self, guildid, userid) -> int:
-        """Returns the number of macros associated with the user and guild."""
+    def macro_count(self, guildid: int, userid: int) -> int:
+        """
+        Retrieve the number of macros associated with the user and guild.
+        Args:
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the invoking user
+        Returns (int): The number of macros owned by the user
+        """
         # Get the macro count
         query = "SELECT COUNT(*) FROM SavedRolls WHERE Guild=%s AND ID=%s;"
         self._execute(query, guildid, userid)
@@ -152,8 +194,16 @@ class RollDB(Database):
         return macro_count
 
 
-    def __store_roll(self, guild, userid, name, syntax, comment):
-        """Store a new roll, or update an old one."""
+    def __store_roll(self, guild: int, userid: int, name: str, syntax: str, comment: str):
+        """
+        Store a new roll or update an old one.
+        Args:
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the invoking user
+            name (str): The name of the macro to store/update
+            syntax (str): The macro's syntax
+            comment (str): The comment to associate with the macro
+        """
         # pylint: disable=too-many-arguments
 
         # Inserting a new macro
@@ -164,7 +214,7 @@ class RollDB(Database):
 
             return f"Saved new macro: `{name}`."
 
-        # Updating an old macro
+        # UPDATING AN OLD MACRO
 
         # Updating both syntax and comment
         if comment:
@@ -177,15 +227,23 @@ class RollDB(Database):
 
             return f"Updated `{name}` syntax and comment."
 
-        # Update only syntax
+        # Update only the syntax
         query = "UPDATE SavedRolls SET Syntax=%s WHERE ID=%s AND Guild=%s AND Name ILIKE %s;"
         self._execute(query, syntax, userid, guild, name)
 
         return f"Updated `{name}` syntax."
 
 
-    def __update_stored_comment(self, guild, userid, name, comment):
-        """Set or delete a stored roll's comment"""
+    def __update_stored_comment(self, guild: int, userid: int, name: str, comment: str) -> str:
+        """
+        Set or delete a stored roll's comment.
+        Args:
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the invoking user
+            name (str): The name of the macro to modify
+            comment (str): The comment to add
+        Returns (str): A confirmation message
+        """
         if self.__is_roll_stored(guild, userid, name):
             if len(comment) == 0:
                 comment = None
@@ -198,8 +256,15 @@ class RollDB(Database):
         return f"Unable to update. You don't have a roll named `{name}`!"
 
 
-    def retrieve_stored_roll(self, guild, userid, name):
-        """Returns the Syntax for a stored roll."""
+    def retrieve_stored_roll(self, guild: int, userid: int, name: str) -> Optional[tuple]:
+        """
+        Retrieve a macro's syntax.
+        Args:
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the invoking user
+            name (str): The name of the macro to retrieve
+        Returns (Optional[tuple]): The macro's syntax and comment
+        """
         query = "SELECT Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
         self._execute(query, guild, userid, name)
         result = self.cursor.fetchone()
@@ -207,7 +272,16 @@ class RollDB(Database):
         return result
 
 
-    def __find_similar_macro(self, guild, userid, name):
+    def __find_similar_macro(self, guild: int, userid: int, name: str) -> Optional[str]:
+        """
+        Find a macro with a similar name to the one given. This method makes use
+        of trigrams and is meant to be used when no exact match has been found.
+        Args:
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the invoking user
+            name (str): The name of the macro whose likeness we are trying to find
+        Returns (Optional[str]): The closest matching macro name
+        """
         query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND SIMILARITY(Name, %s)>0.2;"
         self._execute(query, guild, userid, name)
         result = self.cursor.fetchone()
@@ -218,8 +292,15 @@ class RollDB(Database):
         return None
 
 
-    def delete_stored_roll(self, guild, userid, name):
-        """Delete a stored roll."""
+    def delete_stored_roll(self, guild: int, userid: int, name: str) -> str:
+        """
+        Delete a user's macro.
+        Args:
+            guild (int): The Discord ID of the guild associated with the macro
+            userid (int): The Discord ID of the invoking user
+            name (str): The name of the macro to delete
+        Returns (str): A status message
+        """
         if not self.__is_roll_stored(guild, userid, name):
             return f"Can't delete. `{name}` not found!"
 
@@ -229,14 +310,25 @@ class RollDB(Database):
         return f"`{name}` deleted! It has also been removed from any meta-macros containing it."
 
 
-    def delete_user_rolls(self, guild, userid):
-        """Deletes all of a user's rolls on a given guild."""
+    def delete_user_rolls(self, guild: int, userid: int):
+        """
+        Delete all of a user's rolls in a given guild.
+        Args:
+            guild (int): The Discord ID of the guild from which to delete the macros
+            userid (int): The Discord ID of the user whose macros will be deleted
+        """
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s;"
         self._execute(query, guild, userid)
 
 
-    def stored_rolls(self, guild, userid):
-        """Returns an list of all the stored rolls."""
+    def stored_rolls(self, guild: int, userid: int) -> list:
+        """
+        Retrieve a list of all the user's macros in a given guild.
+        Args:
+            guild (int): The Discord ID of the guild from which to retrieve the macros
+            userid (int): The Discord ID of the user whose macros we will fetch
+        Returns (list): A list of tuples of type: (macro name, syntax)
+        """
         query = """SELECT Name, Syntax, Comment FROM SavedRolls WHERE Guild=%s AND ID=%s
                    ORDER BY Name;"""
         self._execute(query, guild, userid)
@@ -256,6 +348,12 @@ class RollDB(Database):
         return fields
 
 
-    def __is_roll_stored(self, guild, userid, name):
-        """Returns true if a roll by the given name has been stored."""
+    def __is_roll_stored(self, guild: int, userid: int, name: str) -> bool:
+        """
+        Determine whether the user has a specific macro in a given guild.
+        Args:
+            guild (int): The Discord ID of the guild from which to search
+            userid (int): The Discord ID of the user performing the search
+            name (str): The name of the macro to search for
+        """
         return self.retrieve_stored_roll(guild, userid, name) is not None

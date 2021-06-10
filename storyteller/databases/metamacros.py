@@ -1,14 +1,26 @@
-"""Defines a Database class for managing metamacros."""
+"""metamacros.py - Defines a Database class for managing metamacros."""
 
 from .base import Database
 
 
 class MetaMacroDB(Database):
-    """A database manager for handling metamacros."""
+    """
+    A database manager for handling metamacros.
+
+    A metamacro is a special type of macro that calls other macros. Each
+    metamacro comprises three or more records in a table, with an associated
+    metamacro name and a reference to a MacroID, which is the ID (and primary
+    key) of a macro defined in SavedRolls.
+    """
 
     def __init__(self):
         super().__init__()
 
+        # The foreign key constraint automatically removes metamacro records
+        # when the referenced macro is deleted. This can result in a metamacro
+        # with fewer than three entries; however, there is no compelling reason
+        # for the bot to complain in this case, even if we mandate 3+ macros at
+        # creation.
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS MetaMacros(
@@ -25,23 +37,17 @@ class MetaMacroDB(Database):
         )
 
 
-    def retrieve_metamacro(self, guildid, userid, meta_name) -> list:
-        """Retrieves the macro names for a given MetaMacro."""
-        query = "SELECT MacroID FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
-        self._execute(query, guildid, userid, meta_name)
-        macro_ids = self.cursor.fetchall()
-
-        # Convert each MacroID to a macro name
-        macros = []
-        for macro_id in macro_ids:
-            macro = self.__macro_name(guildid, userid, macro_id)
-            macros.append(macro)
-
-        return macros
-
-
-    def store_metamacro(self, guildid, userid, meta_name, *macros) -> bool:
-        """Stores a metamacro. Raises KeyError if one of the given macros doesn't exist."""
+    def store_metamacro(self, guildid: int, userid: int, meta_name: str, *macros) -> bool:
+        """
+        Store a metamacro.
+        Args:
+            guildid (int): The Discord ID of the associated guild
+            userid (int): The Discord ID of the user who owns the metamacro
+            meta_name (str): The name of the new metamacro
+            macros (*str): The macros comprising the metamacro
+        Returns (bool): True if the user has just overwritten an old metamacro
+        Raises: KeyError if one of the given macros doesn't exist
+        """
         for macro in macros:
             if not self.__macro_exists(guildid, userid, macro):
                 raise KeyError(f"Error! You don't have a macro named `{macro}`!")
@@ -61,42 +67,15 @@ class MetaMacroDB(Database):
         return overwriting
 
 
-    def delete_metamacro(self, guildid, userid, meta_name) -> bool:
-        """Deletes a metamacro from the database."""
-        if not self.__metamacro_exists(guildid, userid, meta_name):
-            return False
-
-        query = "DELETE FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
-        self._execute(query, guildid, userid, meta_name)
-
-        return True
-
-
-    def metamacro_list(self, guildid, userid) -> list:
-        """Returns a list of metamacros and their components."""
-        query = "SELECT DISTINCT MetaName FROM MetaMacros WHERE GuildID=%s AND UserID=%s;"
-        self._execute(query, guildid, userid)
-        meta_names = list(map(lambda name: name[0], self.cursor.fetchall()))
-
-        records = []
-        for meta_name in meta_names:
-            macros = self.__metamacro_composition(guildid, userid, meta_name)
-            meta_name = f"{meta_name}"
-            macros = ", ".join(macros)
-
-            records.append((meta_name, macros))
-
-        return records
-
-
-    def metamacro_count(self, guildid, userid) -> int:
-        """Returns the number of metamacros the user has on the guild."""
-        records = self.metamacro_list(guildid, userid)
-        return len(records)
-
-
-    def __metamacro_composition(self, guildid, userid, meta_name) -> list:
-        """Returns the list of macros comprising a given metamacro."""
+    def retrieve_macros(self, guildid: int , userid: int, meta_name: str) -> list:
+        """
+        Retrieve the macro names for a given metamacro.
+        Args:
+            guildid (int): The Discord ID of the guild where the bot was invoked
+            userid (int): The Discord ID of the user invoking the bot
+            meta_name (str): The name of the metamacro
+        Returns (list): A list of macro names
+        """
         query = """
             SELECT Name
             FROM SavedRolls
@@ -110,8 +89,68 @@ class MetaMacroDB(Database):
         return macros
 
 
-    def __macro_exists(self, guildid, userid, macro_name) -> bool:
-        """Returns true if a given macro exists in SavedRolls."""
+    def delete_metamacro(self, guildid: int, userid: int, meta_name: str) -> bool:
+        """
+        Delete a metamacro from the database.
+        Args:
+            guildid (int): The Discord ID of the guild where the bot was invoked
+            userid (int): The Discord ID of the user invoking the bot
+            meta_name (str): The name of the metamacro to delete
+        Returns (bool): True if the user had a metamacro by that name on the server
+        """
+        if not self.__metamacro_exists(guildid, userid, meta_name):
+            return False
+
+        query = "DELETE FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
+        self._execute(query, guildid, userid, meta_name)
+
+        return True
+
+
+    def metamacro_list(self, guildid: int, userid: int) -> list:
+        """
+        Retrieve a list of metamacros and their components.
+        Args:
+            guildid (int): The Discord ID of the guild the bot was invoked in
+            userid (int): The Discord ID of the user invoking the bot
+        Returns (list): An array of tuples of type (meta_name, associated_macros)
+        """
+        query = "SELECT DISTINCT MetaName FROM MetaMacros WHERE GuildID=%s AND UserID=%s;"
+        self._execute(query, guildid, userid)
+        meta_names = list(map(lambda name: name[0], self.cursor.fetchall()))
+
+        records = []
+        for meta_name in meta_names:
+            macros = self.retrieve_macros(guildid, userid, meta_name)
+            meta_name = f"{meta_name}"
+            macros = ", ".join(macros)
+
+            records.append((meta_name, macros))
+
+        return records
+
+
+    def metamacro_count(self, guildid: int, userid: int) -> int:
+        """
+        Retrieve the number of metamacros the user has in a given guild.
+        Args:
+            guildid (int): The Discord ID of the guild the bot was invoked in
+            userid (int): The Discord ID of the user invoking the bot
+        Returns (int): The number of metamacros the user has in this guild
+        """
+        records = self.metamacro_list(guildid, userid)
+        return len(records)
+
+
+    def __macro_exists(self, guildid: int, userid: int, macro_name: str) -> bool:
+        """
+        Determine if a given macro exists in SavedRolls.
+        Args:
+            guildid (int): The Discord ID of the guild the bot was invoked in
+            userid (int): The Discord ID of the user invoking the bot
+            macro_name (str): The name of the macro
+        Returns (bool): True if the macro exists for that user in that guild
+        """
         query = "SELECT * FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
         self._execute(query, guildid, userid, macro_name)
         result = self.cursor.fetchone()
@@ -119,8 +158,15 @@ class MetaMacroDB(Database):
         return result is not None
 
 
-    def __macro_id(self, guildid, userid, macro_name) -> int:
-        """Returns the macro_id of a given macro."""
+    def __macro_id(self, guildid: int, userid: int, macro_name: str) -> int:
+        """
+        Retrieve the macro_id of a given macro.
+        Args:
+            guildid (int): The Discord ID of the guild the bot was invoked in
+            userid (int): The Discord ID of the user invoking the bot
+            macro_name (str): The name of the macro in question
+        Returns (int): The Discord ID of the given macro
+        """
         if not self.__macro_exists(guildid, userid, macro_name):
             raise KeyError(f"Error! {macro_name} doesn't exist!")
 
@@ -131,17 +177,14 @@ class MetaMacroDB(Database):
         return result[0]
 
 
-    def __macro_name(self, guildid, userid, macro_id) -> str:
-        """Returns the name of a macro, given its ID."""
-        query = "SELECT Name FROM SavedRolls WHERE Guild=%s AND ID=%s AND macro_id=%s;"
-        self._execute(query, guildid, userid, macro_id)
-        result = self.cursor.fetchone()
-
-        return result[0]
-
-
-    def __metamacro_exists(self, guildid, userid, metamacro_name) -> bool:
-        """Returns true if a given metamacro exists."""
+    def __metamacro_exists(self, guildid: int, userid: int, metamacro_name: str) -> bool:
+        """
+        Determine if a given metamacro exists.
+        Args:
+            guildid (int): The Discord ID of the guild in which the bot was invoked
+            userid (int): The Discord ID of the user invoking the bot
+        Returns (bool): True if the user has a metamacro by that name in that guild
+        """
         query = "SELECT * FROM MetaMacros WHERE GuildID=%s AND UserID=%s AND MetaName ILIKE %s;"
         self._execute(query, guildid, userid, metamacro_name)
         result = self.cursor.fetchone()

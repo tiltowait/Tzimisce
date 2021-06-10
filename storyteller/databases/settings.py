@@ -74,7 +74,7 @@ class SettingsDB(Database):
     def __fetch_all_settings(self) -> dict:
         """
         Retrieves the settings for each server.
-        Returns (dict): The settings for each server, with the guild ID as the keys
+        Returns (dict): The settings for each server, with the Discord guild ID as the keys
         """
         fields = SQL(", ").join(map(Identifier, self.available_parameters))
         query = SQL("SELECT ID, {fields} FROM GuildSettings;").format(fields=fields)
@@ -99,7 +99,7 @@ class SettingsDB(Database):
         """
         Fetch the settings for a specific guild.
         Args:
-            guild (int): The ID of the guild
+            guild (int): The Discord ID of the guild
         Returns (dict): The guild's settings
         """
         if guild and not isinstance(guild, int):
@@ -133,7 +133,7 @@ class SettingsDB(Database):
         """
         Set a new value for one of a guild's parameters.
         Args:
-            guild (int): The ID of the guild to modify
+            guild (int): The Discord ID of the guild to modify
             key (str): The parameter to modify
             value (any): The parameter's new value
         Returns (str): A message informing the user of the change
@@ -240,7 +240,7 @@ class SettingsDB(Database):
         """
         Add a guild with default settings to the GuildSettings table.
         Args:
-            guildid (int): The ID of the guild to add
+            guildid (int): The Discord ID of the guild to add
         """
         query = "INSERT INTO GuildSettings VALUES (%s);"
         self._execute(query, guildid)
@@ -253,7 +253,7 @@ class SettingsDB(Database):
         """
         Remove a guild from the GuildSettings table.
         Args:
-            guildid (int): The ID of the guild to remove
+            guildid (int): The Discord ID of the guild to remove
         """
         query = "DELETE FROM GuildSettings WHERE ID=%s;"
         self._execute(query, guildid)

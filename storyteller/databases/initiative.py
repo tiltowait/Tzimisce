@@ -1,4 +1,4 @@
-"""Database for handling initiative."""
+"""initiative.py - Database for handling initiative."""
 
 from collections import defaultdict
 
@@ -7,12 +7,14 @@ from .base import Database
 
 
 class InitiativeDB(Database):
-    """Initiative database. Provides interface for managing initiative."""
+    """Class that provides an interface for managing initiative."""
 
     def __init__(self):
         super().__init__()
 
-        # Create the initiative table
+        # Create the initiative table. The foreign key constraint means that if
+        # the guild removes the bot or is deleted, all initiative records will
+        # automatically be removed.
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Initiative(
@@ -32,34 +34,56 @@ class InitiativeDB(Database):
         self.__tables = self.__fetch_initiative_tables()
 
 
-    def temp_associate_guild(self, guild: int, channel:int):
-        """Associates a channel with its guild."""
-        query = "UPDATE Initiative SET Guild=%s WHERE Channel=%s;"
-        self._execute(query, guild, channel)
-
-
-    def get_table(self, channel: int) -> InitiativeManager:
-        """Returns the channel's initiative manager, if it exists."""
-        return self.__tables[channel]
-
+    # For performance reasons, tables are stored in a cache that is generated at
+    # login. This cache is maintained by the database action methods in the next
+    # section. Tables are an abstraction that are simply a list of initiatives
+    # associated with a single channel.
 
     def add_table(self, channel: int, table: InitiativeManager):
-        """Adds a table to the list."""
+        """
+        Add a table to the list.
+        Args:
+            channel (int): The Discord ID of the desired channel
+        """
         self.__tables[channel] = table
 
 
+    def get_table(self, channel: int) -> InitiativeManager:
+        """
+        Retrieve the channel's initiative manager, if it exists.
+        Args:
+            channel (int): The Discord ID of the desired channel
+        Returns (InitiativeManager): The initiative manager for the channel
+        """
+        return self.__tables[channel]
+
+
     def remove_table(self, channel: int):
-        """Removes a table from the list."""
+        """
+        Delete a table from the list.
+        Args:
+            channel (int): The Discord ID of the desired channel
+        """
         if channel in self.__tables:
             del self.__tables[channel]
-        self.__clear_initiative(channel)
+
+        query = "DELETE FROM Initiative WHERE Channel=%s;"
+        self._execute(query, channel)
 
 
     # Database actions
 
     #pylint: disable=too-many-arguments
-    def set_initiative(self, guild, channel, character, mod, die):
-        """Adds an initiative record."""
+    def set_initiative(self, guild: int, channel: int, character: str, mod: int, die: int):
+        """
+        Add an initiative record.
+        Args:
+            guild (int): The Discord ID of the channel's guild
+            channel (int): The Discord ID of the channel where the initiative table lives
+            character (str): The name of the character
+            mod (int): The character's initiative modifier
+            die (int): The character's initiative die roll
+        """
         self.remove_initiative(channel, character)
 
         query = "INSERT INTO Initiative VALUES (%s, %s, %s, %s, %s, %s);"
@@ -67,25 +91,33 @@ class InitiativeDB(Database):
 
 
     def set_initiative_action(self, channel, character, action):
-        """Stores the declared action for a character."""
+        """
+        Store the declared action for a character.
+        Args:
+            channel (int): The Discord ID of the channel where the initiative table lives
+            character (str): The name of the character taking the action
+            action (str): The action the character is taking this round
+        """
         query = "UPDATE Initiative SET Action=%s WHERE Channel=%s AND Character=%s;"
         self._execute(query, action, channel, character)
 
 
     def remove_initiative(self, channel, character):
-        """Removes a character from a given channel."""
+        """
+        Remove a character from a given channel's initiative table.
+        Args:
+            channel (int): The Discord ID of the channel where the initiative table lives
+            character (str): The name of the character to remove
+        """
         query = "DELETE FROM Initiative WHERE Channel=%s AND Character=%s;"
         self._execute(query, channel, character)
 
 
-    def __clear_initiative(self, channel):
-        """Removes all initiative records from a given channel."""
-        query = "DELETE FROM Initiative WHERE Channel=%s;"
-        self._execute(query, channel)
-
-
     def __fetch_initiative_tables(self):
-        """Returns a dictionary of all initiatives."""
+        """
+        Retrieve the initiative table for every single channel.
+        Returns (dict): A dictionary of InitiativeManagers with Discord channel IDs as the keys
+        """
         query = "SELECT Channel, Character, Mod, Die, Action FROM Initiative ORDER BY Channel;"
         self._execute(query)
 

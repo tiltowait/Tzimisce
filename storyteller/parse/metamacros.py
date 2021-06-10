@@ -25,7 +25,7 @@ def parse(ctx, command, handler):
 
     # See if using a metamacro
     if __use_meta_macro.match(syntax):
-        macros = __meta_macros.retrieve_metamacro(guildid, userid, syntax)
+        macros = __meta_macros.retrieve_macros(guildid, userid, syntax)
         if macros:
             return MetaMacro(ctx, command, macros, handler)
         response.content = f"Error! You have no meta-macro named `${syntax}`."
