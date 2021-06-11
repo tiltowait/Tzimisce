@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/tzimisce-logo.webp" alt="Tzimisce Dicebot" height="125" />
+  <img src="images/tzimisce-logo.webp" alt="Tzimisce Dicebot" style="width: auto, max-height: 125px" />
 </p>
 
 <p align="center">
