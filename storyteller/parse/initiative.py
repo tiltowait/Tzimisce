@@ -2,6 +2,7 @@
 
 import argparse
 import io
+from typing import Optional
 from contextlib import redirect_stderr
 
 import storyteller.engine # pylint: disable=cyclic-import
@@ -10,8 +11,17 @@ from storyteller.initiative import InitiativeManager
 from .response import Response
 
 
-def initiative(ctx, mod, args) -> Response:
-    """Parses minit input and returns appropriate results."""
+def initiative(ctx, mod: Optional[int], character_name: Optional[str]) -> Response:
+    """
+    Parse minit input and return appropriate results.
+    Args:
+        ctx (discord.ext.commands.Context): User message context
+        mod (Optional[int]): An initiative modifier
+        character_name (Optional[str]): A character to add to initiative
+    Returns (Response): The bot's response to the command
+    """
+
+    # Craft a usage message
     prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
     usage = "**Initiative Manager Commands**\n"
     usage += f"`{prefix}i` — Show initiative table (if one exists in this channel)\n"
@@ -24,7 +34,9 @@ def initiative(ctx, mod, args) -> Response:
     manager = storyteller.initiative.get_table(ctx.channel.id)
     response = Response(Response.INITIATIVE)
 
-    if not mod: # Not rolling
+    # Not adding a new initiative to the table
+    if not mod:
+        # If an initiative table exists, display it
         if manager:
             embed = storyteller.engine.build_embed(
                 title="Initiative", description=str(manager),
@@ -39,21 +51,25 @@ def initiative(ctx, mod, args) -> Response:
             response.content = content
             return response
 
+        # With no initiative table, display the help message instead
         response.content = usage
         return response
 
-    # Rolling initiative
+    # Rolling a new initiative or augmenting an old one
     try:
-        is_modifier = mod[0] == "-" or mod[0] == "+"
-        mod = int(mod)
-
-        # Add init to manager
         if not manager:
             manager = InitiativeManager()
-        character_name = args or ctx.author.display_name
+
+        # If the user supplies a +/- sign on their mod, that means they are augmenting
+        # their existing modifier in-place. If they do not supply a sign, they
+        # are rolling a new initiative
+        is_augmenting = mod[0] == "-" or mod[0] == "+"
+        mod = int(mod)
+
+        character_name = character_name or ctx.author.display_name
 
         init = None
-        if not is_modifier:
+        if not is_augmenting:
             init = manager.add_init(character_name, mod)
             storyteller.initiative.add_table(ctx.channel.id, manager)
         else:
@@ -62,37 +78,45 @@ def initiative(ctx, mod, args) -> Response:
                 response.content = f"{character_name} has no initiative to modify!"
                 return response
 
+        # Build the embed
         title = f"{character_name}'s Initiative"
 
         entry = "entries" if manager.count > 1 else "entry"
         footer = f"{manager.count} {entry} in table. To see initiative: {prefix}i"
 
-        if is_modifier:
+        if is_augmenting:
             footer = f"Initiative modified by {mod:+}.\n{footer}"
 
         embed = storyteller.engine.build_embed(
             title=title, description=str(init), fields=[], footer=footer
         )
+        response.embed = embed
 
+        # Track the initiative in the database
         storyteller.initiative.set_initiative(
             ctx.guild.id, ctx.channel.id, character_name, init.mod, init.die
         )
         storyteller.engine.statistics.increment_initiative_rolls(ctx.guild)
 
-        response.embed = embed
         return response
     except ValueError:
         response.content = usage
         return response
 
 
-def initiative_removal(ctx, args):
-    """Removes a character from initiative, if possible, and returns a status response."""
+def initiative_removal(ctx, character_name: str) -> Response:
+    """
+    Remove a character from initiative and returns a status response.
+    Args:
+        ctx (discord.ext.commands.Context): User message context
+        character_name (str): The name of the character to remove
+    Returns (Response): A confirmation or error message
+    """
     manager = storyteller.initiative.get_table(ctx.channel.id)
     response = Response(Response.INITIATIVE)
 
     if manager:
-        character = args or ctx.author.display_name
+        character = character_name or ctx.author.display_name
         removed = manager.remove_init(character)
         if removed:
             storyteller.initiative.remove_initiative(ctx.channel.id, character)
@@ -113,29 +137,48 @@ def initiative_removal(ctx, args):
 
 # Initiative Declarations
 
+# This parser is in module scope so it doesn't have to be recreated every time
+# someone rolls initiative
 parser = argparse.ArgumentParser(exit_on_error=False)
 parser.add_argument("action", nargs="*", default=None)
 parser.add_argument("-n", "--name", nargs="*", dest="character")
 parser.add_argument("-c", "--celerity", nargs="?", type=int, const=1)
 
 
-def initiative_declare(ctx, args):
-    """Declares an initiative action, if possible."""
+def initiative_declare(ctx, args: list):
+    """
+    Declare an initiative action.
+    Args:
+        ctx (discord.ext.commands.Context): User message context
+        args (list): User-provided arguments
+    Raises: AttributeError if there is no initiative set for the channel
+            NameError if the given character has no initiative
+            SyntaxError if the correct arguments aren't supplied
+
+            For ease of use, these exceptions are mapped to SyntaxError and thrown
+    """
     try:
+        manager = storyteller.initiative.get_table(ctx.channel.id)
+
+        # argparse can spit out a lot of effor messages to the console, which
+        # the user never (and should never) sees. We are going to suppress
+        # those messages by writing them to stderr where they belong.
         parsed = None
         stream = io.StringIO()
-        with redirect_stderr(stream): # Redirect argparse's error message
+        with redirect_stderr(stream):
             parsed = parser.parse_args(args)
 
+        # Correctly form a character name, if provided
         character = ctx.author.display_name
         if parsed.character:
             character = " ".join(parsed.character)
 
-        manager = storyteller.initiative.get_table(ctx.channel.id)
-        if not parsed.celerity:
-            if not parsed.action:
-                raise SyntaxError("You need to supply an action!")
+        # Assign the declarations
 
+        if not parsed.action and not parsed.celerity:
+            raise SyntaxError("You need to supply an action!")
+
+        if parsed.action:
             action = " ".join(parsed.action)
             if not manager.declare_action(character, action):
                 raise NameError(character)
@@ -143,7 +186,8 @@ def initiative_declare(ctx, args):
             storyteller.initiative.set_initiative_action(
                 ctx.channel.id, character, action
             )
-        else:
+
+        if parsed.celerity:
             if not manager.has_character(character):
                 raise NameError(character)
 
