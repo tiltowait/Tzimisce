@@ -11,13 +11,14 @@ from storyteller.initiative import InitiativeManager
 from .response import Response
 
 
-def initiative(ctx, mod: Optional[int], character_name: Optional[str]) -> Response:
+def initiative(ctx, mod: Optional[int], character_name: Optional[str], use_embed: bool) -> Response:
     """
     Parse minit input and return appropriate results.
     Args:
         ctx (discord.ext.commands.Context): User message context
         mod (Optional[int]): An initiative modifier
         character_name (Optional[str]): A character to add to initiative
+        use_embed (bool): Whether to use an embed or inline text
     Returns (Response): The bot's response to the command
     """
 
@@ -32,23 +33,25 @@ def initiative(ctx, mod: Optional[int], character_name: Optional[str]) -> Respon
     usage += f"`{prefix}i clear` — Clear the table"
 
     manager = storyteller.initiative.get_table(ctx.channel.id)
-    response = Response(Response.INITIATIVE)
+    response = Response(Response.INITIATIVE) # Used for error/usage messages
 
     # Not adding a new initiative to the table
     if not mod:
         # If an initiative table exists, display it
         if manager:
-            embed = storyteller.engine.build_embed(
-                title="Initiative", description=str(manager),
+            response = __generate_response(
+                title="Initiative",
+                content=str(manager),
                 footer="Commands: remove | clear | reroll | declare",
-                fields=[]
+                use_embed=use_embed
             )
 
-            content = None
             if ctx.invoked_with == "reroll":
-                content = "Rerolling initiative!"
-            response.embed = embed
-            response.content = content
+                if use_embed:
+                    response.content = "Rerolling initiative!"
+                else:
+                    response.content = f"**Rerolling** {response.content}"
+
             return response
 
         # With no initiative table, display the help message instead
@@ -87,10 +90,12 @@ def initiative(ctx, mod: Optional[int], character_name: Optional[str]) -> Respon
         if is_augmenting:
             footer = f"Initiative modified by {mod:+}.\n{footer}"
 
-        embed = storyteller.engine.build_embed(
-            title=title, description=str(init), fields=[], footer=footer
+        response = __generate_response(
+            title=title,
+            content=str(init),
+            footer=footer,
+            use_embed=use_embed
         )
-        response.embed = embed
 
         # Track the initiative in the database
         storyteller.initiative.set_initiative(
@@ -200,3 +205,24 @@ def initiative_declare(ctx, args: list):
         raise SyntaxError(f"{character} isn't in the initiative table!") from None
     except (SystemExit, argparse.ArgumentError):
         raise SyntaxError("Usage: `/mi dec <action> [-n character] [--celerity N]`") from None
+
+def __generate_response(title: str, content: str, footer: str, use_embed: bool) -> Response:
+    """
+    Generate a Response object with the given content.
+    Args:
+        title (str): The title of the Response
+        content (str): The message content of the response
+        footer (str): The Response's footer
+        use_embed (bool): Whether to use a Discord embed or a simple text string
+    Returns (Response): The generated Response object
+    """
+    response = Response(Response.INITIATIVE)
+
+    if use_embed:
+        response.embed = storyteller.engine.build_embed(
+            title=title, description=content, fields=[], footer=footer
+        )
+    else:
+        response.content = f"**{title}**\n\n{content}\n\n*{footer}*"
+
+    return response

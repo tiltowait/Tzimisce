@@ -2,6 +2,7 @@
 
 import os
 from collections import defaultdict
+from typing import Optional
 
 import discord
 import topgg
@@ -304,11 +305,17 @@ async def statistics(ctx, *args):
 
 # Initiative Management
 
-@bot.group(invoke_without_command=True, name="mi", aliases=["minit"], case_insensitive=True)
+init_aliases = ["minit", "mcinit", "mci", "minitc", "mic"]
+@bot.group(invoke_without_command=True, name="mi", aliases=init_aliases, case_insensitive=True)
 @commands.guild_only()
-async def initiative_manager(ctx, mod=None, *, character_name=None):
+async def initiative_manager(ctx, mod: str=None, *, character: str=None, use_embed: bool=None):
     """Displays the initiative table for the current channel."""
-    response = storyteller.parse.initiative(ctx, mod, character_name)
+
+    if use_embed is None:
+        use_embed = not __use_compact_mode(ctx.invoked_with, ctx.guild.id)
+
+    # Parse the command
+    response = storyteller.parse.initiative(ctx, mod, character, use_embed)
     if response.both_set:
         await ctx.send(content=response.content, embed=response.embed)
     else:
@@ -341,17 +348,27 @@ async def initiative_reroll(ctx):
     manager = storyteller.initiative.get_table(ctx.channel.id)
 
     if manager:
+        # Reroll and store the new initiatives before displaying
         manager.reroll()
-        await initiative_manager(ctx) # Print the new initiative table
 
-        # Store the new initiatives
-        characters = manager.characters
-        for character in characters:
-            init = characters[character]
-
+        for character, init in manager.characters.items():
             storyteller.initiative.set_initiative(
                 ctx.guild.id, ctx.channel.id, character, init.mod, init.die
             )
+
+        # discord.py provides no means of checking which alias was used to invoke
+        # a subcommand, so we have to manipulate the raw message string itself by
+        # removing the bot prefix from the message and passing that to
+        # __use_compact_mode() instead of passing the simpler ctx.invoked_with.
+        #
+        # Technically, this means the user can accidentally toggle compact mode
+        # by supplying arguments *after* "reroll"; however, as doing so is far
+        # from the end of the world, we won't care about that.
+        prefix = ctx.prefix
+        command = ctx.message.content.replace(prefix, "")
+        use_embed = not __use_compact_mode(command, ctx.guild.id)
+
+        await initiative_manager(ctx, use_embed=use_embed) # Print the new initiative table
     else:
         await ctx.send("Initiative isn't set for this channel!")
 
@@ -518,6 +535,25 @@ def __status_message():
     """Sets the bot's Discord presence message."""
     servers = len(bot.guilds)
     return f"!m help | {servers} chronicles"
+
+
+def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
+    """
+    Determine whether a command should use compact mode.
+    Args:
+        invocation (str): The string used to invoke the command
+        guildid (Optional[int]): The Discord ID of the guild where the bot was invoked
+    Returns (bool): True if the bot should use compact mode
+    """
+
+    # Note that some care must be taken when passing the bot invocation. Some commands,
+    # such as "coin" and "chance", always have a 'c' in them. In these instances, it is
+    # safest simply to pass an empty string.
+    if "c" in invocation:
+        return True
+
+    guild_settings = storyteller.settings.settings_for_guild(guildid)
+    return guild_settings["use_compact"]
 
 
 # END BOT DEFINITIONS
