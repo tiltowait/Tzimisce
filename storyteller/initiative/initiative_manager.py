@@ -122,32 +122,28 @@ class InitiativeManager:
 
     def __str__(self):
         """Returns a string representation of the initiative table, sorted by score."""
-        sorted_inits = sorted(self.characters.items(), key=lambda x: x[1], reverse=True)
-
-        retval = ""
+        initiative_entries = []
         celerities = []
-        for init in sorted_inits:
-            character = init[0]
 
-            # Format initiatives
-            initiative = init[1].init
-            action = init[1].action
+        enumerated_inits = sorted(self.characters.items(), key=lambda x: x[1], reverse=True)
+        for character, initiative in enumerated_inits:
+            entry = f"**{initiative.init}:** {character}"
 
-            retval += f"**{initiative}:** {character}"
+            if initiative.action:
+                entry += f" - {initiative.action}"
 
-            if action:
-                retval += f" - {action}"
+            initiative_entries.append(entry)
 
-            retval += "\n"
-
-            # Figure out celerities
+            # Collect Celerity info while we're here
             celerity = self.celerity[character]
             if celerity > 0:
                 celerities.append(f"{character} ({celerity})")
 
-        if len(celerities) > 0:
-            retval += "\n**Celerity\n**"
-            retval += "\n".join(celerities)
-            retval += "\n"
+        return_string = "\n".join(initiative_entries)
 
-        return retval
+        # Append the Celerity actions
+        if len(celerities) > 0:
+            return_string += "\n\n**Celerity\n**"
+            return_string += "\n".join(celerities)
+
+        return return_string
