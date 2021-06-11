@@ -15,7 +15,13 @@ __initx = re.compile(r"^1d10\s*\+\s*\d+$")
 
 
 def roll(repeat: int, die: int) -> list:
-    """Return a list of random numbers between 1 and die."""
+    """
+    Roll a specified number of dice.
+    Args:
+        repeat (int): The number of dice to roll
+        die (int): The number of faces on each die
+    Returns (list): The results of the rolls
+    """
     return [randbelow(die) + 1 for _ in range(repeat)]
 
 

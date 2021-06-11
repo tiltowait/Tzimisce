@@ -140,7 +140,6 @@ class SettingsDB(Database):
         """
         value = self.__validated_parameter(key, value) # Raises ValueError if invalid
 
-        # Normally unsafe, but we do input validation before we get here
         query = SQL("UPDATE GuildSettings SET {key}=%s WHERE ID=%s;").format(key=Identifier(key))
         self._execute(query, value, guild)
         self.__all_settings[guild][key] = value

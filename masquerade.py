@@ -306,9 +306,9 @@ async def statistics(ctx, *args):
 
 @bot.group(invoke_without_command=True, name="mi", aliases=["minit"], case_insensitive=True)
 @commands.guild_only()
-async def initiative_manager(ctx, mod=None, *, args=None):
+async def initiative_manager(ctx, mod=None, *, character_name=None):
     """Displays the initiative table for the current channel."""
-    response = storyteller.parse.initiative(ctx, mod, args)
+    response = storyteller.parse.initiative(ctx, mod, character_name)
     if response.both_set:
         await ctx.send(content=response.content, embed=response.embed)
     else:
@@ -328,9 +328,9 @@ async def initiative_reset(ctx):
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
-async def initiative_remove_character(ctx, *, args=None):
+async def initiative_remove_character(ctx, *, character_name=None):
     """Remove a character from initiative manager."""
-    response = storyteller.parse.initiative_removal(ctx, args)
+    response = storyteller.parse.initiative_removal(ctx, character_name)
     await ctx.reply(content=response.content, embed=response.embed)
 
 

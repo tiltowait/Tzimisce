@@ -1,4 +1,5 @@
-"""Manages character initiative."""
+"""initiative.py - Manages character initiative."""
+
 from storyteller import roll
 
 

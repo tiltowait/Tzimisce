@@ -13,7 +13,7 @@
 # cleanup will be done to rectify this inconsistency.
 
 import re
-from typing import Optional
+from typing import Optional, Union
 
 import storyteller.parse
 from .base import Database
@@ -60,7 +60,7 @@ class RollDB(Database):
         self.multiwordx = re.compile(r"[\w-]+ [\w-]+")
 
 
-    def query_saved_rolls(self, guild: int, userid: int, command: dict):
+    def query_saved_rolls(self, guild: int, userid: int, command: dict) -> Union[str, dict]:
         """
         Determines the type of query, then performs the necessary actions. This
         method creates, updates, retrieves, and deletes macros, and will even
@@ -75,7 +75,7 @@ class RollDB(Database):
         syntax = command["syntax"]
         comment = command["comment"]
 
-        # Store a new roll or change an old one.
+        # Store a new macro or change an old one
         match = self.storex.match(syntax)
         if match:
             syntax = match.group("syntax")
@@ -91,13 +91,13 @@ class RollDB(Database):
             comment = match.group("comment")
             return self.__update_stored_comment(guild, userid, name, comment)
 
-        # Use a stored roll.
+        # Use a macro
         match = self.usex.match(syntax)
         if match:
-            command = self.__match_stored_roll(command, match, guild, userid)
+            command = self.__process_macro(command, match, guild, userid)
             return command
 
-        # Delete a stored roll.
+        # Delete a macro
         match = self.deletex.match(syntax)
         if match:
             name = match.group("name")
@@ -111,7 +111,9 @@ class RollDB(Database):
         return "Come again?"
 
 
-    def __match_stored_roll(self, command: dict, match: re.Match, guild: int, userid: int):
+    def __process_macro(
+        self, command: dict, match: re.Match, guild: int, userid: int
+    ) -> Union[str, dict]:
         """
         Retrieve and optionally modify a macro from the database.
         Args:
@@ -122,7 +124,7 @@ class RollDB(Database):
         Returns: A macro-expanded command, or an error string if unsuccessful
         """
         name = match.group("name")
-        compound = self.retrieve_stored_roll(guild, userid, name)
+        compound = self.retrieve_macro(guild, userid, name)
 
         if not compound:
             alt = self.__find_similar_macro(guild, userid, name)
@@ -207,7 +209,7 @@ class RollDB(Database):
         # pylint: disable=too-many-arguments
 
         # Inserting a new macro
-        if not self.__is_roll_stored(guild, userid, name):
+        if not self.__macro_exists(guild, userid, name):
             # Create the roll
             query = "INSERT INTO SavedRolls VALUES (%s, %s, %s, %s, %s);"
             self._execute(query, userid, name, syntax, guild, comment)
@@ -244,7 +246,7 @@ class RollDB(Database):
             comment (str): The comment to add
         Returns (str): A confirmation message
         """
-        if self.__is_roll_stored(guild, userid, name):
+        if self.__macro_exists(guild, userid, name):
             if len(comment) == 0:
                 comment = None
 
@@ -256,7 +258,7 @@ class RollDB(Database):
         return f"Unable to update. You don't have a roll named `{name}`!"
 
 
-    def retrieve_stored_roll(self, guild: int, userid: int, name: str) -> Optional[tuple]:
+    def retrieve_macro(self, guild: int, userid: int, name: str) -> Optional[tuple]:
         """
         Retrieve a macro's syntax.
         Args:
@@ -301,7 +303,7 @@ class RollDB(Database):
             name (str): The name of the macro to delete
         Returns (str): A status message
         """
-        if not self.__is_roll_stored(guild, userid, name):
+        if not self.__macro_exists(guild, userid, name):
             return f"Can't delete. `{name}` not found!"
 
         query = "DELETE FROM SavedRolls WHERE Guild=%s AND ID=%s AND Name ILIKE %s;"
@@ -348,7 +350,7 @@ class RollDB(Database):
         return fields
 
 
-    def __is_roll_stored(self, guild: int, userid: int, name: str) -> bool:
+    def __macro_exists(self, guild: int, userid: int, name: str) -> bool:
         """
         Determine whether the user has a specific macro in a given guild.
         Args:
@@ -356,4 +358,4 @@ class RollDB(Database):
             userid (int): The Discord ID of the user performing the search
             name (str): The name of the macro to search for
         """
-        return self.retrieve_stored_roll(guild, userid, name) is not None
+        return self.retrieve_macro(guild, userid, name) is not None

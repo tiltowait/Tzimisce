@@ -2,7 +2,9 @@
 # pylint: disable=no-member
 
 import os
-import psycopg2
+from typing import Union
+
+import psycopg2.sql
 
 
 class Database:
@@ -15,11 +17,11 @@ class Database:
         self.cursor = self.conn.cursor()
 
 
-    def _execute(self, query: str, *args):
+    def _execute(self, query: Union[str, psycopg2.sql.SQL], *args):
         """
         Execute the specified query. Tries to reconnect to the database if there's an error.
         Args:
-            query (str): The SQL query to enact
+            query (Union[str, psycopg2.sql.SQL]): The SQL query to execute
             *args: The values associated with the query
             **kwargs: Used for determining if this is a second execution attempt
         """

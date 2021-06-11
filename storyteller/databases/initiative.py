@@ -113,7 +113,7 @@ class InitiativeDB(Database):
         self._execute(query, channel, character)
 
 
-    def __fetch_initiative_tables(self):
+    def __fetch_initiative_tables(self) -> dict:
         """
         Retrieve the initiative table for every single channel.
         Returns (dict): A dictionary of InitiativeManagers with Discord channel IDs as the keys
