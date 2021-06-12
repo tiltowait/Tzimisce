@@ -122,7 +122,6 @@ class MetaMacroDB(Database):
         records = []
         for meta_name in meta_names:
             macros = self.retrieve_macros(guildid, userid, meta_name)
-            meta_name = f"{meta_name}"
             macros = ", ".join(macros)
 
             records.append((meta_name, macros))
