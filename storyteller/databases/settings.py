@@ -107,7 +107,7 @@ class SettingsDB(Database):
 
         # Make sure the settings are actually in the guild
         if guild is not None and guild not in self.__all_settings:
-            print(f'Guild {guild} wasn\'t in GuildSettings! Adding now.')
+            print(f"Guild {guild} wasn't in GuildSettings! Adding now.")
             self.add_guild(guild)
 
         return self.__all_settings[guild]
