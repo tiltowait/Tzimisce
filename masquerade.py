@@ -24,6 +24,8 @@ bot.remove_command("help")
 @bot.event
 async def on_message(message):
     """Determines how to handle messages."""
+    if message.author == bot.user:
+        return
 
     # Make sure the user is invoking the bot
     prefixes = storyteller.settings.get_prefixes(message.guild)
@@ -510,6 +512,33 @@ async def on_command_error(ctx, error):
             return
         if "IndexError" in str(error):
             await ctx.reply("You forgot your syntax!")
+            return
+    if isinstance(error, commands.UnexpectedQuoteError):
+        # A bug in the library (1.7.2) prevents certain iOS smart quotes from
+        # being handled correctly. Thus far, I have found it doesn't like English
+        # single quotes, but there may be more. When we encounter this error,
+        # we will replace the smart quote with a dumb one.
+        #
+        # Unfortunately, this causes another glitch: when working with command
+        # arguments, discord.py will drop the arguments before (and sometimes
+        # after) the offending quote. Rather than write a nasty workaround,
+        # we are going to let the bug lie for the time being, given its rarity.
+        # A bug has been filed on GitHub.
+        if hasattr(ctx, 'coerced_quotes'):
+            return
+
+        ios_quotes = ["‘","’"]
+        ios_quote_found = False
+
+        for quote in ios_quotes:
+            if quote in ctx.message.content:
+                content = ctx.message.clean_content.replace(quote, "'")
+                ctx.message.content = content
+
+                ios_quote_found = True
+
+        if ios_quote_found:
+            await bot.invoke(ctx)
             return
 
     # Unknown error; print invoking message and raise
