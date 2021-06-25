@@ -1,7 +1,7 @@
 """Module for performing simple, traditional dice rolls."""
 
 import re
-from secrets import randbelow
+from random import randint
 from collections import namedtuple
 
 import dice
@@ -22,7 +22,7 @@ def roll(repeat: int, die: int) -> list:
         die (int): The number of faces on each die
     Returns (list): The results of the rolls
     """
-    return [randbelow(die) + 1 for _ in range(repeat)]
+    return [randint(1,10) for _ in range(repeat)]
 
 
 def roll_from_string(equation: str) -> TraditionalRoll:
