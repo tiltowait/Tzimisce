@@ -14,7 +14,7 @@ __rollx = re.compile(r"(?P<dice>\d+d\d+)")
 __initx = re.compile(r"^1d10\s*\+\s*\d+$")
 
 
-def roll(repeat: int, die: int) -> list:
+def roll(repeat: int) -> list:
     """
     Roll a specified number of dice.
     Args:
