@@ -2,15 +2,24 @@
 
 class Response:
     """Simple container class for parser response types."""
+
     # Response types
-    POOL = 1
-    TRADITIONAL = 2
-    DATABASE = 3
-    INITIATIVE = 4
-    META_MACRO = 5
+    POOL = 1 # Pool-based rolls
+    TRADITIONAL = 2 # Traditional rolls
+    DATABASE = 3 # RollDB response
+    INITIATIVE = 4 # Initiative response
+    META_MACRO = 5 # Metamacro response
 
 
     def __init__(self, response_type, embed=None, content=None):
+        """
+        Create a basic Response object.
+        Args:
+            response_type (int): The type of response being created
+            embed (Optional[discord.Embed]): The embed to present to the user
+            content (Optional[str]): The string to present to the user
+        A Response can contain both an embed and content string.
+        """
         self.type = response_type
         self.embed = embed
         self.content = content
@@ -47,8 +56,13 @@ class Response:
         return self.embed is not None and self.content is not None
 
 
-    def mentioned_content(self, author) -> str:
-        """Returns the content with the author mentioned at the top."""
+    def mentioned_content(self, user) -> str:
+        """
+        Returns the content with the user mentioned at the top.
+        Args:
+            user: The Discord user to mention
+        Returns (str): The content with a Discord mention at the top
+        """
         if self.content:
-            return f"{author.mention}\n{self.content}"
-        return author.mention
+            return f"{user.mention}\n{self.content}"
+        return user.mention
