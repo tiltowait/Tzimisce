@@ -200,9 +200,14 @@ def build_embed(
         author = author.display_name
 
         if header:
-            author += f": {header}"
+            author_header = f"{author}: {header}"
+        else:
+            author_header = author
 
-        embed.set_author(name=author, icon_url=avatar)
+        if len(author_header) > 256:
+            author_header = f"{author}: Rolling many dice"
+
+        embed.set_author(name=author_header, icon_url=avatar)
 
     for field in fields:
         name = field[0]
