@@ -103,7 +103,7 @@ def __pool_roll(ctx, command: dict) -> Union[str, discord.Embed]:
     # have to make sure the user isn't somehow trying to have unsuccessful dice
     # explode, which would just be weird.
     if chronicles and not difficulty <= options["xpl_target"] <= 10:
-        return f"Whoops! X-Again must be between {difficulty} and 10, not {command['xpl_target']}."
+        return f"Whoops! X-Again must be between {difficulty} and 10, not {options['xpl_target']}."
 
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
     autos = int(command["auto"] or 0)
