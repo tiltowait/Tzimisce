@@ -174,11 +174,13 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### ** Other **
 
-| Command                    | Syntax                                   |
-|----------------------------|------------------------------------------|
-| **Remove a character**     | `!mi remove [character]`                 |
-| **Reroll all initiative**  | `!mi reroll`  (removes declared actions) |
-| **Clear initiative table** | `!mi clear`                              |
+| Command                    | Syntax                                     |
+|----------------------------|--------------------------------------------|
+| **Remove a character**     | `!mi remove [character]`                   |
+| **Reroll all initiative**  | `!mi reroll`  (removes declared actions)   |
+| **Increase initiative**    | `!mi +[mod]` (add `mod` to current)        |
+| **Decrease initiative**    | `!mi -[mod]` (subtract `mod` from current) |
+| **Clear initiative table** | `!mi clear`                                |
 
 <!-- tabs:end -->
 
