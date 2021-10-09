@@ -4,7 +4,7 @@
 > * **[Invite \[Tzimisce\] to your server](https://top.gg/bot/642775025770037279)**
 > * **[Join the support server](https://discord.gg/rK3RFqV)**
 > * **[View the source code](https://github.com/tiltowait/Tzimisce)**
-> * **[Become a patron](https://www.patreon.com/tzimisce)**
+> * **[Become a patron](https://www.patreon.com/tiltowait?fan_landing=true)**
 
 ?> **Note:** Parameter names are presented `<like this>` or `[this]`. When entering a parameter, omit the brackets.
 
