@@ -6,6 +6,7 @@ from typing import Optional
 
 import discord
 import topgg
+import pymongo
 from discord.ext import commands
 
 import storyteller
@@ -19,6 +20,8 @@ async def determine_prefix(_, message):
 
 bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
 bot.remove_command("help")
+
+PLAYER_COL = pymongo.MongoClient(os.environ["TZIMISCE_MONGO"]).tzimisce.interactions
 
 
 @bot.event
@@ -62,6 +65,9 @@ async def on_message(message):
 
     message.content = content
     await bot.process_commands(message)
+
+    # Log the interaction
+    PLAYER_COL.insert_one({ "user": message.author.id })
 
 
 # Commands
