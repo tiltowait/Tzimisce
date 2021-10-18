@@ -7,6 +7,7 @@ from typing import Optional
 import discord
 import topgg
 import pymongo
+import statcord
 from discord.ext import commands
 
 import storyteller
@@ -20,6 +21,13 @@ async def determine_prefix(_, message):
 
 bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
 bot.remove_command("help")
+
+# Statcord
+if "STATCORD" in os.environ:
+    api = statcord.Client(bot, os.environ["STATCORD"])
+    api.start_loop()
+else:
+    api = None
 
 PLAYER_COL = pymongo.MongoClient(os.environ["TZIMISCE_MONGO"]).tzimisce.interactions
 
@@ -492,6 +500,13 @@ async def on_guild_update(_, after):
 async def on_guild_channel_delete(channel):
     """Removes initiative from the deleted channel."""
     storyteller.initiative.remove_table(channel.id)
+
+
+@bot.event
+async def on_command(ctx):
+    """Post to Statcord."""
+    if api is not None:
+        api.command_run(ctx)
 
 
 @bot.event
