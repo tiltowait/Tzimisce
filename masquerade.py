@@ -75,7 +75,7 @@ async def on_message(message):
     await bot.process_commands(message)
 
     # Log the interaction
-    PLAYER_COL.insert_one({ "guild": message.guild.id, "user": message.author.id })
+    PLAYER_COL.insert_one({ "guild": message.guild.name, "user": message.author.id })
 
 
 # Commands
