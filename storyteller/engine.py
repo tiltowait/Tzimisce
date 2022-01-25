@@ -30,7 +30,7 @@ async def handle_command(command, ctx, send=True):
         reduction = len(command["comment"]) - 500
         characters = "character" if reduction == 1 else "characters"
 
-        await ctx.reply(f"Comment too long by {reduction} {characters}.")
+        await ctx.respond(f"Comment too long by {reduction} {characters}.", ephemeral=True)
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
@@ -61,7 +61,7 @@ async def handle_command(command, ctx, send=True):
         return
 
     # Unrecognized input
-    await ctx.reply("Come again?")
+    await ctx.respond("Come again?", ephemeral=True)
 
 
 async def __send_response(ctx, response):
@@ -101,9 +101,9 @@ async def show_stored_rolls(ctx):
     meta_records = parse.meta_records(ctx.guild.id, ctx.author.id)
 
     if len(stored_rolls) == 0:
-        await ctx.reply(f"You have no macros on {ctx.guild}!")
+        await ctx.respond(f"You have no macros on {ctx.guild}!", ephemeral=True)
     else:
-        await ctx.reply("List sent. Please check your DMs!")
+        await ctx.respond("List sent. Please check your DMs!", ephemeral=True)
 
         # The macro block. Users might have many macros, so we split them across multiple
         # messages if the total length exceeds 2000 characters.
@@ -144,10 +144,7 @@ async def delete_user_rolls(ctx):
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
     message = f"Deleted your macros on {ctx.guild}."
 
-    if ctx.message.content:
-        await ctx.reply(message)
-    else:
-        await ctx.send(f"{ctx.author.mention}: {message}")
+    await ctx.respond(message, ephemeral=True)
 
 
 def help_embed(prefix):
