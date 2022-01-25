@@ -55,7 +55,7 @@ class RollCommands(commands.Cog):
 
 
     @slash_command(guild_ids=debug.GUILDS)
-    async def roll(
+    async def mm(
         self,
         ctx: discord.ApplicationContext,
         syntax: Option(
@@ -75,7 +75,7 @@ class RollCommands(commands.Cog):
 
 
     @slash_command(guild_ids=debug.GUILDS)
-    async def croll(
+    async def cmm(
         self,
         ctx: discord.ApplicationContext,
         syntax: Option(
@@ -94,7 +94,7 @@ class RollCommands(commands.Cog):
 
 
     @slash_command(guild_ids=debug.GUILDS)
-    async def wroll(
+    async def mw(
         self,
         ctx: discord.ApplicationContext,
         syntax: Option(
@@ -113,7 +113,7 @@ class RollCommands(commands.Cog):
 
 
     @slash_command(guild_ids=debug.GUILDS)
-    async def cwroll(
+    async def cmw(
         self,
         ctx: discord.ApplicationContext,
         syntax: Option(
