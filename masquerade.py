@@ -174,18 +174,6 @@ async def coin_flip(ctx):
     await slash_command_info(ctx, "/coinflip")
 
 
-@bot.slash_command()
-async def coinflip(ctx):
-    """Flip a coin!"""
-    coin = storyteller.roll.traditional.roll(1, 2)[0]
-    if coin == 1:
-        coin = "**Heads!**"
-    else:
-        coin = "**Tails!**"
-
-    await ctx.respond(coin)
-
-
 @standard_roll.command()
 async def chance(ctx):
     """Roll a chance die (primarily for CofD games)."""
@@ -195,12 +183,7 @@ async def chance(ctx):
 @standard_roll.command(name="help")
 async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
-
-    # We want to display the correct prefix for the server
-    prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
-    embed = storyteller.engine.help_embed(prefix)
-
-    await ctx.reply(embed=embed)
+    await slash_command_info(ctx, "/help")
 
 
 # Macro-Related. Must be done in a guild.
@@ -594,6 +577,7 @@ def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
 # END BOT DEFINITIONS
 
 bot.load_extension("roll_commands")
+bot.load_extension("misc_commands")
 
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting
