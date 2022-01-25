@@ -201,31 +201,7 @@ async def show_stored_rolls(ctx):
 @commands.guild_only()
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
-    macro_count, meta_count = storyteller.engine.macro_counts(ctx)
-    prompt = "Are you sure you wish to delete your macros on this server? Click ✅ to confirm."
-
-    # Correctly pluralize and display number of macros/metamacros to delete
-    newline = ""
-    notice = ""
-    if macro_count > 0:
-        newline = "\n"
-        notice = f"**{macro_count}** macro"
-        if macro_count > 1:
-            notice += "s"
-
-    if meta_count > 0:
-        newline = "\n"
-        prompt_addition = f" and **{meta_count}** meta-macro"
-        if meta_count > 1:
-            prompt_addition += "s"
-
-        notice = f"{notice}{prompt_addition}"
-
-    prompt += f"{newline}{notice} will be deleted."
-    message = await ctx.reply(prompt)
-
-    await message.add_reaction("✅")
-    await message.add_reaction("❌")
+    await slash_command_info(ctx, "/macros purge")
 
 
 # Statistics
