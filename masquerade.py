@@ -588,8 +588,8 @@ bot.load_extension("roll_commands")
 
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting
-    if "TOPGG_TOKEN" in os.environ:
+    if (topgg_token := os.getenv("TOPGG_TOKEN")) is not None:
         print("Establishing top.gg connection.")
-        bot.dblpy = topgg.DBLClient(bot, os.environ["TOPGG_TOKEN"], autopost=True)
+        bot.dblpy = topgg.DBLClient(bot, topgg_token, autopost=True)
 
     bot.run(os.environ["TZIMISCE_TOKEN"])
