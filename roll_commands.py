@@ -3,7 +3,6 @@
 from collections import defaultdict
 
 import discord
-
 from discord.commands import slash_command, Option
 from discord.ext import commands
 
