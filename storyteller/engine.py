@@ -100,7 +100,7 @@ async def show_stored_rolls(ctx):
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     meta_records = parse.meta_records(ctx.guild.id, ctx.author.id)
 
-    if len(stored_rolls) == 0:
+    if not stored_rolls:
         await ctx.respond(f"You have no macros on {ctx.guild}!", ephemeral=True)
     else:
         # The macro block. Users might have many macros, so we split them across multiple
@@ -122,8 +122,8 @@ def __yaml_block(lines) -> str:
     """Creates as large a YAML block as possible; returns it and the remainder of the array."""
     block = "```yaml\n"
     while len(lines) > 0 and len(block) < 1500:
-        line = lines.pop(0)
-        block += f"{line[0]}: {line[1]}\n"
+        macro, syntax = lines.pop(0)
+        block += f"{macro}: {syntax}\n"
     block += "\n```\n"
 
     return block, lines
