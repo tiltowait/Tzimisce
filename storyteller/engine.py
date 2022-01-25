@@ -66,15 +66,7 @@ async def handle_command(command, ctx, send=True):
 
 async def __send_response(ctx, response):
     """Sends the response to the given channel."""
-    message = None
-
-    # If the ctx's content is None, then there is no message to reply to
-    if ctx.message.content is None:
-        message = await ctx.send(
-            embed=response.embed, content=response.mentioned_content(ctx.author)
-        )
-    else:
-        message = await ctx.reply(embed=response.embed, content=response.content)
+    message = await ctx.respond(embed=response.embed, content=response.content)
 
     if response.add_reaction:
         await message.add_reaction("👍")
