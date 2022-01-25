@@ -16,7 +16,7 @@ class RollCommands(commands.Cog):
     GUILD_IDS = [758492110591885373]
 
 
-    async def _roll(self, ctx, syntax: str, *options):
+    async def _roll(self, ctx, syntax: str, botch: str, *options):
         """Perform a roll."""
 
         # Split the comment from the syntax
@@ -36,14 +36,17 @@ class RollCommands(commands.Cog):
         guild_settings = storyteller.settings.settings_for_guild(ctx.guild)
         command.update(guild_settings)
 
-        # See what options the user has selected, if any
+        # See what options the user has selected, if any. These options are all
+        # very terse due to artifacts from the old command structure. A proper
+        # rewrite would be more elegant.
+
         if "w" in options:
             command["will"] = "w"
         if "c" in options or guild_settings["use_compact"]:
             command["use_compact"] = "c"
             if ctx.guild:
                 storyteller.engine.statistics.increment_compact_rolls(ctx.guild)
-        if "z" in options:
+        if botch == "Yes":
             command["never_botch"] = "z"
 
         # If the bot doesn't have embed permissions, then we don't want to count that in the stats
@@ -60,10 +63,16 @@ class RollCommands(commands.Cog):
         syntax: Option(
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
-        )
+        ),
+        botch: Option(
+            str,
+            "Whether to allow botching (default yes)",
+            choices=["Yes", "No"],
+            default="Yes"
+        ),
     ):
         """Roll the dice."""
-        await self._roll(ctx, syntax)
+        await self._roll(ctx, syntax, botch)
 
 
 
@@ -74,10 +83,16 @@ class RollCommands(commands.Cog):
         syntax: Option(
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
-        )
+        ),
+        botch: Option(
+            str,
+            "Whether to allow botching (default yes)",
+            choices=["Yes", "No"],
+            default="Yes"
+        ),
     ):
         """Roll the dice using compact mode."""
-        await self._roll(ctx, syntax, "c")
+        await self._roll(ctx, syntax, botch, "c")
 
 
     @slash_command(guild_ids=GUILD_IDS)
@@ -87,10 +102,16 @@ class RollCommands(commands.Cog):
         syntax: Option(
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
-        )
+        ),
+        botch: Option(
+            str,
+            "Whether to allow botching (default yes)",
+            choices=["Yes", "No"],
+            default="Yes"
+        ),
     ):
         """Roll the dice, adding Willpower."""
-        await self._roll(ctx, syntax, "w")
+        await self._roll(ctx, syntax, botch, "w")
 
 
     @slash_command(guild_ids=GUILD_IDS)
@@ -100,10 +121,16 @@ class RollCommands(commands.Cog):
         syntax: Option(
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
-        )
+        ),
+        botch: Option(
+            str,
+            "Whether to allow botching (default yes)",
+            choices=["Yes", "No"],
+            default="Yes"
+        ),
     ):
         """Roll the dice using compact mode, adding Willpower."""
-        await self._roll(ctx, syntax, "c", "w")
+        await self._roll(ctx, syntax, botch, "c", "w")
 
 
 def setup(bot):
