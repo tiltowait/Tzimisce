@@ -578,9 +578,9 @@ def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
 
 # END BOT DEFINITIONS
 
-bot.load_extension("roll_commands")
-bot.load_extension("misc_commands")
-bot.load_extension("macro_commands")
+bot.load_extension("interface.roll_commands")
+bot.load_extension("interface.misc_commands")
+bot.load_extension("interface.macro_commands")
 
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting
