@@ -5,15 +5,19 @@ from collections import defaultdict
 from typing import Optional
 
 import discord
+from dotenv import load_dotenv
 import topgg
 import pymongo
 import statcord
 from discord.ext import commands
 
 import storyteller
+import debug
 
 
 # Setup
+
+load_dotenv()
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
@@ -80,6 +84,15 @@ async def on_message(message):
 
 # Commands
 
+# This is only temporary until May 2022
+
+async def slash_command_info(ctx, repl):
+    """Print a message about slash commands."""
+    await ctx.reply(
+        f"Due to upcoming Discord changes, this command has been replaced with `{repl}`."
+    )
+
+
 # m - Invoke a roll
 # w - Use Willpower
 # c - Use compact mode
@@ -94,41 +107,13 @@ standard_aliases = [
 @bot.group(invoke_without_command=True, name="m", aliases=standard_aliases)
 async def standard_roll(ctx, *, args=None):
     """Primary function. Perform a pool or traditional roll."""
-    if not args:
-        await __help(ctx)
-        return
-
-    # Split the comment from the syntax
-    content = ctx.message.content.split(" ", 1)[1] # Just the command arguments
-    content = content.split("#", 1) # Split out the comment from the syntax
-    syntax = content[0]
-    comment = content[1] if len(content) > 1 else None
-
-    if len(syntax) == 0: # Can happen if user supplies a comment without syntax
-        raise IndexError
-
-    command = defaultdict(lambda: None)
-    command["syntax"] = " ".join(syntax.split())
-    command["comment"] = " ".join(comment.split()) if comment else None
-
-    guild_settings = storyteller.settings.settings_for_guild(ctx.guild)
-    command.update(guild_settings)
-
-    # See what options the user has selected, if any
+    command = "roll"
     if "w" in ctx.invoked_with:
-        command["will"] = "w"
-    if "c" in ctx.invoked_with or guild_settings["use_compact"]:
-        command["use_compact"] = "c"
-        if ctx.guild:
-            storyteller.engine.statistics.increment_compact_rolls(ctx.guild)
-    if "z" in ctx.invoked_with:
-        command["never_botch"] = "z"
+        command = "w" + command
+    if "c" in ctx.invoked_with:
+        command = "c" + command
 
-    # If the bot doesn't have embed permissions, then we don't want to count that in the stats
-    if not ctx.channel.permissions_for(ctx.me).embed_links:
-        command["use_compact"] = "c"
-
-    await storyteller.engine.handle_command(command, ctx)
+    await slash_command_info(ctx, f"/{command}")
 
 
 # Subcommands
@@ -179,32 +164,25 @@ async def settings(ctx, *args):
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
+    await slash_command_info(ctx, "/coinflip")
+
+
+@bot.slash_command(guild_ids=debug.GUILDS)
+async def coinflip(ctx):
+    """Flip a coin!"""
     coin = storyteller.roll.traditional.roll(1, 2)[0]
     if coin == 1:
-        coin = "Heads!"
+        coin = "**Heads!**"
     else:
-        coin = "Tails!"
+        coin = "**Tails!**"
 
-    await ctx.reply(f"{coin}")
+    await ctx.respond(coin)
 
 
 @standard_roll.command()
 async def chance(ctx):
     """Roll a chance die (primarily for CofD games)."""
-    command = defaultdict(lambda: False)
-    command.update(storyteller.settings.settings_for_guild(ctx.guild))
-
-    # A chance roll is 1d10, and you may only succeed on a 10. A 1 is a critical failure. We need to
-    # override some/most server settings to make sure the roll is done correctly. As of now, the
-    # only thing we're keeping is †he compact mode flag; however, additional settings may be added
-    # in the future, so the framework is laid now.
-    command["syntax"] = "1 10"
-    command["comment"] = "Chance roll. Succeed on 10, botch on 1. Is today your lucky day?"
-    command["chronicles"] = False # Have to override this, because a chance roll is closer to WoD
-    command["xpl_always"] = False
-    command["never_botch"] = False
-
-    await storyteller.engine.handle_command(command, ctx)
+    await slash_command_info(ctx, "/chance")
 
 
 @standard_roll.command(name="help")

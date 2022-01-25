@@ -1,3 +1,4 @@
+python-dotenv
 psycopg2-binary==2.9.3
 dice==3.1.2
 topggpy==1.4.0
