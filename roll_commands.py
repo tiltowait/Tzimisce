@@ -8,7 +8,6 @@ from discord.commands import slash_command, Option
 from discord.ext import commands
 
 import storyteller
-import debug
 
 
 class RollCommands(commands.Cog):
@@ -54,7 +53,7 @@ class RollCommands(commands.Cog):
         await storyteller.engine.handle_command(command, ctx)
 
 
-    @slash_command(guild_ids=debug.GUILDS)
+    @slash_command()
     async def mm(
         self,
         ctx: discord.ApplicationContext,
@@ -74,7 +73,7 @@ class RollCommands(commands.Cog):
 
 
 
-    @slash_command(guild_ids=debug.GUILDS)
+    @slash_command()
     async def cmm(
         self,
         ctx: discord.ApplicationContext,
@@ -93,7 +92,7 @@ class RollCommands(commands.Cog):
         await self._roll(ctx, syntax, botch, "c")
 
 
-    @slash_command(guild_ids=debug.GUILDS)
+    @slash_command()
     async def mw(
         self,
         ctx: discord.ApplicationContext,
@@ -112,7 +111,7 @@ class RollCommands(commands.Cog):
         await self._roll(ctx, syntax, botch, "w")
 
 
-    @slash_command(guild_ids=debug.GUILDS)
+    @slash_command()
     async def cmw(
         self,
         ctx: discord.ApplicationContext,
@@ -131,7 +130,7 @@ class RollCommands(commands.Cog):
         await self._roll(ctx, syntax, botch, "c", "w")
 
 
-    @slash_command(guild_ids=debug.GUILDS)
+    @slash_command()
     async def chance(self, ctx):
         """Roll a chance die (primarily for CofD games)."""
         command = defaultdict(lambda: False)

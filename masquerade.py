@@ -12,7 +12,6 @@ import statcord
 from discord.ext import commands
 
 import storyteller
-import debug
 
 
 # Setup
@@ -23,7 +22,17 @@ async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
     return storyteller.settings.get_prefixes(message.guild)
 
-bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
+
+if (debug_guilds := os.getenv('DEBUG')) is not None:
+    print("Debugging on", debug_guilds)
+    debug_guilds = [int(debug_guilds)]
+
+bot = commands.Bot(
+    command_prefix=determine_prefix,
+    case_insensitive=True,
+    debug_guilds=debug_guilds
+)
+
 bot.remove_command("help")
 
 # Statcord
@@ -165,7 +174,7 @@ async def coin_flip(ctx):
     await slash_command_info(ctx, "/coinflip")
 
 
-@bot.slash_command(guild_ids=debug.GUILDS)
+@bot.slash_command()
 async def coinflip(ctx):
     """Flip a coin!"""
     coin = storyteller.roll.traditional.roll(1, 2)[0]
