@@ -194,7 +194,7 @@ async def __help(ctx):
 @commands.guild_only()
 async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
-    await storyteller.engine.show_stored_rolls(ctx)
+    await slash_command_info(ctx, "/macros list")
 
 
 @standard_roll.command(name="$delete-all")
@@ -580,6 +580,7 @@ def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
 
 bot.load_extension("roll_commands")
 bot.load_extension("misc_commands")
+bot.load_extension("macro_commands")
 
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting

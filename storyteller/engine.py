@@ -103,14 +103,11 @@ async def show_stored_rolls(ctx):
     if len(stored_rolls) == 0:
         await ctx.respond(f"You have no macros on {ctx.guild}!", ephemeral=True)
     else:
-        await ctx.respond("List sent. Please check your DMs!", ephemeral=True)
-
         # The macro block. Users might have many macros, so we split them across multiple
         # messages if the total length exceeds 2000 characters.
-        await ctx.author.send(f"Here are your macros on **{ctx.guild}**:\n")
-        while len(stored_rolls) > 0:
+        while stored_rolls:
             block, stored_rolls = __yaml_block(stored_rolls)
-            await ctx.author.send(block)
+            await ctx.respond(block, ephemeral=True)
 
         # The meta-macro block. It's theoretically possible that meta-macros exceed 2000 characters
         # in length, but it is extremely unlikely based on use patterns. We opt against splitting to
@@ -118,7 +115,7 @@ async def show_stored_rolls(ctx):
         if len(meta_records) > 0:
             message = "Meta-macros (remember to prepend with $):\n"
             message += __yaml_block(meta_records)[0]
-            await ctx.author.send(message)
+            await ctx.respond(message, ephemeral=True)
 
 
 def __yaml_block(lines) -> str:
