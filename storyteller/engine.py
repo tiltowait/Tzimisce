@@ -196,7 +196,7 @@ def build_embed(
         embed.set_footer(text=footer)
 
     if author:
-        avatar = author.avatar_url
+        avatar = author.display_avatar
         author = author.display_name
 
         if header:
