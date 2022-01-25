@@ -1,5 +1,7 @@
 """roll_commands.py - Cog for roll commands and related."""
 
+# pylint: disable=invalid-name
+
 from collections import defaultdict
 
 import discord
@@ -12,7 +14,7 @@ import storyteller
 class RollCommands(commands.Cog):
     """A simple cog that exposes the roll command interface."""
 
-    async def _roll(self, ctx, syntax: str, botch: str, *options):
+    async def _roll(self, ctx, syntax: str, *options):
         """Perform a roll."""
 
         # Split the comment from the syntax
@@ -42,7 +44,7 @@ class RollCommands(commands.Cog):
             command["use_compact"] = "c"
             if ctx.guild:
                 storyteller.engine.statistics.increment_compact_rolls(ctx.guild)
-        if botch == "No":
+        if "z" in options:
             command["never_botch"] = "z"
 
         # If the bot doesn't have embed permissions, then we don't want to count that in the stats
@@ -60,16 +62,9 @@ class RollCommands(commands.Cog):
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
         ),
-        botch: Option(
-            str,
-            "Whether to allow botching (default yes)",
-            choices=["Yes", "No"],
-            default="Yes"
-        ),
     ):
         """Roll the dice."""
-        await self._roll(ctx, syntax, botch)
-
+        await self._roll(ctx, syntax)
 
 
     @slash_command()
@@ -80,15 +75,9 @@ class RollCommands(commands.Cog):
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
         ),
-        botch: Option(
-            str,
-            "Whether to allow botching (default yes)",
-            choices=["Yes", "No"],
-            default="Yes"
-        ),
     ):
         """Roll the dice using compact mode."""
-        await self._roll(ctx, syntax, botch, "c")
+        await self._roll(ctx, syntax, "c")
 
 
     @slash_command()
@@ -99,15 +88,9 @@ class RollCommands(commands.Cog):
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
         ),
-        botch: Option(
-            str,
-            "Whether to allow botching (default yes)",
-            choices=["Yes", "No"],
-            default="Yes"
-        ),
     ):
         """Roll the dice, adding Willpower."""
-        await self._roll(ctx, syntax, botch, "w")
+        await self._roll(ctx, syntax, "w")
 
 
     @slash_command()
@@ -118,15 +101,63 @@ class RollCommands(commands.Cog):
             str,
             "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
         ),
-        botch: Option(
-            str,
-            "Whether to allow botching (default yes)",
-            choices=["Yes", "No"],
-            default="Yes"
-        ),
     ):
         """Roll the dice using compact mode, adding Willpower."""
-        await self._roll(ctx, syntax, botch, "c", "w")
+        await self._roll(ctx, syntax, "c", "w")
+
+
+    # "Zero Botch" commands
+
+    @slash_command()
+    async def zmm(
+        self,
+        ctx: discord.ApplicationContext,
+        syntax: Option(
+            str,
+            "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
+        ),
+    ):
+        """Roll the dice. Botches are simple failures."""
+        await self._roll(ctx, syntax, "z")
+
+
+    @slash_command()
+    async def zmw(
+        self,
+        ctx: discord.ApplicationContext,
+        syntax: Option(
+            str,
+            "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
+        ),
+    ):
+        """Roll the dice, adding Willpower. Botches are simple failures."""
+        await self._roll(ctx, syntax, "z", "w")
+
+
+    @slash_command()
+    async def czmm(
+        self,
+        ctx: discord.ApplicationContext,
+        syntax: Option(
+            str,
+            "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
+        ),
+    ):
+        """Roll the dice using compact mode. Botches are simple failures."""
+        await self._roll(ctx, syntax, "c", "z")
+
+
+    @slash_command()
+    async def czmw(
+        self,
+        ctx: discord.ApplicationContext,
+        syntax: Option(
+            str,
+            "Format: POOL [DIFF] [AUTOS] [SPEC] [# Comment] Everything in brackets is optional"
+        ),
+    ):
+        """Roll the dice using compact mode and adding Willpower. Botches are simple failures."""
+        await self._roll(ctx, syntax, "c", "z", "w")
 
 
     @slash_command()

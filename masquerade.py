@@ -117,6 +117,8 @@ standard_aliases = [
 async def standard_roll(ctx, *, args=None):
     """Primary function. Perform a pool or traditional roll."""
     command = "mw" if "w" in ctx.invoked_with else "mm"
+    if "z" in ctx.invoked_with:
+        command = "z" + command
     if "c" in ctx.invoked_with:
         command = "c" + command
 
