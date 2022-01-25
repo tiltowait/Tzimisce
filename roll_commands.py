@@ -22,7 +22,7 @@ class RollCommands(commands.Cog):
         content = content.split("#", 1)
 
         syntax = content.pop(0)
-        comment = content or None
+        comment = content[0] if content else None
 
         if not syntax:
             raise IndexError
