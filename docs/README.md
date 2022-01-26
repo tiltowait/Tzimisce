@@ -1,7 +1,7 @@
 **\[Tzimisce\]** is a Discord dicebot for White Wolf's World of Darkness RPGs, including **Vampire: The Masquerade** (V20), **Mage: The Ascension** (M20), **Werewolf: The Apocalypse** (W20), and **Wraith: The Oblivion** (WtO). It features simple syntax; easy-to-read, color-coded output; and a number of advanced features.
 
 > ### Quick Links
-> * **[Invite \[Tzimisce\] to your server](https://top.gg/bot/642775025770037279)**
+> * **[Invite \[Tzimisce\] to your server](https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot)**
 > * **[Join the support server](https://discord.gg/rK3RFqV)**
 > * **[View the source code](https://github.com/tiltowait/Tzimisce)**
 > * **[Become a patron](https://www.patreon.com/tiltowait)**
@@ -19,7 +19,7 @@
 #### ** Basics **
 
 ```
-!m <pool> [difficulty] [specialty] # comment
+/mm syntax: <pool> [difficulty] [specialty] # comment
 ```
 
 * `pool` — Number of dice to roll
@@ -31,14 +31,14 @@
 
 #### Examples
 
-* `!m 5` — Roll 5 dice at difficulty 6
-* `!m 5 7 # Mask of 1000 Faces` — 5 dice, difficulty 7, with a comment
-* `!m 8 5 Domineering # Command` — 8 dice, difficulty 5, specialty "Domineering", and a comment
+* `/mm syntax: 5` — Roll 5 dice at difficulty 6
+* `/mm syntax: 5 7 # Mask of 1000 Faces` — 5 dice, difficulty 7, with a comment
+* `/mm syntax: 8 5 Domineering # Command` — 8 dice, difficulty 5, specialty "Domineering", and a comment
 
 #### ** Willpower **
 
 ```
-!mw <syntax>
+/mw syntax: <pool> [difficulty] [specialty] # comment
 ```
 
 Adding Willpower to a roll adds an extra success which cannot be canceled by botches. The rest of the roll syntax is the same. May be combined with other options.
@@ -46,7 +46,7 @@ Adding Willpower to a roll adds an extra success which cannot be canceled by bot
 #### ** Auto-Successes **
 
 ```
-!m <pool> <difficulty> <autos> [specialty] # comment
+/mm syntax: <pool> <difficulty> <autos> [specialty] # comment
 ```
 
 In order to add Potence-style automatic successes, both the `pool` and the `difficulty` must be supplied. May be combined with other options.
@@ -55,19 +55,21 @@ In order to add Potence-style automatic successes, both the `pool` and the `diff
 
 #### ** Options **
 
-|                 |       |                                                   |
-|-----------------|-------|---------------------------------------------------|
-| Upgrade botches | `!mz` | Promotes botches to regular failures              |
-| Compact mode    | `!mc` | Outputs results in plain text instead of an embed |
+There are different ways of invoking a roll.
 
-?> These options, as well as Willpower, may be combined. Thus, `!mwcz` becomes a compact Willpower roll that cannot botch (though by definition, a Willpower roll can't botch).
+|                 |        |                                                   |
+|-----------------|--------|---------------------------------------------------|
+| Upgrade botches | `/zmm` | Promotes botches to regular failures              |
+| Compact mode    | `/cmm` | Outputs results in plain text instead of an embed |
+
+?> These options, as well as Willpower, may be combined. Thus, `/czmw` becomes a compact Willpower roll that cannot botch (though by definition, a Willpower roll can't botch).
 
 <!-- tabs:end -->
 
 ## Traditional Rolls
 
 ```
-!m XdY+...+n # comment
+/mm syntax: XdY+...+n # comment
 ```
 
 \[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, 3d6\*7d10/(2d4+1d2), etc. This may be combined with **compact mode** (`!mc`). Other options are ignored.
@@ -81,7 +83,7 @@ In order to add Potence-style automatic successes, both the `pool` and the `diff
 #### ** Create **
 
 ```
-!m <macro-name> = <syntax> # comment
+/mm syntax: <macro-name> = <syntax> # comment
 ```
 
 The `macro-name` must not contain spaces but can contain both `-` and `_` characters. The roll syntax can be any valid roll. If supplied, the `# comment` will be used every time you use the macro unless overridden.
@@ -94,9 +96,9 @@ To use a macro, simply type `!m <macro-name>`. Macros support all the standard r
 
 #### Examples
 
-* `!m attack = 7 Graceful # Dex + Brawl` — Saves both the roll syntax and the comment
-* `!m attack` — Rolls the `attack` macro
-* `!m attack # Using claws` — Rolls the `attack` macro, supplying a different comment
+* `/mm syntax: attack = 7 Graceful # Dex + Brawl` — Saves both the roll syntax and the comment
+* `/mm syntax: attack` — Rolls the `attack` macro
+* `/mm syntax: attack # Using claws` — Rolls the `attack` macro, supplying a different comment
 
 #### ** Modify **
 
@@ -104,14 +106,14 @@ To use a macro, simply type `!m <macro-name>`. Macros support all the standard r
 
 Updating a macro is as simple as using the creation command again. Note that if the current macro has a comment and you do not supply a new one, the old comment will be retained.
 
-You may update *just the comment* with `!m <macro_name> c= <new_comment>`.
+You may update *just the comment* with `/mm syntax: <macro_name> c= <new_comment>`.
 
 #### One-Time
 
 It is also possible to modify a macro for a single roll (for instance, if your character suffers from wound penalties). The syntax for this is:
 
 ```
-!m <macro-name> <pool-mod> [diff-mod] # comment
+/mm syntax: <macro-name> <pool-mod> [diff-mod] # comment
 ```
 
 * `pool-mod` — A positive or negative integer that adds or subtracts from the dice pool
@@ -119,9 +121,9 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### Examples
 
-* `!m attack +2` — Rolls the `attack` macro with two extra dice
-* `!m attack 0 +1` — Rolls the `attack` macro with zero extra dice, at one higher difficulty than normal
-* `!m attack -1 5` — Rolls the `attack` macro with one fewer die, at difficulty 5
+* `/mm syntax: attack +2` — Rolls the `attack` macro with two extra dice
+* `/mm syntax: attack 0 +1` — Rolls the `attack` macro with zero extra dice, at one higher difficulty than normal
+* `/mm syntax: attack -1 5` — Rolls the `attack` macro with one fewer die, at difficulty 5
 
 !> `pool-mod` requires a +/- sign!
 
@@ -129,18 +131,18 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### ** Delete **
 
-| Command                                   | Syntax              |
-|-------------------------------------------|---------------------|
-| **Delete `macro-name`**                   | `!m <macro-name> =` |
-| **Delete all your macros on this server** | `!m $delete-all`    |
+| Command                                   | Syntax                       |
+|-------------------------------------------|------------------------------|
+| **Delete `macro-name`**                   | `/mm syntax: <macro-name> =` |
+| **Delete all your macros on this server** | `/macros purge`              |
 
 !> These actions cannot be undone!
 
 #### ** List **
 
-|                  |                                         |
-|------------------|-----------------------------------------|
-| `!m $`           | DMs a list of your macros on the server |
+|                |                                              |
+|----------------|----------------------------------------------|
+| `/macros list` | Displays a list of your macros on the server |
 
 
 <!-- tabs:end -->
@@ -151,7 +153,7 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### ** Roll **
 ```
-!mi <mod> [character]
+/init add mod: <mod> character: [character]
 ```
 
 * `mod` — The Dex + Wits modifier
@@ -161,7 +163,7 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### ** Declare **
 ```
-!mi dec <action> [-n character] [-c celerity]
+/init dec declaration: <action> [-n character] [-c celerity]
 ```
 
 * `action` — The action to be declared
@@ -174,13 +176,13 @@ It is also possible to modify a macro for a single roll (for instance, if your c
 
 #### ** Other **
 
-| Command                    | Syntax                                     |
-|----------------------------|--------------------------------------------|
-| **Remove a character**     | `!mi remove [character]`                   |
-| **Reroll all initiative**  | `!mi reroll`  (removes declared actions)   |
-| **Increase initiative**    | `!mi +[mod]` (add `mod` to current)        |
-| **Decrease initiative**    | `!mi -[mod]` (subtract `mod` from current) |
-| **Clear initiative table** | `!mi clear`                                |
+| Command                    | Syntax                                                |
+|----------------------------|-------------------------------------------------------|
+| **Remove a character**     | `/init rm character: [character]`                     |
+| **Reroll all initiative**  | `/init reroll`  (removes declared actions)            |
+| **Increase initiative**    | `/init add mod: +[mod]` (add `mod` to current)        |
+| **Decrease initiative**    | `/init add mod: -[mod]` (subtract `mod` from current) |
+| **Clear initiative table** | `/init clear`                                         |
 
 <!-- tabs:end -->
 
@@ -194,20 +196,20 @@ Meta-macros are macros that call a series of macros. Each meta-macro may contain
 
 Every meta-macro begins with the `$` character. Creation follows a similar syntax to regular macro creation, with each component macro being separated by a space.
 
-```!m $<meta> = <macro1> <macro2> ... <macroN>```
+```/mm syntax: $<meta> = <macro1> <macro2> ... <macroN>```
 
-Using a metamacro is as simple as `!m $<meta>`.
+Using a metamacro is as simple as `/mm syntax: $<meta>`.
 
 #### Example
 
-* `!m $rituals = pavis deflection impressive-visage ironbody` — Will create a meta-macro called `$rituals` that calls the macros `pavis`, `deflection`, `impressive-visage`, and `ironbody` when used. To invoke: `!m $rituals`
+* `/mm syntax: $rituals = pavis deflection impressive-visage ironbody` — Will create a meta-macro called `$rituals` that calls the macros `pavis`, `deflection`, `impressive-visage`, and `ironbody` when used. To invoke: `/mm syntax: $rituals`
 
 #### ** Other Commands **
 
-| Command               | Syntax                                                      |
-|-----------------------|-------------------------------------------------------------|
-| **Delete meta-macro** | `!m $<meta> =` (where `meta` is the name of the meta-macro) |
-| **List meta-macros**  | `!m $`  (also lists regular macros)                         |
+| Command               | Syntax                                                               |
+|-----------------------|----------------------------------------------------------------------|
+| **Delete meta-macro** | `/mm syntax: $<meta> =` (where `meta` is the name of the meta-macro) |
+| **List meta-macros**  | `/macros list` (also lists regular macros)                           |
 
 <!-- tabs:end -->
 
@@ -216,7 +218,7 @@ Using a metamacro is as simple as `!m $<meta>`.
 **[Tzimisce]** can give you statistics for any pool-based roll using the default rolling rules. This includes the average number of successes, probability of a certain number of successes, botch rate, and more.
 
 ```
-!m stats <pool> <difficulty> [target]
+/stats syntax: <pool> <difficulty> [target]
 ```
 
 | Parameter    | Explanation                                                                        |
@@ -236,7 +238,6 @@ Statistics are calculated using standard probability models and are thus more ac
 
 | Parameter       | Description                                                                           |
 |-----------------|---------------------------------------------------------------------------------------|
-| `prefix`        | Change the bot's invocation prefix. Defaults to `!` and `/`                           |
 | `use_compact`   | Always use compact mode for rolls                                                     |
 | `unsort_rolls`  | Display dice in roll order rather than sort order.                                    |
 | `default_diff`  | The default difficulty for pool-based rolls. Default `6`.                             |
@@ -253,16 +254,16 @@ Statistics are calculated using standard probability models and are thus more ac
 
 #### ** Commands **
 
-| Command                        | Syntax                       |
-|--------------------------------|------------------------------|
-| **View server settings**       | `!m set`                     |
-| **View parameter description** | `!m set <parameter>`         |
-| **Set parameter**              | `!m set <parameter> <value>` |
+| Command                        | Syntax                                   |
+|--------------------------------|------------------------------------------|
+| **View server settings**       | `/settings view`                         |
+| **View parameter description** | `/settings info key: <key>`              |
+| **Set parameter**              | `/settings set key: <key> vale: <value>` |
 
 <!-- tabs:end -->
 
 # Chronicles of Darkness
-**\[Tzimisce\]** supports Chronicles of Darkness games. To enable, simply enter `/m set chronicles true`. This will set the difficulty to 8, enable explosions, disable ones, and cause Willpower to add 3 dice. These parameters are all modifiable in order to create a truly custom roll experience. Disabling Chronicles mode resets those parameters to the default values.
+**\[Tzimisce\]** supports Chronicles of Darkness games. To enable, simply enter `/settings set key: chronicles value: true`. This will set the difficulty to 8, enable explosions, disable ones, and cause Willpower to add 3 dice. These parameters are all modifiable in order to create a truly custom roll experience. Disabling Chronicles mode resets those parameters to the default values.
 
 # Troubleshooting
 If you cannot see rolls, check that the bot has the permissions below. If it still doesn't work ensure you have the Discord setting, "Show website preview info from links pasted into chat", enabled under Text & Images. If you *still* cannot see rolls, you may have antivirus that's blocking them (McAfee and possibly some others do this).
@@ -271,9 +272,8 @@ If you cannot see rolls, check that the bot has the permissions below. If it sti
 
 * **Send Messages:** Should be obvious, no?
 * **Embed Links:** Used for roll display (outside of compact mode), initiative, help display, etc.
-* **Read Message History:** Used for the reply feature
+* **Use Slash Commands:** Due to Discord policy, all bots in 100+ servers must use slash commands for interactions.
 
 ## Optional Permissions <!-- {docsify-ignore} -->
 
-* **Add Reactions:** Used when suggesting macro names and alerting the user that an action declaration was registered. If not granted, the user can't click to automatically roll a macro suggestion, and there will be no feedback that an action declaration has been logged
 * **Use external emojis:** Used for color-coded display of pool-based dice results. If not granted, it will default to plaintext
