@@ -210,81 +210,37 @@ async def statistics(ctx):
 init_aliases = ["minit", "mcinit", "mci", "minitc", "mic"]
 @bot.group(invoke_without_command=True, name="mi", aliases=init_aliases, case_insensitive=True)
 @commands.guild_only()
-async def initiative_manager(ctx, mod: str=None, *, character: str=None, use_embed: bool=None):
+async def initiative_manager(ctx):
     """Displays the initiative table for the current channel."""
-
-    if use_embed is None:
-        use_embed = not __use_compact_mode(ctx.invoked_with, ctx.guild.id)
-
-    # Parse the command
-    response = storyteller.parse.initiative(ctx, mod, character, use_embed)
-    if response.both_set:
-        await ctx.send(content=response.content, embed=response.embed)
-    else:
-        await ctx.reply(content=response.content, embed=response.embed)
+    await slash_command_info(ctx, "/init")
 
 
 @initiative_manager.command(aliases=["reset", "clear", "empty"])
 @commands.guild_only()
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
-    try:
-        storyteller.initiative.remove_table(ctx.channel.id)
-        await ctx.reply("Reset initiative in this channel!")
-    except KeyError:
-        await ctx.reply("This channel's initiative table is already empty!")
+    await slash_command_info(ctx, "/init clear")
 
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
-async def initiative_remove_character(ctx, *, character_name=None):
+async def initiative_remove_character(ctx):
     """Remove a character from initiative manager."""
-    response = storyteller.parse.initiative_removal(ctx, character_name)
-    await ctx.reply(content=response.content, embed=response.embed)
+    await slash_command_info(ctx, "/init rm")
 
 
 @initiative_manager.command(name="reroll")
 @commands.guild_only()
 async def initiative_reroll(ctx):
     """Rerolls all initiative and prints the new table."""
-    manager = storyteller.initiative.get_table(ctx.channel.id)
-
-    if manager:
-        # Reroll and store the new initiatives before displaying
-        manager.reroll()
-
-        for character, init in manager.characters.items():
-            storyteller.initiative.set_initiative(
-                ctx.guild.id, ctx.channel.id, character, init.mod, init.die
-            )
-
-        # discord.py provides no means of checking which alias was used to invoke
-        # a subcommand, so we have to manipulate the raw message string itself by
-        # removing the bot prefix from the message and passing that to
-        # __use_compact_mode() instead of passing the simpler ctx.invoked_with.
-        #
-        # Technically, this means the user can accidentally toggle compact mode
-        # by supplying arguments *after* "reroll"; however, as doing so is far
-        # from the end of the world, we won't care about that.
-        prefix = ctx.prefix
-        command = ctx.message.content.replace(prefix, "")
-        use_embed = not __use_compact_mode(command, ctx.guild.id)
-
-        await initiative_manager(ctx, use_embed=use_embed) # Print the new initiative table
-    else:
-        await ctx.send("Initiative isn't set for this channel!")
+    await slash_command_info(ctx, "/init reroll")
 
 
 @initiative_manager.command(name="declare", aliases=["dec"])
 @commands.guild_only()
-async def initiative_declare(ctx, *args):
+async def initiative_declare(ctx):
     """Declare an initiative action."""
-    try:
-        storyteller.parse.initiative_declare(ctx, args)
-        await ctx.message.add_reaction("👍")
-        await ctx.message.add_reaction("⚔️")
-    except SyntaxError as error:
-        await ctx.reply(error)
+    await slash_command_info(ctx, "/init dec")
 
 
 # Events

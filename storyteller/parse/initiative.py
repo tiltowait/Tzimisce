@@ -11,7 +11,13 @@ from storyteller.initiative import InitiativeManager
 from .response import Response
 
 
-def initiative(ctx, mod: Optional[int], character_name: Optional[str], use_embed: bool) -> Response:
+def initiative(
+    ctx,
+    mod: Optional[int],
+    character_name: Optional[str],
+    reroll: bool,
+    use_embed: bool,
+) -> Response:
     """
     Parse minit input and return appropriate results.
     Args:
@@ -46,7 +52,7 @@ def initiative(ctx, mod: Optional[int], character_name: Optional[str], use_embed
                 use_embed=use_embed
             )
 
-            if ctx.invoked_with == "reroll":
+            if reroll:
                 if use_embed:
                     response.content = "Rerolling initiative!"
                 else:
@@ -133,9 +139,9 @@ def initiative_removal(ctx, character_name: str) -> Response:
 
             response.content = message
         else:
-            response.content = f"Unable to remove {character}; not in initiative!"
+            raise ValueError(f"Unable to remove {character}; not in initiative!")
     else:
-        response.content = "Initiative isn't running in this channel!"
+        raise ValueError("Initiative isn't running in this channel!")
 
     return response
 
@@ -174,9 +180,10 @@ def initiative_declare(ctx, args: list):
             parsed = parser.parse_args(args)
 
         # Correctly form a character name, if provided
-        character = ctx.author.display_name
         if parsed.character:
             character = " ".join(parsed.character)
+        else:
+            character = ctx.author.display_name
 
         # Assign the declarations
 
@@ -198,6 +205,8 @@ def initiative_declare(ctx, args: list):
 
             for _ in range(parsed.celerity):
                 manager.add_celerity(character)
+
+        return character
 
     except AttributeError:
         raise SyntaxError("Initiative isn't set in this channel!") from None
