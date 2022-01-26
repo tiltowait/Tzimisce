@@ -368,7 +368,7 @@ async def __alert_permissions(ctx):
 def __status_message():
     """Sets the bot's Discord presence message."""
     servers = len(bot.guilds)
-    return f"!m help | {servers} chronicles"
+    return f"/help | {servers} chronicles"
 
 
 def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
