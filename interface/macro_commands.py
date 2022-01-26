@@ -13,12 +13,14 @@ class MacroCommands(commands.Cog):
     macros = SlashCommandGroup("macros", "Macro commands.")
 
     @macros.command(name="list")
+    @commands.guild_only()
     async def macro_list(self, ctx):
         """List all your macros on this server."""
         await storyteller.engine.show_stored_rolls(ctx)
 
 
     @macros.command()
+    @commands.guild_only()
     async def purge(self, ctx):
         """Remove all macros you have on this server."""
         macro_count, meta_count = storyteller.engine.macro_counts(ctx)

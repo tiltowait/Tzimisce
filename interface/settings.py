@@ -12,6 +12,7 @@ class SettingsCommands(commands.Cog):
     settings = SlashCommandGroup("settings", "Server settings management.")
 
     @settings.command()
+    @commands.guild_only()
     async def view(self, ctx):
         """View the server's settings."""
         prefix = storyteller.settings.get_prefixes(ctx.guild.id)[0]
@@ -26,6 +27,7 @@ class SettingsCommands(commands.Cog):
 
 
     @settings.command()
+    @commands.guild_only()
     async def info(
         self,
         ctx,
@@ -38,6 +40,7 @@ class SettingsCommands(commands.Cog):
 
 
     @settings.command()
+    @commands.guild_only()
     async def set(
         self,
         ctx,
