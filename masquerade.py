@@ -87,10 +87,20 @@ async def on_message(message):
 
 # This is only temporary until May 2022
 
+class DocumentationLink(discord.ui.View):
+    """A simple view that shows a link to the documentation."""
+
+    def __init__(self):
+        super().__init__()
+        url = "https://www.storyteller-bot.com/#/"
+        self.add_item(discord.ui.Button(label="More Information", url=url))
+
+
 async def slash_command_info(ctx, repl):
     """Print a message about slash commands."""
     await ctx.reply(
-        f"Due to upcoming Discord changes, this command has been replaced with `{repl}`."
+        f"Due to upcoming Discord changes, this command has been replaced with `{repl}`.",
+        view=DocumentationLink()
     )
 
 
