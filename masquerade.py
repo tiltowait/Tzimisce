@@ -207,62 +207,9 @@ async def delete_all(ctx):
 # Statistics
 
 @standard_roll.command(aliases=["stats"])
-async def statistics(ctx, *args):
+async def statistics(ctx):
     """Prints statistics for a given dice pool."""
-    usage = "Expected arguments: <pool> <difficulty> <target>"
-    try:
-        args = list(args)
-        pool = int(args.pop(0))
-        diff = int(args.pop(0))
-        target = 1
-
-        if len(args) > 0:
-            target = int(args.pop(0))
-
-        # Check our constraints
-        if not 1 <= pool <= 30:
-            raise ValueError("Error! Pool must be between 1-30!")
-
-        if not 2 <= diff <= 10:
-            raise ValueError("Error! Difficulty must be between 2-10!")
-
-        if not 1 <= target <= (pool * 2):
-            raise ValueError("Error! Success target must be between 1 and twice your pool!")
-
-        prob = storyteller.probabilities.get_probabilities(pool, diff, target)
-
-        # Properly pluralize "successes", when applicable
-        success = "success"
-        if target > 1:
-            success += "es"
-
-        title = f"Statistics for {target} {success} at {pool} v {diff}"
-        embed = discord.Embed(title=title)
-
-        standard = f"**Average successes:** {prob.avg:.3}\n"
-        standard += f"**{target}+ {success}:** {prob.prob:.3%}\n"
-        standard += f"**Using Willpower:** {prob.prob_wp:.3%}\n"
-        standard += f"**Total Failure:** {prob.fail:.3%}\n"
-        standard += f"**Botch:** {prob.botch:.3%}"
-
-        spec = f"**Average successes:** {prob.avg_spec:.3}\n"
-        spec += f"**{target}+ {success}:** {prob.prob_spec:.3%}\n"
-        spec += f"**Using Willpower:** {prob.prob_spec_wp:.3%}\n"
-        spec += f"**Total Failure:** {prob.fail_spec:.3%}\n"
-        spec += f"**Botch:** {prob.botch:.3%}"
-
-        embed.add_field(name="Standard Roll", value=standard, inline=False)
-        embed.add_field(name="With Specialty", value=spec, inline=False)
-
-        await ctx.reply(embed=embed)
-    except IndexError:
-        await ctx.reply(usage)
-    except ValueError as error:
-        await ctx.reply(f"{error}\n{usage}")
-
-    # Log statistics
-    if ctx.guild:
-        storyteller.engine.statistics.increment_stats_calculated(ctx.guild)
+    await slash_command_info(ctx, "/stats")
 
 
 # Initiative Management
