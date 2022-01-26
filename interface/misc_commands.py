@@ -1,6 +1,5 @@
 """misc_commands.py - A cog that has miscellaneous commands."""
 
-import discord
 from discord.commands import slash_command
 from discord.ext import commands
 
