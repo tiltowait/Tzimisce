@@ -15,6 +15,7 @@ class InitiativeCommands(commands.Cog):
     init = SlashCommandGroup("init", "Initiative Manager")
 
     @init.command()
+    @commands.guild_only()
     async def show(self, ctx):
         """Show the current channel's initiative table."""
         response = _init_parse(ctx)
@@ -22,6 +23,7 @@ class InitiativeCommands(commands.Cog):
 
 
     @init.command()
+    @commands.guild_only()
     async def add(
         self,
         ctx: discord.ApplicationContext,
@@ -37,6 +39,7 @@ class InitiativeCommands(commands.Cog):
             await ctx.respond("**Error:** `mod` must be a number.", ephemeral=True)
 
     @init.command()
+    @commands.guild_only()
     async def rm(self, ctx, character: Option(str, "The character to remove", default="")):
         """Remove a character from the channel's initiative table."""
         try:
@@ -47,6 +50,7 @@ class InitiativeCommands(commands.Cog):
 
 
     @init.command()
+    @commands.guild_only()
     async def reroll(self, ctx):
         """Re-roll this channel's initiative."""
         manager = storyteller.initiative.get_table(ctx.channel.id)
@@ -67,6 +71,7 @@ class InitiativeCommands(commands.Cog):
 
 
     @init.command()
+    @commands.guild_only()
     async def dec(
         self,
         ctx,
@@ -82,6 +87,7 @@ class InitiativeCommands(commands.Cog):
 
 
     @init.command()
+    @commands.guild_only()
     async def clear(self, ctx):
         """Clear this channel's initiative table."""
         try:
