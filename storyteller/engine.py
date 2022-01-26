@@ -79,7 +79,11 @@ async def __send_response(ctx, response):
         )
     else:
         confirm = None
-        await ctx.respond(embed=response.embed, content=response.content)
+        await ctx.respond(
+            embed=response.embed,
+            content=response.content,
+            ephemeral=response.ephemeral
+        )
 
     if confirm is not None:
         await confirm.wait()
