@@ -1,6 +1,5 @@
 """settings.py - Guild settings cog."""
 
-import discord
 from discord.commands import SlashCommandGroup, Option
 from discord.ext import commands
 
@@ -19,7 +18,7 @@ class SettingsCommands(commands.Cog):
         msg = []
         for param in storyteller.settings.available_parameters:
             value = storyteller.settings.value(ctx.guild.id, param)
-            msg.append(f"`{param}`: `{value}`")
+            msg.append(f"**{param}**: `{value}`")
         msg = "\n".join(msg)
         details = f"For more info or to set: `{prefix} settings <parameter> [value]`"
 
