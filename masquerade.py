@@ -378,9 +378,10 @@ async def on_guild_remove(guild):
 
 
 @bot.event
-async def on_guild_update(_, after):
+async def on_guild_update(before, after):
     """Sometimes guilds are renamed. Fix that."""
-    storyteller.engine.statistics.rename_guild(after.id, after.name)
+    if before.name != after.name:
+        storyteller.engine.statistics.rename_guild(after.id, after.name)
 
 
 @bot.event
