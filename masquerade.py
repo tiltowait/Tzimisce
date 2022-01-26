@@ -124,42 +124,7 @@ async def standard_roll(ctx):
 @commands.has_permissions(administrator=True)
 async def settings(ctx, *args):
     """Fetch or update server settings."""
-
-    # Display settings
-    if len(args) < 1:
-        prefix = storyteller.settings.get_prefixes(ctx.guild.id)[0]
-        msg = []
-        for param in storyteller.settings.available_parameters:
-            value = storyteller.settings.value(ctx.guild.id, param)
-            msg.append(f"`{param}`: `{value}`")
-        msg = "\n".join(msg)
-        details = f"For more info or to set: `{prefix} settings <parameter> [value]`"
-
-        await ctx.reply(f"This server's settings:\n{msg}\n{details}")
-        return
-
-    if len(args) > 2:
-        await ctx.reply("Error! Too many arguments.")
-        return
-
-    # Display or update indivitual settings
-    key = args[0]
-    try:
-        # Display
-        if len(args) < 2:
-            value = storyteller.settings.value(ctx.guild.id, key)
-            info = storyteller.settings.parameter_information(key)
-            await ctx.reply(f"{info} (Current: `{value}`)")
-        # Update
-        else:
-            new_value = args[1]
-            if key == storyteller.settings.PREFIX and new_value == "reset":
-                new_value = None
-
-            message = storyteller.settings.update(ctx.guild.id, key, new_value)
-            await ctx.reply(message)
-    except ValueError as error:
-        await ctx.reply(error)
+    await slash_command_info(ctx, "/settings")
 
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
