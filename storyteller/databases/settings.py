@@ -21,7 +21,7 @@ class SettingsDB(Database):
     CHRONICLES = "chronicles"
 
     __PARAMETERS = {
-        PREFIX: "Defines the bot invocation prefix.",
+        PREFIX: "(DEPRECATED) Defines the bot invocation prefix.",
         "use_compact": "Set the server to always use compact rolls.",
         "unsort_rolls": "Dice are displayed in roll order vs. sorted.",
         DEFAULT_DIFF: "The default difficulty for a pool-based roll.",
