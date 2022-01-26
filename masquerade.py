@@ -371,25 +371,6 @@ def __status_message():
     return f"/help | {servers} chronicles"
 
 
-def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
-    """
-    Determine whether a command should use compact mode.
-    Args:
-        invocation (str): The string used to invoke the command
-        guildid (Optional[int]): The Discord ID of the guild where the bot was invoked
-    Returns (bool): True if the bot should use compact mode
-    """
-
-    # Note that some care must be taken when passing the bot invocation. Some commands,
-    # such as "coin" and "chance", always have a 'c' in them. In these instances, it is
-    # safest simply to pass an empty string.
-    if "c" in invocation:
-        return True
-
-    guild_settings = storyteller.settings.settings_for_guild(guildid)
-    return guild_settings["use_compact"]
-
-
 # END BOT DEFINITIONS
 
 for filename in os.listdir("./interface"):
