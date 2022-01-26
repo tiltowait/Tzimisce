@@ -349,65 +349,6 @@ async def initiative_declare(ctx, *args):
 
 # Events
 
-def __is_valid_reaction(reaction, user, emoji):
-    """Determines if the correct user clicked the correct reaction."""
-    if reaction.emoji == emoji and reaction.message.author == bot.user:
-        return user in reaction.message.mentions
-    return False
-
-
-def suggestion_to_roll(reaction, user):
-    """Returns a suggested macro if the correct user replies with a thumbsup."""
-    if __is_valid_reaction(reaction, user, "👍"):
-        match = storyteller.engine.suggestx.search(reaction.message.content)
-        if match:
-            return match.group("suggestion")
-
-    return None
-
-
-@bot.event
-async def on_reaction_add(reaction, user):
-    """Rolls a macro correction suggestion if certain conditions are met."""
-    suggestion = suggestion_to_roll(reaction, user)
-    if suggestion:
-        command = defaultdict(lambda: None)
-        match = storyteller.engine.invokex.match(suggestion)
-        command.update(match.groupdict())
-
-        # Get the server settings
-        guild_settings = storyteller.settings.settings_for_guild(reaction.message.guild)
-        command.update(guild_settings)
-
-        await reaction.message.delete()
-
-        # We are going to try to reply to the original invocation message. If
-        # that fails, then we will simply @ the user.
-        ctx = await __get_reaction_message_reference_context(reaction, user)
-        ctx.author = user
-
-        await storyteller.engine.handle_command(command, ctx)
-    elif __is_valid_reaction(reaction, user, "✅"):
-        ctx = await __get_reaction_message_reference_context(reaction, user)
-        await storyteller.engine.delete_user_rolls(ctx)
-        await reaction.message.delete()
-    elif __is_valid_reaction(reaction, user, "❌"):
-        await reaction.message.delete()
-
-
-async def __get_reaction_message_reference_context(reaction, user):
-    """Returns the context of the message replied to in the reaction's message."""
-    ctx = await bot.get_context(reaction.message)
-    try:
-        msg = await ctx.fetch_message(reaction.message.reference.message_id)
-        ctx = await bot.get_context(msg)
-        return ctx
-    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
-        # If the above fails, we return the reaction's message context and zero out the content."""
-        ctx.author = user
-        ctx.message.content = None
-        return ctx
-
 
 @bot.event
 async def on_ready():

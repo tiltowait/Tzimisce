@@ -1,7 +1,7 @@
 """macro_commands.py - Macro-related commands"""
 
 import discord
-from discord.commands import slash_command, Option, SlashCommandGroup
+from discord.commands import SlashCommandGroup
 from discord.ext import commands
 
 import storyteller

@@ -2,11 +2,14 @@
 
 import re
 import asyncio
+from collections import defaultdict
 
 import discord
 
+import storyteller
 from storyteller import parse
 from storyteller.databases import RollDB, StatisticsDB
+
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
@@ -66,10 +69,33 @@ async def handle_command(command, ctx, send=True):
 
 async def __send_response(ctx, response):
     """Sends the response to the given channel."""
-    message = await ctx.respond(embed=response.embed, content=response.content)
-
     if response.add_reaction:
-        await message.add_reaction("👍")
+        confirm = storyteller.views.Confirmation()
+        await ctx.respond(
+            embed=response.embed,
+            content=response.content,
+            view=confirm,
+            ephemeral=True
+        )
+    else:
+        confirm = None
+        await ctx.respond(embed=response.embed, content=response.content)
+
+    if confirm is not None:
+        await confirm.wait()
+        if confirm.confirmed:
+            if (match := suggestx.search(response.content)) is not None:
+                suggestion = match.group("suggestion")
+
+                command = defaultdict(lambda: None)
+                match = invokex.match(suggestion)
+                command.update(match.groupdict())
+
+                # Get the server settings
+                guild_settings = storyteller.settings.settings_for_guild(ctx.guild)
+                command.update(guild_settings)
+
+                await handle_command(command, ctx)
 
     if ctx.guild:
         statistics.increment_rolls(ctx.guild)
