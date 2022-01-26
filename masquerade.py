@@ -443,9 +443,10 @@ def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
 
 # END BOT DEFINITIONS
 
-bot.load_extension("interface.roll_commands")
-bot.load_extension("interface.misc_commands")
-bot.load_extension("interface.macro_commands")
+for filename in os.listdir("./interface"):
+    if filename.endswith(".py"):
+        bot.load_extension(f"interface.{filename[:-3]}")
+
 
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting
