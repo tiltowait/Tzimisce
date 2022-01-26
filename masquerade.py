@@ -114,7 +114,7 @@ standard_aliases = [
 
 
 @bot.group(invoke_without_command=True, name="m", aliases=standard_aliases)
-async def standard_roll(ctx, *, args=None):
+async def standard_roll(ctx):
     """Primary function. Perform a pool or traditional roll."""
     command = "mw" if "w" in ctx.invoked_with else "mm"
     if "z" in ctx.invoked_with:
