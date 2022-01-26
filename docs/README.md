@@ -1,5 +1,7 @@
 **\[Tzimisce\]** is a Discord dicebot for White Wolf's World of Darkness RPGs, including **Vampire: The Masquerade** (V20), **Mage: The Ascension** (M20), **Werewolf: The Apocalypse** (W20), and **Wraith: The Oblivion** (WtO). It features simple syntax; easy-to-read, color-coded output; and a number of advanced features.
 
+!> **Important!** Due to Discord changes, **[Tzimisce]** is moving to the new slash/application command interface. This means that the old commands will no longer work. Please read below for the new commands. If they do not work, you may need to re-invite **[Tzimisce]** to your server by clicking the link below.
+
 > ### Quick Links
 > * **[Invite \[Tzimisce\] to your server](https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot)**
 > * **[Join the support server](https://discord.gg/rK3RFqV)**
