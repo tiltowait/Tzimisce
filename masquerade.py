@@ -1,13 +1,11 @@
 """Creates and connects an instance of the Tzimisce dicebot."""
 
 import os
-from collections import defaultdict
 from typing import Optional
 
 import discord
 from dotenv import load_dotenv
 import topgg
-import pymongo
 import statcord
 from discord.ext import commands
 
@@ -41,8 +39,6 @@ if "STATCORD" in os.environ:
     api.start_loop()
 else:
     api = None
-
-PLAYER_COL = pymongo.MongoClient(os.environ["TZIMISCE_MONGO"]).tzimisce.interactions
 
 
 @bot.event
@@ -86,9 +82,6 @@ async def on_message(message):
 
     message.content = content
     await bot.process_commands(message)
-
-    # Log the interaction
-    PLAYER_COL.insert_one({ "guild": message.guild.name, "user": message.author.id })
 
 
 # Commands
