@@ -27,17 +27,6 @@ def initiative(
         use_embed (bool): Whether to use an embed or inline text
     Returns (Response): The bot's response to the command
     """
-
-    # Craft a usage message
-    prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
-    usage = "**Initiative Manager Commands**\n"
-    usage += f"`{prefix}i` — Show initiative table (if one exists in this channel)\n"
-    usage += f"`{prefix}i <mod> <character>` — Roll initiative (character optional)\n"
-    usage += f"`{prefix}i dec <action> [-n character] [-c N]` — Declare a character action\n"
-    usage += f"`{prefix}i remove [character]` — Remove initiative (character optional)\n"
-    usage += f"`{prefix}i reroll` — Reroll all initiatives\n"
-    usage += f"`{prefix}i clear` — Clear the table"
-
     manager = storyteller.initiative.get_table(ctx.channel.id)
     response = Response(Response.INITIATIVE) # Used for error/usage messages
 
@@ -48,7 +37,7 @@ def initiative(
             response = __generate_response(
                 title="Initiative",
                 content=str(manager),
-                footer="Commands: remove | clear | reroll | declare",
+                footer="Commands: rm | clear | reroll | dec",
                 use_embed=use_embed
             )
 
@@ -61,58 +50,53 @@ def initiative(
             return response
 
         # With no initiative table, display the help message instead
-        response.content = usage
-        return response
+        raise ValueError("There's no initiative in this channel!")
 
     # Rolling a new initiative or augmenting an old one
-    try:
-        if not manager:
-            manager = InitiativeManager()
+    if not manager:
+        manager = InitiativeManager()
 
-        # If the user supplies a +/- sign on their mod, that means they are augmenting
-        # their existing modifier in-place. If they do not supply a sign, they
-        # are rolling a new initiative
-        is_augmenting = mod[0] == "-" or mod[0] == "+"
-        mod = int(mod)
+    # If the user supplies a +/- sign on their mod, that means they are augmenting
+    # their existing modifier in-place. If they do not supply a sign, they
+    # are rolling a new initiative
+    is_augmenting = mod[0] == "-" or mod[0] == "+"
+    mod = int(mod)
 
-        character_name = character_name or ctx.author.display_name
+    character_name = character_name or ctx.author.display_name
 
-        init = None
-        if not is_augmenting:
-            init = manager.add_init(character_name, mod)
-            storyteller.initiative.add_table(ctx.channel.id, manager)
-        else:
-            init = manager.modify_init(character_name, mod)
-            if not init:
-                response.content = f"{character_name} has no initiative to modify!"
-                return response
+    init = None
+    if not is_augmenting:
+        init = manager.add_init(character_name, mod)
+        storyteller.initiative.add_table(ctx.channel.id, manager)
+    else:
+        init = manager.modify_init(character_name, mod)
+        if not init:
+            response.content = f"{character_name} has no initiative to modify!"
+            return response
 
-        # Build the embed
-        title = f"{character_name}'s Initiative"
+    # Build the embed
+    title = f"{character_name}'s Initiative"
 
-        entry = "entries" if manager.count > 1 else "entry"
-        footer = f"{manager.count} {entry} in table. To see initiative: {prefix}i"
+    entry = "entries" if manager.count > 1 else "entry"
+    footer = f"{manager.count} {entry} in table. To see initiative: /init show"
 
-        if is_augmenting:
-            footer = f"Initiative modified by {mod:+}.\n{footer}"
+    if is_augmenting:
+        footer = f"Initiative modified by {mod:+}.\n{footer}"
 
-        response = __generate_response(
-            title=title,
-            content=str(init),
-            footer=footer,
-            use_embed=use_embed
-        )
+    response = __generate_response(
+        title=title,
+        content=str(init),
+        footer=footer,
+        use_embed=use_embed
+    )
 
-        # Track the initiative in the database
-        storyteller.initiative.set_initiative(
-            ctx.guild.id, ctx.channel.id, character_name, init.mod, init.die
-        )
-        storyteller.engine.statistics.increment_initiative_rolls(ctx.guild)
+    # Track the initiative in the database
+    storyteller.initiative.set_initiative(
+        ctx.guild.id, ctx.channel.id, character_name, init.mod, init.die
+    )
+    storyteller.engine.statistics.increment_initiative_rolls(ctx.guild)
 
-        return response
-    except ValueError:
-        response.content = usage
-        return response
+    return response
 
 
 def initiative_removal(ctx, character_name: str) -> Response:
