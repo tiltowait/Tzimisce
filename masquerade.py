@@ -1,7 +1,6 @@
 """Creates and connects an instance of the Tzimisce dicebot."""
 
 import os
-from typing import Optional
 
 import discord
 from dotenv import load_dotenv
