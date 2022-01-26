@@ -122,7 +122,7 @@ async def standard_roll(ctx):
 @standard_roll.command(aliases=["set", "setting"])
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
-async def settings(ctx, *args):
+async def settings(ctx):
     """Fetch or update server settings."""
     await slash_command_info(ctx, "/settings")
 
