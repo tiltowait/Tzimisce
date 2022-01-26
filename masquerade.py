@@ -20,14 +20,14 @@ async def determine_prefix(_, message):
     return storyteller.settings.get_prefixes(message.guild)
 
 
-if (debug_guilds := os.getenv('DEBUG')) is not None:
-    print("Debugging on", debug_guilds)
-    debug_guilds = [int(debug_guilds)]
+if (debug_guild := os.getenv('DEBUG')) is not None:
+    print("Debugging on", debug_guild)
+    debug_guild = [int(debug_guild)]
 
 bot = commands.Bot(
     command_prefix=determine_prefix,
     case_insensitive=True,
-    debug_guilds=debug_guilds
+    debug_guilds=debug_guild
 )
 
 bot.remove_command("help")
