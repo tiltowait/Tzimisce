@@ -41,6 +41,7 @@ class SettingsCommands(commands.Cog):
 
     @settings.command()
     @commands.guild_only()
+    @commands.has_permissions(administrator=True)
     async def set(
         self,
         ctx,
@@ -52,10 +53,6 @@ class SettingsCommands(commands.Cog):
         value: Option(str, "The new setting. True/False for most, but some take a number")
     ):
         """Change a server setting."""
-        if not ctx.author.guild_permissions.administrator:
-            await ctx.respond("Only server admins can change these settings.", ephemeral=True)
-            return
-
         if key == storyteller.settings.PREFIX and value == "reset":
             value = None
 

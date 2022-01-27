@@ -268,6 +268,17 @@ async def on_command(ctx):
 
 
 @bot.event
+async def on_application_command_error(ctx, error):
+    """Inform user of errors."""
+    if isinstance(error.original, commands.NoPrivateMessage):
+        await ctx.respond("Sorry, this can't be done in DMs.", ephemeral=True)
+    elif isinstance(error.original, commands.MissingPermissions):
+        await ctx.respond("Sorry, you don't have permission to do this.", ephemeral=True)
+    else:
+        await ctx.respond("Sorry, I've encountered an error.", ephemeral=True)
+
+
+@bot.event
 async def on_command_error(ctx, error):
     """Ignore CommandNotFound errors."""
     # pylint: disable=too-many-return-statements
