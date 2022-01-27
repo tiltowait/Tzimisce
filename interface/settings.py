@@ -15,15 +15,14 @@ class SettingsCommands(commands.Cog):
     @commands.guild_only()
     async def view(self, ctx):
         """View the server's settings."""
-        prefix = storyteller.settings.get_prefixes(ctx.guild.id)[0]
         msg = []
         for param in storyteller.settings.available_parameters:
             value = storyteller.settings.value(ctx.guild.id, param)
             msg.append(f"**{param}**: `{value}`")
         msg = "\n".join(msg)
-        details = f"For more info or to set: `{prefix} settings <parameter> [value]`"
+        details = "**Note:** The `prefix` parameter is deprecated and will soon be removed."
 
-        await ctx.respond(f"This server's settings:\n{msg}\n{details}")
+        await ctx.respond(f"This server's settings:\n{msg}\n\n{details}")
 
 
     @settings.command()
