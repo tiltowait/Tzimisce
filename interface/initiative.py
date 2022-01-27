@@ -1,6 +1,7 @@
 """initiative.py - Cog for managing initiative."""
-
 # pylint: disable=invalid-name
+
+import re
 
 import discord
 from discord.commands import SlashCommandGroup, Option
@@ -33,6 +34,14 @@ class InitiativeCommands(commands.Cog):
         """Add a character to the initiative table."""
         try:
             int(mod)
+
+            # Convert @mentions to text
+            character = " ".join(character.split())
+            while (match := re.search(r"(<@!(\d+)>)", character)) is not None:
+                member_id = match.group(2)
+                member = await ctx.guild.fetch_member(member_id)
+                character = character.replace(match.group(1), member.display_name)
+
             response = _init_parse(ctx, mod, character)
             await ctx.respond(content=response.content, embed=response.embed)
         except ValueError:
