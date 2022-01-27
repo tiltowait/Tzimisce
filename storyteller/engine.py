@@ -70,7 +70,7 @@ async def handle_command(command, ctx, send=True):
 async def __send_response(ctx, response):
     """Sends the response to the given channel."""
     if response.add_reaction:
-        confirm = storyteller.views.Confirmation()
+        confirm = storyteller.views.Confirmation("Yes")
         await ctx.respond(
             embed=response.embed,
             content=response.content,

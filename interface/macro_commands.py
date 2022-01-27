@@ -45,7 +45,7 @@ class MacroCommands(commands.Cog):
 
         if macro_count + meta_count > 0:
             prompt += f"{newline}{notice} will be deleted."
-            confirmation = storyteller.views.Confirmation(discord.ButtonStyle.danger)
+            confirmation = storyteller.views.Confirmation(confirm_style=discord.ButtonStyle.danger)
             await ctx.respond(prompt, view=confirmation, ephemeral=True)
             await confirmation.wait()
 

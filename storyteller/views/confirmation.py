@@ -7,11 +7,11 @@ from discord.ui import Button
 class Confirmation(discord.ui.View):
     """Presents an Okay/Cancel button pair."""
 
-    def __init__(self, confirmation_style=discord.ButtonStyle.primary):
+    def __init__(self, confirm_label="Confirm", confirm_style=discord.ButtonStyle.primary):
         super().__init__()
         self.confirmed = False
 
-        confirm = Button(label="Confirm", style=confirmation_style)
+        confirm = Button(label=confirm_label, style=confirm_style)
         confirm.callback = self.confirm
 
         self.add_item(confirm)
