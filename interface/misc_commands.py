@@ -3,8 +3,19 @@
 import discord
 from discord.commands import slash_command, Option
 from discord.ext import commands
+from discord.ui import View, Button
 
 import storyteller
+
+
+class _LinkView(View):
+    """A view with support links."""
+
+    def __init__(self):
+        super().__init__()
+        self.add_item(Button(label="Documentation", url="https://www.storyteller-bot.com/#/"))
+        self.add_item(Button(label="Support", url="https://discord.gg/rK3RFqV"))
+        self.add_item(Button(label="Patreon", url="https://www.patreon.com/tiltowait"))
 
 
 class MiscCommands(commands.Cog):
@@ -14,7 +25,7 @@ class MiscCommands(commands.Cog):
     async def __help(self, ctx):
         """Displays the basic syntax and a link to the full help file."""
         embed = storyteller.engine.help_embed("/mm syntax:")
-        await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, view=_LinkView())
 
 
     @slash_command()

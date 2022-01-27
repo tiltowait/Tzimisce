@@ -188,11 +188,6 @@ def help_embed(prefix):
         inline=False
     )
     embed.add_field(name="Example", value=f"```{prefix} 8 5 Mesmerizing # Summon```", inline=False)
-    embed.add_field(
-        name="Become a Patron",
-        value=r"Support \[Tzimisce\]'s development [here](https://www.patreon.com/tzimisce)!",
-        inline=False
-    )
 
     return embed
 
