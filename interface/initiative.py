@@ -36,7 +36,10 @@ class InitiativeCommands(commands.Cog):
             response = _init_parse(ctx, mod, character)
             await ctx.respond(content=response.content, embed=response.embed)
         except ValueError:
-            await ctx.respond("**Error:** `mod` must be a number.", ephemeral=True)
+            await ctx.respond(
+                "**Error:** `mod` must be a number. Use `character` parameter to add a character.",
+                ephemeral=True
+            )
 
     @init.command()
     @commands.guild_only()
