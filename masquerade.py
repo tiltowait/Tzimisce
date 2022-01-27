@@ -92,17 +92,23 @@ class DocumentationLink(discord.ui.View):
 
     def __init__(self):
         super().__init__()
-        url = "https://www.storyteller-bot.com/#/"
-        self.add_item(discord.ui.Button(label="More Information", url=url))
+        self.add_item(discord.ui.Button(
+            label="More Information",
+            url="https://www.storyteller-bot.com/#/"
+        ))
+        self.add_item(discord.ui.Button(
+            label="Re-Invite [Tzimisce]",
+            url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot"
+        ))
 
 
 async def slash_command_info(ctx, *repls):
     """Print a message about slash commands."""
     repls = " or ".join(map(lambda r: f"`{r}`", repls))
-    await ctx.reply(
-        f"Due to upcoming Discord changes, this command has been replaced with {repls}.",
-        view=DocumentationLink()
-    )
+    msg = f"Due to upcoming Discord changes, this command has been replaced with {repls}."
+    msg += "\nSlash commands not working? Try clicking the button to re-invite [Tzimisce]."
+
+    await ctx.reply(msg, view=DocumentationLink())
 
 
 # m - Invoke a roll
