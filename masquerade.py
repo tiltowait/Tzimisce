@@ -261,7 +261,7 @@ async def on_guild_channel_delete(channel):
 
 
 @bot.event
-async def on_command(ctx):
+async def on_application_command(ctx):
     """Post to Statcord."""
     if api is not None:
         api.command_run(ctx)
