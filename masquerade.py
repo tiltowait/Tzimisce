@@ -276,6 +276,7 @@ async def on_application_command_error(ctx, error):
         await ctx.respond("Sorry, you don't have permission to do this.", ephemeral=True)
     else:
         await ctx.respond("Sorry, I've encountered an error.", ephemeral=True)
+        raise error
 
 
 @bot.event
