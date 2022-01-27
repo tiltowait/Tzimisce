@@ -179,7 +179,7 @@ def help_embed(prefix):
 
     # Not using build_embed() because we need a little more than it offers
     embed=discord.Embed(
-        title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/",
+        title="[Tzimisce] | Help", url="https://www.storyteller-bot.com/#/",
         description="Click above for a complete listing of commands: Macros, initiative, and more!"
     )
     embed.add_field(
