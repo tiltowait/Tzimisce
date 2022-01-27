@@ -96,10 +96,11 @@ class DocumentationLink(discord.ui.View):
         self.add_item(discord.ui.Button(label="More Information", url=url))
 
 
-async def slash_command_info(ctx, repl):
+async def slash_command_info(ctx, *repls):
     """Print a message about slash commands."""
+    repls = " or ".join(map(lambda r: f"`{r}`", repls))
     await ctx.reply(
-        f"Due to upcoming Discord changes, this command has been replaced with `{repl}`.",
+        f"Due to upcoming Discord changes, this command has been replaced with {repls}.",
         view=DocumentationLink()
     )
 
@@ -186,7 +187,7 @@ init_aliases = ["minit", "mcinit", "mci", "minitc", "mic"]
 @commands.guild_only()
 async def initiative_manager(ctx):
     """Displays the initiative table for the current channel."""
-    await slash_command_info(ctx, "/init")
+    await slash_command_info(ctx, "/init show", "/init add")
 
 
 @initiative_manager.command(aliases=["reset", "clear", "empty"])
