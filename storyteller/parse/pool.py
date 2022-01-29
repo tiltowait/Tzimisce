@@ -190,7 +190,11 @@ def __build_embed(
 
     # Display individual dice as emoji, if available
     #if ctx.channel.permissions_for(ctx.me).external_emojis and len(results.dice) <= 40:
-    if len(results.dice) <= 40:
+    perms = ctx.channel.permissions_for(ctx.me)
+    print(perms)
+    print(dir(perms))
+    print("Emojis?", perms.external_emojis)
+    if perms.external_emojis and len(results.dice) <= 40:
         names = results.dice_emoji_names
         emojis = __emojify_dice(ctx, names, will, autos)
         fields.append(("Dice", emojis, True))
