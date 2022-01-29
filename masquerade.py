@@ -33,8 +33,8 @@ bot = commands.Bot(
 bot.remove_command("help")
 
 # Statcord
-if (statcord := os.getenv("STATCORD")) is not None:
-    api = statcord.Client(bot, statcord)
+if (statcord_token := os.getenv("STATCORD")) is not None:
+    api = statcord.Client(bot, statcord_token)
     api.start_loop()
 else:
     api = None
