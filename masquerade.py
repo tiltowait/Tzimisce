@@ -252,7 +252,7 @@ async def on_guild_join(guild):
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
     print(f"Removing {guild}.")
-    storyteller.settings.remove_guild(guild.id)
+    #storyteller.settings.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 
