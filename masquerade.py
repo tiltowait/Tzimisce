@@ -107,7 +107,8 @@ async def slash_command_info(ctx, *repls):
     repls = " or ".join(map(lambda r: f"`{r}`", repls))
     msg = f"Due to upcoming Discord changes, this command has been replaced with {repls}."
     msg += "\nSlash commands not working? Try clicking the button to re-invite [Tzimisce]."
-    msg += "\n**You may need to *remove* the bot before re-inviting!"
+    msg += "\n\n**You may need to *remove* the bot before re-inviting!** In addition, the"
+    msg += " `@everyone` role needs the *Use Slash Commands* permission."
 
     await ctx.reply(msg, view=DocumentationLink())
 
