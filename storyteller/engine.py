@@ -2,11 +2,14 @@
 
 import re
 import asyncio
+from collections import defaultdict
 
 import discord
 
+import storyteller
 from storyteller import parse
 from storyteller.databases import RollDB, StatisticsDB
+
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
@@ -30,7 +33,7 @@ async def handle_command(command, ctx, send=True):
         reduction = len(command["comment"]) - 500
         characters = "character" if reduction == 1 else "characters"
 
-        await ctx.reply(f"Comment too long by {reduction} {characters}.")
+        await ctx.respond(f"Comment too long by {reduction} {characters}.", ephemeral=True)
         return
 
     # If the command involves the RollDB, we need to modify the syntax first
@@ -61,23 +64,42 @@ async def handle_command(command, ctx, send=True):
         return
 
     # Unrecognized input
-    await ctx.reply("Come again?")
+    await ctx.respond("Come again?", ephemeral=True)
 
 
 async def __send_response(ctx, response):
     """Sends the response to the given channel."""
-    message = None
-
-    # If the ctx's content is None, then there is no message to reply to
-    if ctx.message.content is None:
-        message = await ctx.send(
-            embed=response.embed, content=response.mentioned_content(ctx.author)
+    if response.add_reaction:
+        confirm = storyteller.views.Confirmation("Yes")
+        await ctx.respond(
+            embed=response.embed,
+            content=response.content,
+            view=confirm,
+            ephemeral=True
         )
     else:
-        message = await ctx.reply(embed=response.embed, content=response.content)
+        confirm = None
+        await ctx.respond(
+            embed=response.embed,
+            content=response.content,
+            ephemeral=response.ephemeral
+        )
 
-    if response.add_reaction:
-        await message.add_reaction("👍")
+    if confirm is not None:
+        await confirm.wait()
+        if confirm.confirmed:
+            if (match := suggestx.search(response.content)) is not None:
+                suggestion = match.group("suggestion")
+
+                command = defaultdict(lambda: None)
+                match = invokex.match(suggestion)
+                command.update(match.groupdict())
+
+                # Get the server settings
+                guild_settings = storyteller.settings.settings_for_guild(ctx.guild)
+                command.update(guild_settings)
+
+                await handle_command(command, ctx)
 
     if ctx.guild:
         statistics.increment_rolls(ctx.guild)
@@ -108,17 +130,14 @@ async def show_stored_rolls(ctx):
     stored_rolls = database.stored_rolls(ctx.guild.id, ctx.author.id)
     meta_records = parse.meta_records(ctx.guild.id, ctx.author.id)
 
-    if len(stored_rolls) == 0:
-        await ctx.reply(f"You have no macros on {ctx.guild}!")
+    if not stored_rolls:
+        await ctx.respond(f"You have no macros on {ctx.guild}!", ephemeral=True)
     else:
-        await ctx.reply("List sent. Please check your DMs!")
-
         # The macro block. Users might have many macros, so we split them across multiple
         # messages if the total length exceeds 2000 characters.
-        await ctx.author.send(f"Here are your macros on **{ctx.guild}**:\n")
-        while len(stored_rolls) > 0:
+        while stored_rolls:
             block, stored_rolls = __yaml_block(stored_rolls)
-            await ctx.author.send(block)
+            await ctx.respond(block, ephemeral=True)
 
         # The meta-macro block. It's theoretically possible that meta-macros exceed 2000 characters
         # in length, but it is extremely unlikely based on use patterns. We opt against splitting to
@@ -126,15 +145,15 @@ async def show_stored_rolls(ctx):
         if len(meta_records) > 0:
             message = "Meta-macros (remember to prepend with $):\n"
             message += __yaml_block(meta_records)[0]
-            await ctx.author.send(message)
+            await ctx.respond(message, ephemeral=True)
 
 
 def __yaml_block(lines) -> str:
     """Creates as large a YAML block as possible; returns it and the remainder of the array."""
     block = "```yaml\n"
     while len(lines) > 0 and len(block) < 1500:
-        line = lines.pop(0)
-        block += f"{line[0]}: {line[1]}\n"
+        macro, syntax = lines.pop(0)
+        block += f"{macro}: {syntax}\n"
     block += "\n```\n"
 
     return block, lines
@@ -152,10 +171,7 @@ async def delete_user_rolls(ctx):
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
     message = f"Deleted your macros on {ctx.guild}."
 
-    if ctx.message.content:
-        await ctx.reply(message)
-    else:
-        await ctx.send(f"{ctx.author.mention}: {message}")
+    await ctx.respond(message, ephemeral=True)
 
 
 def help_embed(prefix):
@@ -163,7 +179,7 @@ def help_embed(prefix):
 
     # Not using build_embed() because we need a little more than it offers
     embed=discord.Embed(
-        title="[Tzimisce] | Help", url="https://tiltowait.github.io/Tzimisce/",
+        title="[Tzimisce] | Help", url="https://www.storyteller-bot.com/#/",
         description="Click above for a complete listing of commands: Macros, initiative, and more!"
     )
     embed.add_field(
@@ -172,11 +188,6 @@ def help_embed(prefix):
         inline=False
     )
     embed.add_field(name="Example", value=f"```{prefix} 8 5 Mesmerizing # Summon```", inline=False)
-    embed.add_field(
-        name="Become a Patron",
-        value=r"Support \[Tzimisce\]'s development [here](https://www.patreon.com/tzimisce)!",
-        inline=False
-    )
 
     return embed
 
@@ -196,7 +207,7 @@ def build_embed(
         embed.set_footer(text=footer)
 
     if author:
-        avatar = author.avatar_url
+        avatar = author.display_avatar
         author = author.display_name
 
         if header:

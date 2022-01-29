@@ -5,6 +5,7 @@ from storyteller import initiative
 from storyteller import roll
 from storyteller.databases import SettingsDB, InitiativeDB, StatisticsDB
 from storyteller import probabilities
+from storyteller import views
 
 initiative = InitiativeDB()
 settings = SettingsDB()

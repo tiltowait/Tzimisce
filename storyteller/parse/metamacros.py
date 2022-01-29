@@ -32,6 +32,7 @@ def parse(ctx, command: dict, handler) -> Union[Response, MetaMacro]:
     Returns (Union[Response, MetaMacro]): A Response object to show the user
     """
     response = Response(Response.META_MACRO)
+    response.ephemeral = True
 
     if not ctx.guild:
         response.content = "Sorry, you can't use mata-macros in a private message!"
@@ -80,8 +81,9 @@ def parse(ctx, command: dict, handler) -> Union[Response, MetaMacro]:
         meta_name = match.group("name")
         if __metamacros.delete_metamacro(guildid, userid, meta_name):
             response.content = f"Deleted meta-macro `${meta_name}`!"
-            return response
-        response.content = f"Error! You have no meta-macro named `${meta_name}` on this server!"
+        else:
+            response.content = f"Error! You have no meta-macro named `${meta_name}` on this server!"
+
         return response
 
     # The user gave a bad metamacro command, so send back no response

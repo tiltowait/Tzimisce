@@ -1,12 +1,10 @@
 """Creates and connects an instance of the Tzimisce dicebot."""
 
 import os
-from collections import defaultdict
-from typing import Optional
 
 import discord
+from dotenv import load_dotenv
 import topgg
-import pymongo
 import statcord
 from discord.ext import commands
 
@@ -15,21 +13,31 @@ import storyteller
 
 # Setup
 
+load_dotenv()
+
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
     return storyteller.settings.get_prefixes(message.guild)
 
-bot = commands.Bot(command_prefix=determine_prefix, case_insensitive=True)
+
+if (debug_guild := os.getenv('DEBUG')) is not None:
+    print("Debugging on", debug_guild)
+    debug_guild = [int(debug_guild)]
+
+bot = commands.Bot(
+    command_prefix=determine_prefix,
+    case_insensitive=True,
+    debug_guilds=debug_guild
+)
+
 bot.remove_command("help")
 
 # Statcord
-if "STATCORD" in os.environ:
-    api = statcord.Client(bot, os.environ["STATCORD"])
+if (statcord := os.getenv("STATCORD")) is not None:
+    api = statcord.Client(bot, statcord)
     api.start_loop()
 else:
     api = None
-
-PLAYER_COL = pymongo.MongoClient(os.environ["TZIMISCE_MONGO"]).tzimisce.interactions
 
 
 @bot.event
@@ -74,11 +82,34 @@ async def on_message(message):
     message.content = content
     await bot.process_commands(message)
 
-    # Log the interaction
-    PLAYER_COL.insert_one({ "guild": message.guild.name, "user": message.author.id })
-
 
 # Commands
+
+# This is only temporary until May 2022
+
+class DocumentationLink(discord.ui.View):
+    """A simple view that shows a link to the documentation."""
+
+    def __init__(self):
+        super().__init__()
+        self.add_item(discord.ui.Button(
+            label="More Information",
+            url="https://www.storyteller-bot.com/#/"
+        ))
+        self.add_item(discord.ui.Button(
+            label="Re-Invite [Tzimisce]",
+            url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot"
+        ))
+
+
+async def slash_command_info(ctx, *repls):
+    """Print a message about slash commands."""
+    repls = " or ".join(map(lambda r: f"`{r}`", repls))
+    msg = f"Due to upcoming Discord changes, this command has been replaced with {repls}."
+    msg += "\nSlash commands not working? Try clicking the button to re-invite [Tzimisce]."
+
+    await ctx.reply(msg, view=DocumentationLink())
+
 
 # m - Invoke a roll
 # w - Use Willpower
@@ -92,43 +123,15 @@ standard_aliases = [
 
 
 @bot.group(invoke_without_command=True, name="m", aliases=standard_aliases)
-async def standard_roll(ctx, *, args=None):
+async def standard_roll(ctx):
     """Primary function. Perform a pool or traditional roll."""
-    if not args:
-        await __help(ctx)
-        return
-
-    # Split the comment from the syntax
-    content = ctx.message.content.split(" ", 1)[1] # Just the command arguments
-    content = content.split("#", 1) # Split out the comment from the syntax
-    syntax = content[0]
-    comment = content[1] if len(content) > 1 else None
-
-    if len(syntax) == 0: # Can happen if user supplies a comment without syntax
-        raise IndexError
-
-    command = defaultdict(lambda: None)
-    command["syntax"] = " ".join(syntax.split())
-    command["comment"] = " ".join(comment.split()) if comment else None
-
-    guild_settings = storyteller.settings.settings_for_guild(ctx.guild)
-    command.update(guild_settings)
-
-    # See what options the user has selected, if any
-    if "w" in ctx.invoked_with:
-        command["will"] = "w"
-    if "c" in ctx.invoked_with or guild_settings["use_compact"]:
-        command["use_compact"] = "c"
-        if ctx.guild:
-            storyteller.engine.statistics.increment_compact_rolls(ctx.guild)
+    command = "mw" if "w" in ctx.invoked_with else "mm"
     if "z" in ctx.invoked_with:
-        command["never_botch"] = "z"
+        command = "z" + command
+    if "c" in ctx.invoked_with:
+        command = "c" + command
 
-    # If the bot doesn't have embed permissions, then we don't want to count that in the stats
-    if not ctx.channel.permissions_for(ctx.me).embed_links:
-        command["use_compact"] = "c"
-
-    await storyteller.engine.handle_command(command, ctx)
+    await slash_command_info(ctx, f"/{command}")
 
 
 # Subcommands
@@ -136,86 +139,27 @@ async def standard_roll(ctx, *, args=None):
 @standard_roll.command(aliases=["set", "setting"])
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
-async def settings(ctx, *args):
+async def settings(ctx):
     """Fetch or update server settings."""
-
-    # Display settings
-    if len(args) < 1:
-        prefix = storyteller.settings.get_prefixes(ctx.guild.id)[0]
-        msg = []
-        for param in storyteller.settings.available_parameters:
-            value = storyteller.settings.value(ctx.guild.id, param)
-            msg.append(f"`{param}`: `{value}`")
-        msg = "\n".join(msg)
-        details = f"For more info or to set: `{prefix} settings <parameter> [value]`"
-
-        await ctx.reply(f"This server's settings:\n{msg}\n{details}")
-        return
-
-    if len(args) > 2:
-        await ctx.reply("Error! Too many arguments.")
-        return
-
-    # Display or update indivitual settings
-    key = args[0]
-    try:
-        # Display
-        if len(args) < 2:
-            value = storyteller.settings.value(ctx.guild.id, key)
-            info = storyteller.settings.parameter_information(key)
-            await ctx.reply(f"{info} (Current: `{value}`)")
-        # Update
-        else:
-            new_value = args[1]
-            if key == storyteller.settings.PREFIX and new_value == "reset":
-                new_value = None
-
-            message = storyteller.settings.update(ctx.guild.id, key, new_value)
-            await ctx.reply(message)
-    except ValueError as error:
-        await ctx.reply(error)
+    await slash_command_info(ctx, "/settings")
 
 
 @standard_roll.command(aliases=["coin", "flip", "coinflip",])
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
-    coin = storyteller.roll.traditional.roll(1, 2)[0]
-    if coin == 1:
-        coin = "Heads!"
-    else:
-        coin = "Tails!"
-
-    await ctx.reply(f"{coin}")
+    await slash_command_info(ctx, "/coinflip")
 
 
 @standard_roll.command()
 async def chance(ctx):
     """Roll a chance die (primarily for CofD games)."""
-    command = defaultdict(lambda: False)
-    command.update(storyteller.settings.settings_for_guild(ctx.guild))
-
-    # A chance roll is 1d10, and you may only succeed on a 10. A 1 is a critical failure. We need to
-    # override some/most server settings to make sure the roll is done correctly. As of now, the
-    # only thing we're keeping is †he compact mode flag; however, additional settings may be added
-    # in the future, so the framework is laid now.
-    command["syntax"] = "1 10"
-    command["comment"] = "Chance roll. Succeed on 10, botch on 1. Is today your lucky day?"
-    command["chronicles"] = False # Have to override this, because a chance roll is closer to WoD
-    command["xpl_always"] = False
-    command["never_botch"] = False
-
-    await storyteller.engine.handle_command(command, ctx)
+    await slash_command_info(ctx, "/chance")
 
 
 @standard_roll.command(name="help")
 async def __help(ctx):
     """Displays the basic syntax and a link to the full help file."""
-
-    # We want to display the correct prefix for the server
-    prefix = storyteller.settings.get_prefixes(ctx.guild)[0]
-    embed = storyteller.engine.help_embed(prefix)
-
-    await ctx.reply(embed=embed)
+    await slash_command_info(ctx, "/help")
 
 
 # Macro-Related. Must be done in a guild.
@@ -224,99 +168,22 @@ async def __help(ctx):
 @commands.guild_only()
 async def show_stored_rolls(ctx):
     """Displays the user's stored rolls."""
-    await storyteller.engine.show_stored_rolls(ctx)
+    await slash_command_info(ctx, "/macros list")
 
 
 @standard_roll.command(name="$delete-all")
 @commands.guild_only()
 async def delete_all(ctx):
     """Deletes all of a user's stored rolls."""
-    macro_count, meta_count = storyteller.engine.macro_counts(ctx)
-    prompt = "Are you sure you wish to delete your macros on this server? Click ✅ to confirm."
-
-    # Correctly pluralize and display number of macros/metamacros to delete
-    newline = ""
-    notice = ""
-    if macro_count > 0:
-        newline = "\n"
-        notice = f"**{macro_count}** macro"
-        if macro_count > 1:
-            notice += "s"
-
-    if meta_count > 0:
-        newline = "\n"
-        prompt_addition = f" and **{meta_count}** meta-macro"
-        if meta_count > 1:
-            prompt_addition += "s"
-
-        notice = f"{notice}{prompt_addition}"
-
-    prompt += f"{newline}{notice} will be deleted."
-    message = await ctx.reply(prompt)
-
-    await message.add_reaction("✅")
-    await message.add_reaction("❌")
+    await slash_command_info(ctx, "/macros purge")
 
 
 # Statistics
 
 @standard_roll.command(aliases=["stats"])
-async def statistics(ctx, *args):
+async def statistics(ctx):
     """Prints statistics for a given dice pool."""
-    usage = "Expected arguments: <pool> <difficulty> <target>"
-    try:
-        args = list(args)
-        pool = int(args.pop(0))
-        diff = int(args.pop(0))
-        target = 1
-
-        if len(args) > 0:
-            target = int(args.pop(0))
-
-        # Check our constraints
-        if not 1 <= pool <= 30:
-            raise ValueError("Error! Pool must be between 1-30!")
-
-        if not 2 <= diff <= 10:
-            raise ValueError("Error! Difficulty must be between 2-10!")
-
-        if not 1 <= target <= (pool * 2):
-            raise ValueError("Error! Success target must be between 1 and twice your pool!")
-
-        prob = storyteller.probabilities.get_probabilities(pool, diff, target)
-
-        # Properly pluralize "successes", when applicable
-        success = "success"
-        if target > 1:
-            success += "es"
-
-        title = f"Statistics for {target} {success} at {pool} v {diff}"
-        embed = discord.Embed(title=title)
-
-        standard = f"**Average successes:** {prob.avg:.3}\n"
-        standard += f"**{target}+ {success}:** {prob.prob:.3%}\n"
-        standard += f"**Using Willpower:** {prob.prob_wp:.3%}\n"
-        standard += f"**Total Failure:** {prob.fail:.3%}\n"
-        standard += f"**Botch:** {prob.botch:.3%}"
-
-        spec = f"**Average successes:** {prob.avg_spec:.3}\n"
-        spec += f"**{target}+ {success}:** {prob.prob_spec:.3%}\n"
-        spec += f"**Using Willpower:** {prob.prob_spec_wp:.3%}\n"
-        spec += f"**Total Failure:** {prob.fail_spec:.3%}\n"
-        spec += f"**Botch:** {prob.botch:.3%}"
-
-        embed.add_field(name="Standard Roll", value=standard, inline=False)
-        embed.add_field(name="With Specialty", value=spec, inline=False)
-
-        await ctx.reply(embed=embed)
-    except IndexError:
-        await ctx.reply(usage)
-    except ValueError as error:
-        await ctx.reply(f"{error}\n{usage}")
-
-    # Log statistics
-    if ctx.guild:
-        storyteller.engine.statistics.increment_stats_calculated(ctx.guild)
+    await slash_command_info(ctx, "/stats")
 
 
 # Initiative Management
@@ -324,143 +191,40 @@ async def statistics(ctx, *args):
 init_aliases = ["minit", "mcinit", "mci", "minitc", "mic"]
 @bot.group(invoke_without_command=True, name="mi", aliases=init_aliases, case_insensitive=True)
 @commands.guild_only()
-async def initiative_manager(ctx, mod: str=None, *, character: str=None, use_embed: bool=None):
+async def initiative_manager(ctx):
     """Displays the initiative table for the current channel."""
-
-    if use_embed is None:
-        use_embed = not __use_compact_mode(ctx.invoked_with, ctx.guild.id)
-
-    # Parse the command
-    response = storyteller.parse.initiative(ctx, mod, character, use_embed)
-    if response.both_set:
-        await ctx.send(content=response.content, embed=response.embed)
-    else:
-        await ctx.reply(content=response.content, embed=response.embed)
+    await slash_command_info(ctx, "/init show", "/init add")
 
 
 @initiative_manager.command(aliases=["reset", "clear", "empty"])
 @commands.guild_only()
 async def initiative_reset(ctx):
     """Clears the current channel's initiative table."""
-    try:
-        storyteller.initiative.remove_table(ctx.channel.id)
-        await ctx.reply("Reset initiative in this channel!")
-    except KeyError:
-        await ctx.reply("This channel's initiative table is already empty!")
+    await slash_command_info(ctx, "/init clear")
 
 
 @initiative_manager.command(aliases=["remove", "rm", "delete", "del"])
 @commands.guild_only()
-async def initiative_remove_character(ctx, *, character_name=None):
+async def initiative_remove_character(ctx):
     """Remove a character from initiative manager."""
-    response = storyteller.parse.initiative_removal(ctx, character_name)
-    await ctx.reply(content=response.content, embed=response.embed)
+    await slash_command_info(ctx, "/init rm")
 
 
 @initiative_manager.command(name="reroll")
 @commands.guild_only()
 async def initiative_reroll(ctx):
     """Rerolls all initiative and prints the new table."""
-    manager = storyteller.initiative.get_table(ctx.channel.id)
-
-    if manager:
-        # Reroll and store the new initiatives before displaying
-        manager.reroll()
-
-        for character, init in manager.characters.items():
-            storyteller.initiative.set_initiative(
-                ctx.guild.id, ctx.channel.id, character, init.mod, init.die
-            )
-
-        # discord.py provides no means of checking which alias was used to invoke
-        # a subcommand, so we have to manipulate the raw message string itself by
-        # removing the bot prefix from the message and passing that to
-        # __use_compact_mode() instead of passing the simpler ctx.invoked_with.
-        #
-        # Technically, this means the user can accidentally toggle compact mode
-        # by supplying arguments *after* "reroll"; however, as doing so is far
-        # from the end of the world, we won't care about that.
-        prefix = ctx.prefix
-        command = ctx.message.content.replace(prefix, "")
-        use_embed = not __use_compact_mode(command, ctx.guild.id)
-
-        await initiative_manager(ctx, use_embed=use_embed) # Print the new initiative table
-    else:
-        await ctx.send("Initiative isn't set for this channel!")
+    await slash_command_info(ctx, "/init reroll")
 
 
 @initiative_manager.command(name="declare", aliases=["dec"])
 @commands.guild_only()
-async def initiative_declare(ctx, *args):
+async def initiative_declare(ctx):
     """Declare an initiative action."""
-    try:
-        storyteller.parse.initiative_declare(ctx, args)
-        await ctx.message.add_reaction("👍")
-        await ctx.message.add_reaction("⚔️")
-    except SyntaxError as error:
-        await ctx.reply(error)
+    await slash_command_info(ctx, "/init dec")
 
 
 # Events
-
-def __is_valid_reaction(reaction, user, emoji):
-    """Determines if the correct user clicked the correct reaction."""
-    if reaction.emoji == emoji and reaction.message.author == bot.user:
-        return user in reaction.message.mentions
-    return False
-
-
-def suggestion_to_roll(reaction, user):
-    """Returns a suggested macro if the correct user replies with a thumbsup."""
-    if __is_valid_reaction(reaction, user, "👍"):
-        match = storyteller.engine.suggestx.search(reaction.message.content)
-        if match:
-            return match.group("suggestion")
-
-    return None
-
-
-@bot.event
-async def on_reaction_add(reaction, user):
-    """Rolls a macro correction suggestion if certain conditions are met."""
-    suggestion = suggestion_to_roll(reaction, user)
-    if suggestion:
-        command = defaultdict(lambda: None)
-        match = storyteller.engine.invokex.match(suggestion)
-        command.update(match.groupdict())
-
-        # Get the server settings
-        guild_settings = storyteller.settings.settings_for_guild(reaction.message.guild)
-        command.update(guild_settings)
-
-        await reaction.message.delete()
-
-        # We are going to try to reply to the original invocation message. If
-        # that fails, then we will simply @ the user.
-        ctx = await __get_reaction_message_reference_context(reaction, user)
-        ctx.author = user
-
-        await storyteller.engine.handle_command(command, ctx)
-    elif __is_valid_reaction(reaction, user, "✅"):
-        ctx = await __get_reaction_message_reference_context(reaction, user)
-        await storyteller.engine.delete_user_rolls(ctx)
-        await reaction.message.delete()
-    elif __is_valid_reaction(reaction, user, "❌"):
-        await reaction.message.delete()
-
-
-async def __get_reaction_message_reference_context(reaction, user):
-    """Returns the context of the message replied to in the reaction's message."""
-    ctx = await bot.get_context(reaction.message)
-    try:
-        msg = await ctx.fetch_message(reaction.message.reference.message_id)
-        ctx = await bot.get_context(msg)
-        return ctx
-    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
-        # If the above fails, we return the reaction's message context and zero out the content."""
-        ctx.author = user
-        ctx.message.content = None
-        return ctx
 
 
 @bot.event
@@ -491,9 +255,10 @@ async def on_guild_remove(guild):
 
 
 @bot.event
-async def on_guild_update(_, after):
+async def on_guild_update(before, after):
     """Sometimes guilds are renamed. Fix that."""
-    storyteller.engine.statistics.rename_guild(after.id, after.name)
+    if before.name != after.name:
+        storyteller.engine.statistics.rename_guild(after.id, after.name)
 
 
 @bot.event
@@ -503,10 +268,22 @@ async def on_guild_channel_delete(channel):
 
 
 @bot.event
-async def on_command(ctx):
+async def on_application_command(ctx):
     """Post to Statcord."""
     if api is not None:
         api.command_run(ctx)
+
+
+@bot.event
+async def on_application_command_error(ctx, error):
+    """Inform user of errors."""
+    if isinstance(error.original, commands.NoPrivateMessage):
+        await ctx.respond("Sorry, this can't be done in DMs.", ephemeral=True)
+    elif isinstance(error.original, commands.MissingPermissions):
+        await ctx.respond("Sorry, you don't have permission to do this.", ephemeral=True)
+    else:
+        await ctx.respond("Sorry, I've encountered an error.", ephemeral=True)
+        raise error
 
 
 @bot.event
@@ -584,34 +361,20 @@ async def __alert_permissions(ctx):
 def __status_message():
     """Sets the bot's Discord presence message."""
     servers = len(bot.guilds)
-    return f"!m help | {servers} chronicles"
-
-
-def __use_compact_mode(invocation: str, guildid: Optional[int]) -> bool:
-    """
-    Determine whether a command should use compact mode.
-    Args:
-        invocation (str): The string used to invoke the command
-        guildid (Optional[int]): The Discord ID of the guild where the bot was invoked
-    Returns (bool): True if the bot should use compact mode
-    """
-
-    # Note that some care must be taken when passing the bot invocation. Some commands,
-    # such as "coin" and "chance", always have a 'c' in them. In these instances, it is
-    # safest simply to pass an empty string.
-    if "c" in invocation:
-        return True
-
-    guild_settings = storyteller.settings.settings_for_guild(guildid)
-    return guild_settings["use_compact"]
+    return f"/help | {servers} chronicles"
 
 
 # END BOT DEFINITIONS
 
+for filename in os.listdir("./interface"):
+    if filename.endswith(".py"):
+        bot.load_extension(f"interface.{filename[:-3]}")
+
+
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting
-    if "TOPGG_TOKEN" in os.environ:
+    if (topgg_token := os.getenv("TOPGG_TOKEN")) is not None:
         print("Establishing top.gg connection.")
-        bot.dblpy = topgg.DBLClient(bot, os.environ["TOPGG_TOKEN"], autopost=True)
+        bot.dblpy = topgg.DBLClient(bot, topgg_token, autopost=True)
 
     bot.run(os.environ["TZIMISCE_TOKEN"])

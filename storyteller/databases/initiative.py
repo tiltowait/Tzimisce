@@ -22,6 +22,7 @@ class InitiativeDB(Database):
                 Character Text   NOT NULL,
                 Mod       int    NOT NULL,
                 Die       int    NOT NULL,
+                Action    text,
                 Guild     bigint NOT NULL,
                 CONSTRAINT fk_guild
                     FOREIGN KEY (Guild)

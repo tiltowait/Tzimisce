@@ -199,10 +199,8 @@ def __build_embed(
     if specialty:
         fields.append(("Specialty", specialty, True))
 
-    fields.append(("Result", results.formatted_result, False))
-
     return engine.build_embed(
-        author=ctx.author, header=title, color=color, fields=fields,
+        author=ctx.author, title=results.formatted_result, header=title, color=color, fields=fields,
         footer=comment
     )
 

@@ -24,6 +24,7 @@ class Response:
         self.embed = embed
         self.content = content
         self.add_reaction = False
+        self.ephemeral = False
 
 
     @property

@@ -38,6 +38,7 @@ async def database(ctx, command: dict) -> Union[dict, Response]:
         if ctx.channel.type is discord.ChannelType.private:
             response = Response(Response.DATABASE)
             response.content = "Sorry, you can't store macros in private DMs!"
+            response.ephemeral = True
             return response
 
         # This is either a modified command (in the case of a successful
@@ -78,6 +79,7 @@ async def database(ctx, command: dict) -> Union[dict, Response]:
                 response.add_reaction = True
 
             response.content = query_result
+            response.ephemeral = True
 
             return response
 

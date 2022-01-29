@@ -4,8 +4,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.9-blue" alt="Requires Python 3.9" />
-  <img src="https://img.shields.io/badge/discord.py-1.7.2-brightgreen" alt="Requires discord.py 1.7.2" />
-  <img src="https://img.shields.io/badge/psycopg2-2.8.6-yellow" alt="Requires psycopg2 2.8.6" />
+  <img src="https://img.shields.io/badge/py--cord-2.0-blue" alt="Requires Pycord 2.0" />
+  <img src="https://img.shields.io/badge/psycopg2-2.9.3-yellow" alt="Requires psycopg2 2.9.3" />
   <img src="https://img.shields.io/badge/dice-3.1.2-green" alt="Requires dice 3.1.2" />
 </p>
 
@@ -48,10 +48,10 @@ Should you wish to run the bot locally, you will need to obtain a Discord develo
 ### Setup
 \[Tzimisce\] requires version >=3.9 of [Python](https://www.python.org) and [PostgreSQL](https://www.postgresql.org) with SSL support enabled (which means you need an SSL certificate). You will also need a Discord developer token and, if you intend on making your fork available on [the Discord Bot List](https://top.gg), a top.gg API token.
 
-Finally, you will need to use PIP to install [psycopg2](https://pypi.org/project/psycopg2/), [discord.py](https://pypi.org/project/discord.py/), [dice](https://pypi.org/project/dice/), and [topggpy](https://pypi.org/project/topggpy/). Typically, you can install these dependencies with `pip -r requirements.txt`, but the command may differ on your system if you have multiple Python versions installed.
+Finally, you will need to use PIP to install [psycopg2](https://pypi.org/project/psycopg2/), [py-cord](https://pypi.org/project/py-cord/2.0.0b1/), [dice](https://pypi.org/project/dice/), and [topggpy](https://pypi.org/project/topggpy/). Typically, you can install these dependencies with `pip -r requirements.txt`, but the command may differ on your system if you have multiple Python versions installed.
 
 #### Setting the Environment Variables
-Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store your PostgreSQL server address in an environment variable named `DATABASE_URL`. (Optional: If listing in the Discord Bot List, set `TOPGG_TOKEN`.)
+Store your API token in an environment variable called `TZIMISCE_TOKEN`. Store your PostgreSQL server address in an environment variable named `DATABASE_URL`. (Optional: If listing in the Discord Bot List, set `TOPGG_TOKEN`.) Dotenv is recommended for this.
 
 ### Run the Bot
 Make sure Postgres is running, then enter `python masquerade.py` to run the bot. Like before, this command may differ if your system has multiple Python versions installed.
