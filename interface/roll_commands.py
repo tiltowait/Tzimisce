@@ -49,8 +49,10 @@ class RollCommands(commands.Cog):
 
         # If the bot doesn't have embed permissions, then we don't want to count that in the stats
         # Disabling until library fix/workaround is found
-        print(type(ctx.channel))
-        print(dir(ctx.channel))
+        perms = ctx.channel.permissions_for(ctx.me)
+        print(perms)
+        print(dir(perms))
+        print("Embed?", perms.embed_links)
         #if not ctx.channel.permissions_for(ctx.me).embed_links:
             #command["use_compact"] = "c"
 
