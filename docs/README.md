@@ -1,6 +1,6 @@
 **\[Tzimisce\]** is a Discord dicebot for White Wolf's World of Darkness RPGs, including **Vampire: The Masquerade** (V20), **Mage: The Ascension** (M20), **Werewolf: The Apocalypse** (W20), and **Wraith: The Oblivion** (WtO). It features simple syntax; easy-to-read, color-coded output; and a number of advanced features.
 
-!> **Important!** Due to Discord changes, **[Tzimisce]** is moving to the new slash/application command interface. This means that the old commands will no longer work. Please read below for the new commands. If they do not work, you may need to re-invite **[Tzimisce]** to your server by clicking the link below.
+!> **Important!** Due to Discord changes, **[Tzimisce]** is moving to the new slash/application command interface. This means that the old commands will no longer work. Please read below for the new commands. If they do not work, you may need to re-invite **[Tzimisce]** to your server by clicking the link below. ***In addition, the `@everyone` role needs "Use Slash Commands" permission in channels where you want the bot to work. It will also need external emoji support!***
 
 > ### Quick Links
 > * **[Invite \[Tzimisce\] to your server](https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot)**
@@ -274,7 +274,7 @@ If you cannot see rolls, check that the bot has the permissions below. If it sti
 
 * **Send Messages:** Should be obvious, no?
 * **Embed Links:** Used for roll display (outside of compact mode), initiative, help display, etc.
-* **Use Slash Commands:** Due to Discord policy, all bots in 100+ servers must use slash commands for interactions.
+* **Use Slash Commands:** Due to Discord policy, all bots in 100+ servers must use slash commands for interactions. In addition, the `@everyone` role needs "Use Slash Commands" permission.
 
 ## Optional Permissions <!-- {docsify-ignore} -->
 
