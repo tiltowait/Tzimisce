@@ -289,6 +289,8 @@ def __emojify_dice(ctx, emoji_names: list[str], willpower: bool, autos: int) -> 
         willpower (bool): Whether Willpower was used in the roll
         autos (int): The number of auto-successes in the roll
     """
+
+    # This is way more complex than it needs to be, but I don't feel like fixing it
     emojis = []
     for emoji_name in emoji_names:
         emoji = emojidict[emoji_name]
@@ -307,7 +309,7 @@ def __emojify_dice(ctx, emoji_names: list[str], willpower: bool, autos: int) -> 
                 # the string and present that to the user.
                 emoji = re.search(r"\d+", emoji_name).group(0) # Guaranteed to have a match
 
-        emojis.append(emoji)
+        emojis.append(emoji + "​")
 
     emoji_string = " ".join(emojis)
 
