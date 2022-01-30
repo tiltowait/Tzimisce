@@ -47,12 +47,6 @@ class RollCommands(commands.Cog):
         if "z" in options:
             command["never_botch"] = "z"
 
-        # If the bot doesn't have embed permissions, then we don't want to count that in the stats
-        if hasattr(ctx.channel, "permissions_for"):
-            perms = ctx.channel.permissions_for(ctx.me)
-            if not perms.embed_links:
-                command["use_compact"] = "c"
-
         await storyteller.engine.handle_command(command, ctx)
 
 
