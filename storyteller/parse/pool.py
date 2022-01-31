@@ -190,10 +190,6 @@ def __build_embed(
 
     # Display individual dice as emoji, if available
     can_use_emoji = ctx.channel.permissions_for(ctx.me).external_emojis
-    if ctx.guild.id == 568700509712678922:
-        print("Found Nathy gaming. Can I use emoji?", can_use_emoji)
-    if not can_use_emoji:
-        print(f"Can't use emoji in {ctx.guild.name}'s {ctx.channel.name} channel.")
 
     if can_use_emoji and len(results.dice) <= 40:
         names = results.dice_emoji_names
