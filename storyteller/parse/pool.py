@@ -193,7 +193,7 @@ def __build_embed(
 
     if can_use_emoji and len(results.dice) <= 40:
         names = results.dice_emoji_names
-        emojis = __emojify_dice(ctx, names, will, autos)
+        emojis = __emojify_dice(names, will, autos)
         fields.append(("Dice", emojis, True))
     else:
         fields.append(("Dice", results.formatted_dice, True))
@@ -252,30 +252,30 @@ def __pluralize_auto_successes(autos: int) -> str:
 # as stored in the Tzimisce Dicebot Support server.
 
 emojidict = {
-    "ss10": 821609995811553280,
-    "s10": 821613862737674261,
-    "s9": 821613862805700618,
-    "s8": 821613862457180212,
-    "s7": 821613862490341408,
-    "s6": 821613862830080031,
-    "s5": 821613862524420157,
-    "s4": 821613862783549480,
-    "s3": 821613862797049876,
-    "s2": 821613862554042389,
-    "f9": 821601300541734973,
-    "f8": 821601300541210674,
-    "f7": 821601300541603870,
-    "f6": 821601300210253825,
-    "f5": 821601300495335504,
-    "f4": 821601300486553600,
-    "f3": 821601300281425962,
-    "f2": 821601300483014666,
-    "f1": 821601300420493362,
-    "b1": 821601300310392832
+    "ss10": "<:ss10:821609995811553280>",
+    "s10": "<:s10:821613862737674261>",
+    "s9": "<:s9:821613862805700618>",
+    "s8": "<:s8:821613862457180212>",
+    "s7": "<:s7:821613862490341408>",
+    "s6": "<:s6:821613862830080031>",
+    "s5": "<:s5:821613862524420157>",
+    "s4": "<:s4:821613862783549480>",
+    "s3": "<:s3:821613862797049876>",
+    "s2": "<:s2:821613862554042389>",
+    "f9": "<:f9:821601300541734973>",
+    "f8": "<:f8:821601300541210674>",
+    "f7": "<:f7:821601300541603870>",
+    "f6": "<:f6:821601300210253825>",
+    "f5": "<:f5:821601300495335504>",
+    "f4": "<:f4:821601300486553600>",
+    "f3": "<:f3:821601300281425962>",
+    "f2": "<:f2:821601300483014666>",
+    "f1": "<:f1:821601300420493362>",
+    "b1": "<:b1:821601300310392832>"
 }
 
 
-def __emojify_dice(ctx, emoji_names: list[str], willpower: bool, autos: int) -> str:
+def __emojify_dice(emoji_names: list[str], willpower: bool, autos: int) -> str:
     """
     Convert a roll string to an emoji string.
     Args:
@@ -288,21 +288,8 @@ def __emojify_dice(ctx, emoji_names: list[str], willpower: bool, autos: int) -> 
     # This is way more complex than it needs to be, but I don't feel like fixing it
     emojis = []
     for emoji_name in emoji_names:
-        emoji = emojidict[emoji_name]
-        if isinstance(emoji, int):
-            emoji = ctx.bot.get_emoji(emoji)
-
-            # Cache the emoji for faster lookup, but only if we successfully
-            # fetched one
-            if emoji:
-                emoji = str(emoji)
-                emojidict[emoji_name] = emoji
-            else:
-                # For some reason, we failed to capture an emoji. This typically
-                # means a Discord error of some sort and is usually recoverable
-                # in the long term. For now, we need to extract the number from
-                # the string and present that to the user.
-                emoji = re.search(r"\d+", emoji_name).group(0) # Guaranteed to have a match
+        emoji = emojidict.get(emoji_name)
+        #emoji = re.search(r"\d+", emoji_name).group(0) # Guaranteed to have a match
 
         emojis.append(emoji + "​")
 
