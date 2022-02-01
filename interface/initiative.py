@@ -29,11 +29,16 @@ class InitiativeCommands(commands.Cog):
         self,
         ctx: discord.ApplicationContext,
         mod: Option(str, "The initiative modifier"),
-        character: Option(str, "The character who's acting", default=""),
+        character: Option(str, "The character who's acting", required=False),
     ):
         """Add a character to the initiative table."""
         try:
+            args = mod.split()
+            mod = args.pop(0)
             int(mod)
+
+            if args and character is None:
+                character = " ".join(args)
 
             # Convert @mentions to text
             character = " ".join(character.split())
