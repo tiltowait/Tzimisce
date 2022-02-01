@@ -102,6 +102,22 @@ class DocumentationLink(discord.ui.View):
         ))
 
 
+    @discord.ui.button(label="Disable This Message", style=discord.ButtonStyle.danger)
+    async def slash_warning_disable(self, _, interaction):
+        """Disable the slash warning by changing the prefix."""
+        if interaction.user.guild_permissions.administrator:
+            storyteller.settings.update(interaction.guild.id, "prefix", ".,/;m")
+            await interaction.response.edit_message(
+                content="Slash command warnings are now disabled.",
+                view=None
+            )
+        else:
+            await interaction.response.send_message(
+                "Only the server admin may do this!",
+                ephemeral=True
+            )
+
+
 async def slash_command_info(ctx, *repls):
     """Print a message about slash commands."""
     repls = " or ".join(map(lambda r: f"`{r}`", repls))
