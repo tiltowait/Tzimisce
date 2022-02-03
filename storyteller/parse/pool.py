@@ -189,7 +189,7 @@ def __build_embed(
         fields.append(("Macro override", override, False))
 
     # Display individual dice as emoji, if available
-    can_use_emoji = ctx.channel.permissions_for(ctx.me).external_emojis
+    can_use_emoji = ctx.channel.permissions_for(ctx.guild.default_role).external_emojis
 
     if can_use_emoji and len(results.dice) <= 40:
         names = results.dice_emoji_names
