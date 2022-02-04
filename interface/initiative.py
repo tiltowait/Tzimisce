@@ -37,8 +37,11 @@ class InitiativeCommands(commands.Cog):
             mod = args.pop(0)
             int(mod)
 
-            if args and character is None:
-                character = " ".join(args)
+            if character is None:
+                if args:
+                    character = " ".join(args)
+                else:
+                    character = ""
 
             # Convert @mentions to text
             character = " ".join(character.split())
