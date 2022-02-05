@@ -25,7 +25,7 @@ if (debug_guild := os.getenv('DEBUG')) is not None:
     debug_guild = [int(debug_guild)]
 
 intents = discord.Intents.default()
-intents.members = True
+#intents.members = True
 
 bot = commands.Bot(
     command_prefix=determine_prefix,
