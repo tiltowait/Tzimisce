@@ -29,12 +29,17 @@ async def handle_command(command, ctx, send=True):
     # or display an error message.
 
     # Discord will reject messages that are too long
-    if command["comment"] and len(command["comment"]) > 500:
-        reduction = len(command["comment"]) - 500
-        characters = "character" if reduction == 1 else "characters"
+    if (comment := command.get("comment")) is not None:
+        comment = await storyteller.stringize_mentions(ctx, comment)
 
-        await ctx.respond(f"Comment too long by {reduction} {characters}.", ephemeral=True)
-        return
+        if len(comment) > 500:
+            reduction = len(comment) - 500
+            characters = "character" if reduction == 1 else "characters"
+
+            await ctx.respond(f"Comment too long by {reduction} {characters}.", ephemeral=True)
+            return
+
+        command["comment"] = comment
 
     # If the command involves the RollDB, we need to modify the syntax first
     response = await parse.database(ctx, command)

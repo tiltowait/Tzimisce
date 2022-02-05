@@ -24,10 +24,14 @@ if (debug_guild := os.getenv('DEBUG')) is not None:
     print("Debugging on", debug_guild)
     debug_guild = [int(debug_guild)]
 
+intents = discord.Intents.default()
+intents.members = True
+
 bot = commands.Bot(
     command_prefix=determine_prefix,
     case_insensitive=True,
-    debug_guilds=debug_guild
+    debug_guilds=debug_guild,
+    intents=intents
 )
 
 bot.remove_command("help")

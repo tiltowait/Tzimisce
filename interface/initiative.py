@@ -43,12 +43,7 @@ class InitiativeCommands(commands.Cog):
                 else:
                     character = ""
 
-            # Convert @mentions to text
-            character = " ".join(character.split())
-            while (match := re.search(r"(<@!(\d+)>)", character)) is not None:
-                member_id = match.group(2)
-                member = await ctx.guild.fetch_member(member_id)
-                character = character.replace(match.group(1), member.display_name)
+            character = await storyteller.stringize_mentions(ctx, character)
 
             response = _init_parse(ctx, mod, character)
             await ctx.respond(content=response.content, embed=response.embed)
