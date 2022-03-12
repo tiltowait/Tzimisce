@@ -30,7 +30,7 @@ async def handle_command(command, ctx, send=True):
 
     # Discord will reject messages that are too long
     if (comment := command.get("comment")) is not None:
-        comment = await storyteller.stringize_mentions(ctx, comment)
+        comment = await storyteller.stringify_mentions(ctx, comment)
 
         if len(comment) > 500:
             reduction = len(comment) - 500

@@ -15,25 +15,48 @@ initiative = InitiativeDB()
 settings = SettingsDB()
 
 
-async def stringize_mentions(ctx, args):
-    """Convert mentions inside a list of arguments into plain text."""
-    if args is None:
-        return
+async def stringify_mentions(ctx, sentence):
+    """Replace all raw mentions and channels with their plaintext names."""
+    if not sentence:
+        return None
 
-    converter = discord.ext.commands.MemberConverter()
-    converted = []
+    # Use a set to avoid redundant lookups
+    if (matches := set(re.findall(r"<[@#]!?\d+>", sentence))):
+        member_converter = discord.ext.commands.MemberConverter()
+        channel_converter = discord.ext.commands.GuildChannelConverter()
 
-    if isinstance(args, str):
-        args = args.split()
+        replacements = {}
+        failed_lookups = 0
 
-    for arg in args:
-        if re.match(r"<@!?\d+>", arg) is not None:
-            try:
-                member = await converter.convert(ctx, arg)
-                converted.append("@" + member.display_name)
-            except discord.ext.commands.MemberNotFound:
-                converted.append(arg)
-        else:
-            converted.append(arg)
+        for match in matches:
+            if match in replacements:
+                continue
 
-    return " ".join(converted)
+            if "@" in match:
+                # Member lookup
+                try:
+                    replacement = await member_converter.convert(ctx, match)
+                    replacements[match] = "@" + replacement.display_name
+                except discord.ext.commands.MemberNotFound:
+                    pass
+            else:
+                # Channel lookup
+                try:
+                    replacement = await channel_converter.convert(ctx, match)
+                    replacements[match] = "#" + replacement.name
+                except discord.ext.commands.BadArgument:
+                    pass
+
+            # Realistically, there should be no failed lookups. If there are,
+            # the user is probably trying to lock up the bot. Give them three
+            # tries in case there's something weird going on before bailing.
+            if not match in replacements:
+                failed_lookups += 1
+                if failed_lookups == 3:
+                    break
+
+        # Replace the items in the original string
+        for (match, replacement) in replacements.items():
+            sentence = sentence.replace(match, replacement)
+
+    return " ".join(sentence.split())

@@ -43,7 +43,7 @@ class InitiativeCommands(commands.Cog):
                 else:
                     character = ""
 
-            character = await storyteller.stringize_mentions(ctx, character)
+            character = await storyteller.stringify_mentions(ctx, character)
 
             response = _init_parse(ctx, mod, character)
             await ctx.respond(content=response.content, embed=response.embed)
