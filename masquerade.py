@@ -101,7 +101,7 @@ class DocumentationLink(discord.ui.View):
         ))
         self.add_item(discord.ui.Button(
             label="Re-Invite [Tzimisce]",
-            url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot"
+            url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147747840&scope=applications.commands%20bot"
         ))
 
 

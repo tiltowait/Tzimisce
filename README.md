@@ -19,7 +19,7 @@
 
 ## Getting Started
 ### Adding [Tzimisce] to Your Server
-Simply [click this link](https://top.gg/bot/642775025770037279) to add the bot to your server. Feel free to vote and leave a review while you're at it; it's greatly appreciated. Not ready to add it yet? [Try out the demo server!](https://discord.gg/rK3RFqV)
+Simply [click this link](https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147747840&scope=applications.commands%20bot) to add the bot to your server. Feel free to vote and leave a review while you're at it; it's greatly appreciated. Not ready to add it yet? [Try out the demo server!](https://discord.gg/QHnCdSPeEE)
 
 ### Usage
 Base syntax is simple: `/m pool difficulty specialty`. The specialty is optional. If `difficulty` isn't supplied, it defaults to 6. If you want to add a comment, simply append a `#` and start typing.

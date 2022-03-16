@@ -14,7 +14,7 @@ class _LinkView(View):
     def __init__(self):
         super().__init__()
         self.add_item(Button(label="Documentation", url="https://www.storyteller-bot.com/#/"))
-        self.add_item(Button(label="Support", url="https://discord.gg/rK3RFqV"))
+        self.add_item(Button(label="Support", url="https://discord.gg/QHnCdSPeEE"))
         self.add_item(Button(label="Patreon", url="https://www.patreon.com/tiltowait"))
 
 
