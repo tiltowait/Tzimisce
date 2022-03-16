@@ -3,8 +3,8 @@
 !> **Important!** Due to Discord changes, **[Tzimisce]** is moving to the new slash/application command interface. This means that the old commands will no longer work. Please read below for the new commands. If they do not work, you may need to re-invite **[Tzimisce]** to your server by clicking the link below. ***In addition, the `@everyone` role needs "Use Slash Commands" permission in channels where you want the bot to work. It will also need external emoji support!***
 
 > ### Quick Links
-> * **[Invite \[Tzimisce\] to your server](https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147764224&scope=applications.commands%20bot)**
-> * **[Join the support server](https://discord.gg/rK3RFqV)**
+> * **[Invite \[Tzimisce\] to your server](https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147747840&scope=applications.commands%20bot)**
+> * **[Join the support server](https://discord.gg/QHnCdSPeEE)**
 > * **[View the source code](https://github.com/tiltowait/Tzimisce)**
 > * **[Become a patron](https://www.patreon.com/tiltowait)**
 
