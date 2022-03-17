@@ -19,8 +19,11 @@ class InitiativeCommands(commands.Cog):
     @commands.guild_only()
     async def show(self, ctx):
         """Show the current channel's initiative table."""
-        response = _init_parse(ctx)
-        await ctx.respond(content=response.content, embed=response.embed)
+        try:
+            response = _init_parse(ctx)
+            await ctx.respond(content=response.content, embed=response.embed)
+        except ValueError as err:
+            await ctx.respond(str(err))
 
 
     @init.command()
@@ -52,6 +55,47 @@ class InitiativeCommands(commands.Cog):
                 "**Error:** `mod` must be a number. Use `character` parameter to add a character.",
                 ephemeral=True
             )
+
+
+    @init.command()
+    @commands.guild_only()
+    async def bulk(
+        self,
+        ctx: discord.ApplicationContext,
+        characters: Option(str, "Name1=Mod1 Name2=Mod2 ...")
+    ):
+        """Add multiple characters to the initiative table."""
+        characters = re.sub(r"\s*=\s*", r"=", characters)
+
+        try:
+            chars_and_mods = []
+            char_names = []
+            chars = characters.split()
+            for char in chars:
+                char, mod = char.split("=")
+                mod = int(mod)
+
+                chars_and_mods.append((char, mod))
+                char_names.append(char)
+
+            storyteller.parse.initiative_bulk_add(ctx, chars_and_mods)
+
+            last = char_names.pop(-1)
+            if (num_chars := len(char_names)) == 0:
+                char_str = last
+            elif num_chars == 1:
+                char_str = f"{char_names[0]} and {last}"
+            else:
+                char_str = ", ".join(char_names)
+                char_str += f", and {last}"
+
+            await ctx.respond(f"Added {char_str} to the initiative table.")
+        except:
+            await ctx.respond(
+                "Error: Expected `Name1=Mod1 Name2=Mod2 ...`. Mods must be numbers!",
+                ephemeral=True
+            )
+
 
     @init.command()
     @commands.guild_only()

@@ -2,7 +2,7 @@
 
 import argparse
 import io
-from typing import Optional
+from typing import Optional, List, Tuple
 from contextlib import redirect_stderr
 
 import storyteller.engine # pylint: disable=cyclic-import
@@ -97,6 +97,21 @@ def initiative(
     storyteller.engine.statistics.increment_initiative_rolls(ctx.guild)
 
     return response
+
+
+def initiative_bulk_add(ctx, characters: List[Tuple[str, int]]):
+    """Add multiple characters to the initiative table."""
+    if not (manager := storyteller.initiative.get_table(ctx.channel.id)):
+        manager = InitiativeManager()
+
+    for char, mod in characters:
+        init = manager.add_init(char, mod)
+        storyteller.initiative.set_initiative(
+            ctx.guild.id, ctx.channel.id, char, init.mod, init.die
+        )
+
+    storyteller.initiative.add_table(ctx.channel.id, manager)
+    storyteller.engine.statistics.increment_initiative_rolls(ctx.guild)
 
 
 def initiative_removal(ctx, character_name: str) -> Response:
