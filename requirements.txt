@@ -3,4 +3,4 @@ psycopg2-binary==2.9.3
 dice==3.1.2
 topggpy==1.4.0
 statcord.py==3.1.0
-py-cord==2.0.0b1
+py-cord==2.0.0b5
