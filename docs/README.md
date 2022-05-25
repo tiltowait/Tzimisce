@@ -74,7 +74,7 @@ There are different ways of invoking a roll.
 /mm syntax: XdY+...+n # comment
 ```
 
-\[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, 3d6\*7d10/(2d4+1d2), etc. This may be combined with **compact mode** (`!mc`). Other options are ignored.
+\[Tzimisce\] can perform traditional rolls, such as 1d10+5, 2d10+3d6, 3d6\*7d10/(2d4+1d2), etc. This may be combined with **compact mode** (`/cmm`). Other options are ignored.
 
 ## Macros
 
@@ -92,7 +92,7 @@ The `macro-name` must not contain spaces but can contain both `-` and `_` charac
 
 If the macro already exists, invoking this command will overwrite it. In this case, the previously stored comment will be retained unless a new one is supplied.
 
-To use a macro, simply type `!m <macro-name>`. Macros support all the standard roll options (compact mode, Willpower, botch upgrades).
+To use a macro, simply type `/mm syntax: <macro-name>`. Macros support all the standard roll options (compact mode, Willpower, botch upgrades).
 
 !> **Note:** Saving a macro does not roll the macro!
 
