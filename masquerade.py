@@ -3,24 +3,23 @@
 import os
 
 import discord
-from dotenv import load_dotenv
-import topgg
 import statcord
 from discord.ext import commands
+from dotenv import load_dotenv
 
 import storyteller
-
 
 # Setup
 
 load_dotenv()
+
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
     return storyteller.settings.get_prefixes(message.guild)
 
 
-if (debug_guild := os.getenv('DEBUG')) is not None:
+if (debug_guild := os.getenv("DEBUG")) is not None:
     print("Debugging on", debug_guild)
     debug_guild = [int(debug_guild)]
 
@@ -30,7 +29,7 @@ bot = commands.Bot(
     command_prefix=determine_prefix,
     case_insensitive=True,
     debug_guilds=debug_guild,
-    intents=intents
+    intents=intents,
 )
 
 bot.remove_command("help")
@@ -59,7 +58,7 @@ async def on_message(message):
     if not used_prefix:
         return
 
-    updated_prefix = f"{used_prefix}m" # Standardize to internal prefix
+    updated_prefix = f"{used_prefix}m"  # Standardize to internal prefix
     content = message.clean_content.removeprefix(used_prefix)
     components = content.split()
 
@@ -90,20 +89,21 @@ async def on_message(message):
 
 # This is only temporary until May 2022
 
+
 class DocumentationLink(discord.ui.View):
     """A simple view that shows a link to the documentation."""
 
     def __init__(self):
         super().__init__()
-        self.add_item(discord.ui.Button(
-            label="More Information",
-            url="https://www.storyteller-bot.com/#/"
-        ))
-        self.add_item(discord.ui.Button(
-            label="Re-Invite [Tzimisce]",
-            url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147747840&scope=applications.commands%20bot"
-        ))
-
+        self.add_item(
+            discord.ui.Button(label="More Information", url="https://www.storyteller-bot.com/#/")
+        )
+        self.add_item(
+            discord.ui.Button(
+                label="Re-Invite [Tzimisce]",
+                url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147747840&scope=applications.commands%20bot",
+            )
+        )
 
     @discord.ui.button(label="Disable This Message", style=discord.ButtonStyle.danger)
     async def slash_warning_disable(self, _, interaction):
@@ -111,13 +111,11 @@ class DocumentationLink(discord.ui.View):
         if interaction.user.guild_permissions.administrator:
             storyteller.settings.update(interaction.guild.id, "prefix", ".,/;m")
             await interaction.response.edit_message(
-                content="Slash command warnings are now disabled.",
-                view=None
+                content="Slash command warnings are now disabled.", view=None
             )
         else:
             await interaction.response.send_message(
-                "Only the server admin may do this!",
-                ephemeral=True
+                "Only the server admin may do this!", ephemeral=True
             )
 
 
@@ -138,9 +136,21 @@ async def slash_command_info(ctx, *repls):
 # c - Use compact mode
 # z - Disable botches
 standard_aliases = [
-    "mw", "mc", "mz",
-    "mwz", "mzw", "mcz", "mzc", "mwc", "mcw",
-    "mzcw", "mzwc", "mwzc", "mczw", "mcwz", "mwcz"
+    "mw",
+    "mc",
+    "mz",
+    "mwz",
+    "mzw",
+    "mcz",
+    "mzc",
+    "mwc",
+    "mcw",
+    "mzcw",
+    "mzwc",
+    "mwzc",
+    "mczw",
+    "mcwz",
+    "mwcz",
 ]
 
 
@@ -158,6 +168,7 @@ async def standard_roll(ctx):
 
 # Subcommands
 
+
 @standard_roll.command(aliases=["set", "setting"])
 @commands.guild_only()
 @commands.has_permissions(administrator=True)
@@ -166,7 +177,13 @@ async def settings(ctx):
     await slash_command_info(ctx, "/settings")
 
 
-@standard_roll.command(aliases=["coin", "flip", "coinflip",])
+@standard_roll.command(
+    aliases=[
+        "coin",
+        "flip",
+        "coinflip",
+    ]
+)
 async def coin_flip(ctx):
     """Performs a simple coinflip."""
     await slash_command_info(ctx, "/coinflip")
@@ -186,6 +203,7 @@ async def __help(ctx):
 
 # Macro-Related. Must be done in a guild.
 
+
 @standard_roll.command(name="$")
 @commands.guild_only()
 async def show_stored_rolls(ctx):
@@ -202,6 +220,7 @@ async def delete_all(ctx):
 
 # Statistics
 
+
 @standard_roll.command(aliases=["stats"])
 async def statistics(ctx):
     """Prints statistics for a given dice pool."""
@@ -211,6 +230,8 @@ async def statistics(ctx):
 # Initiative Management
 
 init_aliases = ["minit", "mcinit", "mci", "minitc", "mic"]
+
+
 @bot.group(invoke_without_command=True, name="mi", aliases=init_aliases, case_insensitive=True)
 @commands.guild_only()
 async def initiative_manager(ctx):
@@ -272,7 +293,7 @@ async def on_guild_join(guild):
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
     print(f"Removing {guild}.")
-    #storyteller.settings.remove_guild(guild.id)
+    # storyteller.settings.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
 
@@ -343,10 +364,10 @@ async def on_command_error(ctx, error):
         # after) the offending quote. Rather than write a nasty workaround,
         # we are going to let the bug lie for the time being, given its rarity.
         # A bug has been filed on GitHub.
-        if hasattr(ctx, 'coerced_quotes'):
+        if hasattr(ctx, "coerced_quotes"):
             return
 
-        ios_quotes = ["‘","’"]
+        ios_quotes = ["‘", "’"]
         ios_quote_found = False
 
         for quote in ios_quotes:
@@ -379,6 +400,7 @@ async def __alert_permissions(ctx):
 
 # Misc Functions
 
+
 def __status_message():
     """Sets the bot's Discord presence message."""
     servers = len(bot.guilds)
@@ -394,8 +416,4 @@ for filename in os.listdir("./interface"):
 
 if __name__ == "__main__":
     # Track guild count in top.gg. Only do this in production, not in dev setting
-    if (topgg_token := os.getenv("TOPGG_TOKEN")) is not None:
-        print("Establishing top.gg connection.")
-        bot.dblpy = topgg.DBLClient(bot, topgg_token, autopost=True)
-
     bot.run(os.environ["TZIMISCE_TOKEN"])
