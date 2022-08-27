@@ -1,5 +1,6 @@
 """Creates and connects an instance of the Tzimisce dicebot."""
 
+import logging
 import os
 
 import discord
@@ -13,6 +14,8 @@ import storyteller
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+
 
 async def determine_prefix(_, message):
     """Determines the correct command prefix for the guild."""
@@ -20,7 +23,7 @@ async def determine_prefix(_, message):
 
 
 if (debug_guild := os.getenv("DEBUG")) is not None:
-    print("Debugging on", debug_guild)
+    logging.info("Debugging on %s", debug_guild)
     debug_guild = [int(debug_guild)]
 
 intents = discord.Intents(guilds=True, members=True)
@@ -273,9 +276,9 @@ async def initiative_declare(ctx):
 @bot.event
 async def on_ready():
     """Print a message letting us know the bot logged in to Discord."""
-    print(f"Logged on as {bot.user}!")
-    print(f"Playing on {len(bot.guilds)} servers.")
-    print(discord.version_info)
+    logging.info("Logged on as %s!", bot.user)
+    logging.info("Playing on %s servers.", len(bot.guilds))
+    logging.info(discord.version_info)
 
     await bot.change_presence(activity=discord.Game(__status_message()))
 
@@ -283,7 +286,7 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):
     """When joining a guild, log it for statistics purposes."""
-    print(f"Joining {guild}!")
+    logging.info("Joining %s!", guild)
     storyteller.settings.add_guild(guild.id)
     storyteller.engine.statistics.add_guild(guild.id, guild.name)
     await bot.change_presence(activity=discord.Game(__status_message()))
@@ -292,7 +295,7 @@ async def on_guild_join(guild):
 @bot.event
 async def on_guild_remove(guild):
     """We don't want to keep track of guilds we no longer belong to."""
-    print(f"Removing {guild}.")
+    logging.info("Removing %s.", guild)
     # storyteller.settings.remove_guild(guild.id)
     await bot.change_presence(activity=discord.Game(__status_message()))
 
@@ -383,9 +386,7 @@ async def on_command_error(ctx, error):
 
     # Unknown error; print invoking message and raise
     chat = ctx.guild.name if ctx.guild else "DM"
-    print("\n\n**********************")
-    print(f"{chat}: UNKNOWN ERROR ON {ctx.message.content}")
-    print("**********************\n\n")
+    logging.error("%s: UNKNOWN ERROR ON %s", chat, ctx.message.content)
 
     raise error
 
