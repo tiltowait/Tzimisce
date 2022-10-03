@@ -1,5 +1,6 @@
 """settings.py - Database for managing server settings."""
 
+import copy
 from collections import defaultdict
 from distutils.util import strtobool
 
@@ -32,14 +33,13 @@ class SettingsDB(Database):
         IGNORE_ONES: "If `true`, ones do not subtract from non-botching rolls.",
         NEVER_BOTCH: "Permanently disables botches.",
         "wp_cancelable": "Allows ones to cancel a Willpower success.",
-        CHRONICLES: "Enables Chronicles of Darkness-style rolls."
+        CHRONICLES: "Enables Chronicles of Darkness-style rolls.",
     }
 
     # Though "sort_rolls" would be a more logical setting (and unsorted the default), for historical
     # reasons we're doing the opposite. In earlier versions, the bot only displayed dice in sorted
     # order. After conducting a small poll on the Discord server, it was decided to keep sorted as
     # the default, despite the slightly clunky language and logic inherent to "unsort_rolls".
-
 
     def __init__(self):
         super().__init__()
@@ -63,13 +63,12 @@ class SettingsDB(Database):
             );
             """
         )
-        self.__all_settings = self.__fetch_all_settings() # Cache for performance reasons
+        self.__all_settings = self.__fetch_all_settings()  # Cache for performance reasons
 
         # Set up the default parameters
         self.default_params = defaultdict(lambda: False)
         self.default_params[self.DEFAULT_DIFF] = 6
         self.default_params[self.PREFIX] = None
-
 
     def __fetch_all_settings(self) -> dict:
         """
@@ -94,7 +93,6 @@ class SettingsDB(Database):
 
         return settings
 
-
     def settings_for_guild(self, guild) -> dict:
         """
         Fetch the settings for a specific guild.
@@ -110,8 +108,7 @@ class SettingsDB(Database):
             print(f"Guild {guild} wasn't in GuildSettings! Adding now.")
             self.add_guild(guild)
 
-        return self.__all_settings[guild]
-
+        return copy.deepcopy(self.__all_settings[guild])
 
     def get_prefixes(self, guild) -> tuple:
         """
@@ -128,7 +125,6 @@ class SettingsDB(Database):
             return (prefix,)
         return ("!m", "/m")
 
-
     def update(self, guild, key, value) -> str:
         """
         Set a new value for one of a guild's parameters.
@@ -138,7 +134,7 @@ class SettingsDB(Database):
             value (any): The parameter's new value
         Returns (str): A message informing the user of the change
         """
-        value = self.__validated_parameter(key, value) # Raises ValueError if invalid
+        value = self.__validated_parameter(key, value)  # Raises ValueError if invalid
 
         query = SQL("UPDATE GuildSettings SET {key}=%s WHERE ID=%s;").format(key=Identifier(key))
         self._execute(query, value, guild)
@@ -164,7 +160,6 @@ class SettingsDB(Database):
 
         return message
 
-
     def value(self, guild, key):
         """
         Retrieve a specific setting on a given guild.
@@ -181,7 +176,6 @@ class SettingsDB(Database):
             return ", ".join(self.get_prefixes(guild))
 
         return self.__all_settings[guild][key]
-
 
     def __validated_parameter(self, key, new_value):
         """
@@ -213,12 +207,10 @@ class SettingsDB(Database):
         except ValueError:
             raise ValueError(f"Error! `{key}` must be `true` or `false`!") from None
 
-
     @property
     def available_parameters(self):
         """Returns a list of available configuration options."""
         return self.__PARAMETERS.keys()
-
 
     def parameter_information(self, param: str) -> str:
         """
@@ -231,7 +223,6 @@ class SettingsDB(Database):
             return self.__PARAMETERS[param]
         except KeyError:
             return f"Unknown parameter `{param}`!"
-
 
     # Housekeeping stuff
 
@@ -246,7 +237,6 @@ class SettingsDB(Database):
 
         # Add the guild to the settings dictionary
         self.__all_settings[guildid] = self.default_params
-
 
     def remove_guild(self, guildid: int):
         """
