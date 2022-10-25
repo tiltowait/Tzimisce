@@ -1,7 +1,7 @@
 """The main Tzimisce dicebot class."""
 
-import re
 import asyncio
+import re
 from collections import defaultdict
 
 import discord
@@ -9,7 +9,6 @@ import discord
 import storyteller
 from storyteller import parse
 from storyteller.databases import RollDB, StatisticsDB
-
 
 # Suggestion Stuff
 suggestx = re.compile(r"`.*`.*`(?P<suggestion>.*)`")
@@ -43,7 +42,7 @@ async def handle_command(command, ctx, send=True):
 
     # If the command involves the RollDB, we need to modify the syntax first
     response = await parse.database(ctx, command)
-    if isinstance(response, dict): # Database didn't generate a user response
+    if isinstance(response, dict):  # Database didn't generate a user response
         command = response
         response = None
 
@@ -77,18 +76,19 @@ async def __send_response(ctx, response):
     if response.add_reaction:
         confirm = storyteller.views.Confirmation("Yes")
         await ctx.respond(
-            embed=response.embed,
-            content=response.content,
-            view=confirm,
-            ephemeral=True
+            embed=response.embed, content=response.content, view=confirm, ephemeral=True
         )
     else:
         confirm = None
-        await ctx.respond(
-            embed=response.embed,
-            content=response.content,
-            ephemeral=response.ephemeral
-        )
+        try:
+            await ctx.respond(
+                embed=response.embed, content=response.content, ephemeral=response.ephemeral
+            )
+        except discord.errors.HTTPException as err:
+            # Temporary. There have been a bunch of errors with the embed field
+            # being longer than 1024, and we need to figure out the cause
+            print("EMBED ERROR:", response.embed)
+            raise err
 
     if confirm is not None:
         await confirm.wait()
@@ -171,6 +171,7 @@ def macro_counts(ctx) -> list:
 
     return (macro_count, meta_count)
 
+
 async def delete_user_rolls(ctx):
     """Deletes all of a user's macros on the given guild."""
     database.delete_user_rolls(ctx.guild.id, ctx.author.id)
@@ -183,14 +184,15 @@ def help_embed(prefix):
     """Return a handy help embed."""
 
     # Not using build_embed() because we need a little more than it offers
-    embed=discord.Embed(
-        title="[Tzimisce] | Help", url="https://www.storyteller-bot.com/#/",
-        description="Click above for a complete listing of commands: Macros, initiative, and more!"
+    embed = discord.Embed(
+        title="[Tzimisce] | Help",
+        url="https://www.storyteller-bot.com/#/",
+        description="Click above for a complete listing of commands: Macros, initiative, and more!",
     )
     embed.add_field(
         name="Basic Syntax",
         value=f"```{prefix} <pool> [difficulty] [specialty] # comment```Only `pool` is required.",
-        inline=False
+        inline=False,
     )
     embed.add_field(name="Example", value=f"```{prefix} 8 5 Mesmerizing # Summon```", inline=False)
 
@@ -198,15 +200,12 @@ def help_embed(prefix):
 
 
 def build_embed(
-    fields, author=None, title="", color=0x1F3446, description="", header=None,
-    footer=None
+    fields, author=None, title="", color=0x1F3446, description="", header=None, footer=None
 ):
     """Return a discord embed with a variable number of fields."""
     # pylint: disable=too-many-arguments
 
-    embed = discord.Embed(
-        title=title, colour=discord.Colour(color), description=description
-    )
+    embed = discord.Embed(title=title, colour=discord.Colour(color), description=description)
 
     if footer:
         embed.set_footer(text=footer)
