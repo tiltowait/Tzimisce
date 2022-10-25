@@ -175,9 +175,9 @@ async def on_application_command(ctx):
 @bot.event
 async def on_application_command_error(ctx, error):
     """Inform user of errors."""
-    if isinstance(error.original, commands.NoPrivateMessage):
+    if isinstance(error, commands.NoPrivateMessage):
         await ctx.respond("Sorry, this can't be done in DMs.", ephemeral=True)
-    elif isinstance(error.original, commands.MissingPermissions):
+    elif isinstance(error, commands.MissingPermissions):
         await ctx.respond("Sorry, you don't have permission to do this.", ephemeral=True)
     else:
         raise error
