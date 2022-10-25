@@ -2,4 +2,4 @@ python-dotenv
 psycopg2-binary==2.9.3
 dice==3.1.2
 statcord.py==3.1.0
-py-cord==2.1.1
+py-cord==2.2.2
