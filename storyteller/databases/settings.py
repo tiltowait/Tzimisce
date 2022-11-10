@@ -1,6 +1,7 @@
 """settings.py - Database for managing server settings."""
 
 import copy
+import logging
 from collections import defaultdict
 from distutils.util import strtobool
 
@@ -70,6 +71,8 @@ class SettingsDB(Database):
         self.default_params[self.DEFAULT_DIFF] = 6
         self.default_params[self.PREFIX] = None
 
+        logging.info("Created SettingsDB")
+
     def __fetch_all_settings(self) -> dict:
         """
         Retrieves the settings for each server.
@@ -91,6 +94,7 @@ class SettingsDB(Database):
 
             settings[guild] = parameters
 
+        logging.info("Fetched all guild settings")
         return settings
 
     def settings_for_guild(self, guild) -> dict:
@@ -105,7 +109,7 @@ class SettingsDB(Database):
 
         # Make sure the settings are actually in the guild
         if guild is not None and guild not in self.__all_settings:
-            print(f"Guild {guild} wasn't in GuildSettings! Adding now.")
+            logging.info("Guild %s wasn't in GuildSettings! Adding now.", guild)
             self.add_guild(guild)
 
         return copy.deepcopy(self.__all_settings[guild])
@@ -139,6 +143,7 @@ class SettingsDB(Database):
         query = SQL("UPDATE GuildSettings SET {key}=%s WHERE ID=%s;").format(key=Identifier(key))
         self._execute(query, value, guild)
         self.__all_settings[guild][key] = value
+        logging.info("Settings: Guild %s: Set %s to %s", guild, key, value)
 
         message = f"Setting `{key}` to `{value}`!"
         if key == self.PREFIX:
@@ -234,9 +239,11 @@ class SettingsDB(Database):
         """
         query = "INSERT INTO GuildSettings VALUES (%s);"
         self._execute(query, guildid)
+        logging.info("Guild %s added to database", guildid)
 
         # Add the guild to the settings dictionary
         self.__all_settings[guildid] = self.default_params
+        logging.info("Guild %s added to settings cache", guildid)
 
     def remove_guild(self, guildid: int):
         """
@@ -246,3 +253,8 @@ class SettingsDB(Database):
         """
         query = "DELETE FROM GuildSettings WHERE ID=%s;"
         self._execute(query, guildid)
+        logging.info("Guild %s removed from database", guildid)
+
+        if guildid in self.__all_settings:
+            del self.__all_settings[guildid]
+            logging.info("Guild %s removed from settings cache", guildid)
