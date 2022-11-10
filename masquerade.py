@@ -88,40 +88,6 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-# Commands
-
-# This is only temporary until May 2022
-
-
-class DocumentationLink(discord.ui.View):
-    """A simple view that shows a link to the documentation."""
-
-    def __init__(self):
-        super().__init__()
-        self.add_item(
-            discord.ui.Button(label="More Information", url="https://www.storyteller-bot.com/#/")
-        )
-        self.add_item(
-            discord.ui.Button(
-                label="Re-Invite [Tzimisce]",
-                url="https://discord.com/api/oauth2/authorize?client_id=642775025770037279&permissions=2147747840&scope=applications.commands%20bot",
-            )
-        )
-
-    @discord.ui.button(label="Disable This Message", style=discord.ButtonStyle.danger)
-    async def slash_warning_disable(self, _, interaction):
-        """Disable the slash warning by changing the prefix."""
-        if interaction.user.guild_permissions.administrator:
-            storyteller.settings.update(interaction.guild.id, "prefix", ".,/;m")
-            await interaction.response.edit_message(
-                content="Slash command warnings are now disabled.", view=None
-            )
-        else:
-            await interaction.response.send_message(
-                "Only the server admin may do this!", ephemeral=True
-            )
-
-
 # Events
 
 
