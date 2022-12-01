@@ -1,6 +1,7 @@
 """initiative_manager.py - Manages initiative for multiple characters."""
 
 from collections import defaultdict
+
 from .initiative import Initiative
 
 
@@ -8,9 +9,8 @@ class InitiativeManager:
     """Class for keeping track of multiple character initiative scores."""
 
     def __init__(self):
-        self.characters = {} # str: initiative
-        self.celerity = defaultdict(lambda: 0) # str: int
-
+        self.characters = {}  # str: initiative
+        self.celerity = defaultdict(lambda: 0)  # str: int
 
     def has_character(self, character: str) -> bool:
         """
@@ -20,7 +20,6 @@ class InitiativeManager:
         Returns (bool): True if the character exists in the table
         """
         return character in self.characters
-
 
     def add_init(self, character: str, mod: int, die: int = None, action: str = None) -> int:
         """
@@ -36,7 +35,6 @@ class InitiativeManager:
         self.characters[character] = init
 
         return init
-
 
     def remove_init(self, character) -> bool:
         """
@@ -56,7 +54,6 @@ class InitiativeManager:
 
         return contained
 
-
     def modify_init(self, character: str, mod: int) -> Initiative:
         """
         Modify the modifier of an init (for instance, if dexterity or celerity
@@ -73,7 +70,6 @@ class InitiativeManager:
 
         return None
 
-
     def declare_action(self, character: str, action: str) -> bool:
         """
         Add a declared action to a character.
@@ -88,7 +84,6 @@ class InitiativeManager:
 
         return False
 
-
     def add_celerity(self, character: str) -> bool:
         """
         Add a celerity action for a character.
@@ -102,7 +97,6 @@ class InitiativeManager:
 
         return False
 
-
     def reroll(self):
         """
         Reroll the initiative of every single character in the table and remove
@@ -113,12 +107,10 @@ class InitiativeManager:
 
         self.celerity.clear()
 
-
     @property
     def count(self) -> int:
         """Returns the number of characters in the initiative table."""
         return len(self.characters)
-
 
     def __str__(self):
         """Returns a string representation of the initiative table, sorted by score."""
@@ -127,7 +119,7 @@ class InitiativeManager:
 
         enumerated_inits = sorted(self.characters.items(), key=lambda x: x[1], reverse=True)
         for character, initiative in enumerated_inits:
-            entry = f"**{initiative.init}:** {character}"
+            entry = f"**{initiative.init}:** `{character}`"
 
             if initiative.action:
                 entry += f" - {initiative.action}"
