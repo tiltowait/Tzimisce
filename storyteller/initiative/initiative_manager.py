@@ -129,7 +129,7 @@ class InitiativeManager:
             # Collect Celerity info while we're here
             celerity = self.celerity[character]
             if celerity > 0:
-                celerities.append(f"{character} ({celerity})")
+                celerities.append(f"`{character}` ({celerity})")
 
         return_string = "\n".join(initiative_entries)
 
