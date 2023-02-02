@@ -84,7 +84,7 @@ class SettingsDB(Database):
         self._execute(query)
         results = self.cursor.fetchall()
 
-        settings = defaultdict(lambda: self.default_params)
+        settings = defaultdict(lambda: copy.deepcopy(self.default_params))
 
         # Put the fetched parameters into dictionaries
         for row in results:
@@ -180,7 +180,7 @@ class SettingsDB(Database):
         if key == SettingsDB.PREFIX:
             return ", ".join(self.get_prefixes(guild))
 
-        return self.__all_settings[guild][key]
+        return copy.deepcopy(self.__all_settings[guild][key])
 
     def __validated_parameter(self, key, new_value):
         """
@@ -242,7 +242,7 @@ class SettingsDB(Database):
         logging.info("Guild %s added to database", guildid)
 
         # Add the guild to the settings dictionary
-        self.__all_settings[guildid] = self.default_params
+        self.__all_settings[guildid] = copy.deepcopy(self.default_params)
         logging.info("Guild %s added to settings cache", guildid)
 
     def remove_guild(self, guildid: int):
