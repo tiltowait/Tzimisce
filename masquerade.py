@@ -28,7 +28,7 @@ if (debug_guild := os.getenv("DEBUG")) is not None:
 
 intents = discord.Intents(guilds=True, members=True)
 
-bot = commands.Bot(
+bot = commands.AutoShardedBot(
     command_prefix=determine_prefix,
     case_insensitive=True,
     debug_guilds=debug_guild,
