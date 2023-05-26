@@ -4,9 +4,10 @@ import re
 from typing import Union
 
 import discord
-from storyteller import roll, engine # pylint: disable=cyclic-import
-from .response import Response
 
+from storyteller import engine, roll  # pylint: disable=cyclic-import
+
+from .response import Response
 
 __poolx = re.compile(
     r"^(?P<pool>-?\d+)[\s@]?(?P<difficulty>\d+)?\s?(?P<auto>[+-]?\d+)?(?: (?P<specialty>\D[^#]*))?$"
@@ -18,8 +19,8 @@ __poolx = re.compile(
 EXCEPTIONAL_COLOR = 0x00FF00
 SUCCESS_COLOR = 0x0DC06B
 MARGINAL_COLOR = 0x14A1A0
-FAIL_COLOR = 0X777777
-BOTCH_COLOR = 0XfF0000
+FAIL_COLOR = 0x777777
+BOTCH_COLOR = 0xFF0000
 
 
 async def pool(ctx, command: dict) -> Response:
@@ -43,7 +44,6 @@ async def pool(ctx, command: dict) -> Response:
             return Response(Response.POOL, embed=result)
 
         return Response(Response.POOL, content=result)
-
 
 
 def is_valid_pool(syntax: str) -> bool:
@@ -77,7 +77,7 @@ def __pool_roll(ctx, command: dict) -> Union[str, discord.Embed]:
         "never_botch": command["never_botch"],
         "ignore_ones": command["ignore_ones"],
         "wp_cancelable": command["wp_cancelable"],
-        "unsort_rolls": command["unsort_rolls"]
+        "unsort_rolls": command["unsort_rolls"],
     }
 
     # If the user did not supply a difficulty, use the server default
@@ -108,10 +108,10 @@ def __pool_roll(ctx, command: dict) -> Union[str, discord.Embed]:
     # Sometimes, a roll may have auto-successes that can be canceled by 1s.
     autos = int(command["auto"] or 0)
 
-    specialty = command["specialty"] # Doubles 10s if set
+    specialty = command["specialty"]  # Doubles 10s if set
     options["double_tens"] = __should_double(command, specialty is not None)
 
-    if not chronicles: # Regular CofD rolls *always* explode
+    if not chronicles:  # Regular CofD rolls *always* explode
         options["xpl_target"] = __explosion_target(command, specialty is not None)
 
     # Finally, roll it!
@@ -155,7 +155,7 @@ def __build_embed(
     will: bool,
     autos: int,
     title: str,
-    comment: str
+    comment: str,
 ):
     """
     Build an embed for displaying the roll results.
@@ -191,7 +191,7 @@ def __build_embed(
     # Display individual dice as emoji, if available
     can_use_emoji = ctx.channel.permissions_for(ctx.guild.default_role).external_emojis
 
-    if can_use_emoji and len(results.dice) <= 40:
+    if can_use_emoji and len(results.dice) <= 37:
         names = results.dice_emoji_names
         emojis = __emojify_dice(names, will, autos)
         fields.append(("Dice", emojis, True))
@@ -202,8 +202,12 @@ def __build_embed(
         fields.append(("Specialty", specialty, True))
 
     return engine.build_embed(
-        author=ctx.author, title=results.formatted_result, header=title, color=color, fields=fields,
-        footer=comment
+        author=ctx.author,
+        title=results.formatted_result,
+        header=title,
+        color=color,
+        fields=fields,
+        footer=comment,
     )
 
 
@@ -228,6 +232,7 @@ def __build_compact(results: str, specialty: str, comment: str) -> str:
     compact_string += f"\n**{results.formatted_result}**"
 
     return compact_string
+
 
 def __pluralize_auto_successes(autos: int) -> str:
     """
@@ -271,7 +276,7 @@ emojidict = {
     "f3": "<:f3:821601300281425962>",
     "f2": "<:f2:821601300483014666>",
     "f1": "<:f1:821601300420493362>",
-    "b1": "<:b1:821601300310392832>"
+    "b1": "<:b1:821601300310392832>",
 }
 
 
@@ -289,7 +294,7 @@ def __emojify_dice(emoji_names: list[str], willpower: bool, autos: int) -> str:
     emojis = []
     for emoji_name in emoji_names:
         emoji = emojidict.get(emoji_name)
-        #emoji = re.search(r"\d+", emoji_name).group(0) # Guaranteed to have a match
+        # emoji = re.search(r"\d+", emoji_name).group(0) # Guaranteed to have a match
 
         emojis.append(emoji + "​")
 
@@ -331,4 +336,4 @@ def __explosion_target(command: dict, spec: bool) -> int:
         return 10
     if command["xpl_spec"] and spec:
         return 10
-    return 11 # An unreachable explosion target means no roll will ever explode
+    return 11  # An unreachable explosion target means no roll will ever explode
