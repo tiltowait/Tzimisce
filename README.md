@@ -30,7 +30,7 @@ Base syntax is simple: `/m pool difficulty specialty`. The specialty is optional
 /m 7 5 Climbing # Dex + Athletics
 ```
 
-But that's not all [Tzimisce] can do! It also features macro support, initiative, server-wide customization, and more. For a full command listing, check [the help page](https://storyteller-bot.com).
+But that's not all [Tzimisce] can do! It also features macro support, initiative, server-wide customization, and more. For a full command listing, check [the help page](https://tzimisce.app).
 
 ### Requried Permissions
 * **Send Messages:** Should be obvious, no?
