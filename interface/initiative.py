@@ -4,7 +4,7 @@
 import re
 
 import discord
-from discord.commands import SlashCommandGroup, Option
+from discord.commands import Option, SlashCommandGroup
 from discord.ext import commands
 
 import storyteller
@@ -17,14 +17,14 @@ class InitiativeCommands(commands.Cog):
 
     @init.command()
     @commands.guild_only()
-    async def show(self, ctx):
+    async def show(self, ctx: discord.ApplicationContext):
         """Show the current channel's initiative table."""
+        await ctx.defer()
         try:
             response = _init_parse(ctx)
             await ctx.respond(content=response.content, embed=response.embed)
         except ValueError as err:
             await ctx.respond(str(err))
-
 
     @init.command()
     @commands.guild_only()
@@ -35,6 +35,7 @@ class InitiativeCommands(commands.Cog):
         character: Option(str, "The character who's acting", required=False),
     ):
         """Add a character to the initiative table."""
+        await ctx.defer()
         try:
             args = mod.split()
             mod = args.pop(0)
@@ -53,18 +54,16 @@ class InitiativeCommands(commands.Cog):
         except ValueError:
             await ctx.respond(
                 "**Error:** `mod` must be a number. Use `character` parameter to add a character.",
-                ephemeral=True
+                ephemeral=True,
             )
-
 
     @init.command()
     @commands.guild_only()
     async def bulk(
-        self,
-        ctx: discord.ApplicationContext,
-        characters: Option(str, "Name1=Mod1 Name2=Mod2 ...")
+        self, ctx: discord.ApplicationContext, characters: Option(str, "Name1=Mod1 Name2=Mod2 ...")
     ):
         """Add multiple characters to the initiative table."""
+        await ctx.defer()
         characters = re.sub(r"\s*=\s*", r"=", characters)
 
         try:
@@ -92,26 +91,25 @@ class InitiativeCommands(commands.Cog):
             await ctx.respond(f"Added {char_str} to the initiative table.")
         except:
             await ctx.respond(
-                "Error: Expected `Name1=Mod1 Name2=Mod2 ...`. Mods must be numbers!",
-                ephemeral=True
+                "Error: Expected `Name1=Mod1 Name2=Mod2 ...`. Mods must be numbers!", ephemeral=True
             )
-
 
     @init.command()
     @commands.guild_only()
     async def rm(self, ctx, character: Option(str, "The character to remove", default="")):
         """Remove a character from the channel's initiative table."""
+        await ctx.defer()
         try:
             response = storyteller.parse.initiative_removal(ctx, character)
             await ctx.respond(content=response.content, embed=response.embed)
         except ValueError as err:
             await ctx.respond(err, ephemeral=True)
 
-
     @init.command()
     @commands.guild_only()
     async def reroll(self, ctx):
         """Re-roll this channel's initiative."""
+        await ctx.defer()
         manager = storyteller.initiative.get_table(ctx.channel.id)
 
         if manager:
@@ -123,11 +121,10 @@ class InitiativeCommands(commands.Cog):
                     ctx.guild.id, ctx.channel.id, character, init.mod, init.die
                 )
 
-            response = _init_parse(ctx, reroll=True) # Print the new initiative table
+            response = _init_parse(ctx, reroll=True)  # Print the new initiative table
             await ctx.respond(content=response.content, embed=response.embed)
         else:
             await ctx.respond("Initiative isn't set for this channel!", ephemeral=True)
-
 
     @init.command()
     @commands.guild_only()
@@ -137,18 +134,18 @@ class InitiativeCommands(commands.Cog):
         declaration: Option(str, "Format: <action> [-n character] [-c N]"),
     ):
         """Declare an initiative action."""
+        await ctx.defer()
         try:
             character = storyteller.parse.initiative_declare(ctx, declaration.split())
             await ctx.respond(f"Declared {character}'s action!")
         except SyntaxError as error:
             await ctx.respond(error, ephemeral=True)
 
-
-
     @init.command()
     @commands.guild_only()
     async def clear(self, ctx):
         """Clear this channel's initiative table."""
+        await ctx.defer()
         try:
             storyteller.initiative.remove_table(ctx.channel.id)
             await ctx.respond("Reset initiative in this channel!")
