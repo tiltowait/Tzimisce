@@ -4,7 +4,6 @@ import re
 from typing import Union
 
 import discord
-
 from storyteller import engine, roll  # pylint: disable=cyclic-import
 
 from .response import Response
@@ -109,6 +108,9 @@ def __pool_roll(ctx, command: dict) -> Union[str, discord.Embed]:
     autos = int(command["auto"] or 0)
 
     specialty = command["specialty"]  # Doubles 10s if set
+    if specialty.casefold() == "yes":
+        return "Actually put a specialty, you coward. You absolute scrub. None of this 'yes' BS."
+
     options["double_tens"] = __should_double(command, specialty is not None)
 
     if not chronicles:  # Regular CofD rolls *always* explode
@@ -144,7 +146,9 @@ def __pool_roll(ctx, command: dict) -> Union[str, discord.Embed]:
         explosions = "explosion" if results.explosions == 1 else "explosions"
         title += f" (+{results.explosions} {explosions})"
 
-    return __build_embed(ctx, command["override"], results, specialty, will, autos, title, comment)
+    return __build_embed(
+        ctx, command["override"], results, specialty, will, autos, title, comment
+    )
 
 
 def __build_embed(
